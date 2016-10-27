@@ -1,0 +1,55 @@
+{
+	"tags": {
+		"allowUnknownTags": true
+	},
+	"source": {
+		"include": [
+			"./dist/",
+			"./readme.md",
+			"./package.json"
+		],
+		"includePattern": ".+\\.js(doc)?$",
+		"excludePattern": "(^|\\/|\\\\)_"
+	},
+	"plugins": [
+		"plugins/markdown"
+	],
+	"markdown": {
+		"parser": "gfm",
+		"hardwrap": true
+	},
+	"templates": {
+		"cleverLinks": true,
+		"monospaceLinks": true,
+		"default": {
+			"staticFiles": {
+				"paths": [
+					"./images"
+				]
+			},
+			"outputSourceFiles": true
+		},
+		"linenums": true,
+		"path": "ink-docstrap",
+		"theme": "cerulean",
+		"navType": "vertical",
+		"dateFormat": "MMMM Do YYYY, h:mm:ss a"
+	},
+	"opts": {
+		"template1": "./node_modules/ink-docstrap/template",
+		"encoding": "utf8",
+		"destination": "./dist-api",
+		"recurse": true,
+		"tutorials": "",
+		"explain": false,
+		"query": "value",
+		"private": true,
+		"lenient": true,
+		"version": false,
+		"test": false,
+		"help": false,
+		"verbose": false,
+		"match": "value",
+		"nocolor": false
+	}
+}

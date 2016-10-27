@@ -1,0 +1,28 @@
+{
+  "name": "nools-ts",
+  "version": "1.0.0",
+  "description": "nools in TypeScript.",
+  "main": "./src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "nools"
+  ],
+  "author": "taoqf <tao_qiufeng@126.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "del": "^2.2.2",
+    "dts-generator": "^1.7.0",
+    "gulp": "^3.9.1",
+    "gulp-copy": "^0.0.2",
+    "gulp-jsdoc3": "^0.3.0",
+    "gulp-sequence": "^0.4.6",
+    "gulp-typescript": "^2.14.0",
+    "jison": "^0.4.17",
+    "lodash-ts": "^1.0.0"
+  },
+  "dependencies": {
+    "lodash-ts": "^1.0.5"
+  }
+}
