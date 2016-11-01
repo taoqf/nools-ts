@@ -18,22 +18,22 @@ let nools = require('./dist/');
 let rule = `
 rule test {
     when {
-		a: String;
-		b: String;
+		// a: String;
+		a: String a === "test";
     }
     then {
-        console.log('*****************', a);
+        console.log('----------------', a);
     }
 }
 
-rule test2 {
-    when {
-		a: String;
-    }
-    then {
-        console.log('*****************', a);
-    }
-}
+// rule test2 {
+//     when {
+// 		a: String;
+//     }
+//     then {
+//         console.log('*****************', a);
+//     }
+// }
 
 `;
 
@@ -52,7 +52,8 @@ let session = flow.getSession();
 // session.assert(new Message('hello'));
 // session.assert(new Message('hello world'));
 // session.assert(new Message('goodbye'));
-session.assert('111');
+// session.assert('111');
+session.assert('test');
 session.match().then((data) => {
 	console.log('data', data)
 }, (err)=>{

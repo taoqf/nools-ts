@@ -3,7 +3,7 @@ import AgendaTree from '../agenda';
 import Fact from '../facts/fact';
 import Rule from '../rule';
 
-// import Constraint from '../constraint/constraint';
+import Constraint from '../constraint/constraint';
 import ReferenceConstraint from '../constraint/reference-constraint';
 import HashConstraint from '../constraint/hash-constraint';
 import ObjectConstraint from '../constraint/object-constraint';
@@ -62,9 +62,9 @@ import EqualityNode from './equality-node';
 //     PropertyNode = require("./propertyNode");
 
 function hasRefernceConstraints(pattern: Pattern) {
-    return (pattern.constraints || []).some(function (c) {
-        return c instanceof ReferenceConstraint;
-    });
+	return (pattern.constraints || []).some(function (c) {
+		return c instanceof ReferenceConstraint;
+	});
 }
 
 export type Side = 'left' | 'right';
@@ -155,8 +155,8 @@ export default class RootNode {
 		}
 	}
 
-	__createTypeNode(rule: Rule, pattern: ObjectPattern) {
-		const ret = new TypeNode(pattern.constraints[0]);
+	__createTypeNode(rule: Rule, constraint: Constraint) {
+		const ret = new TypeNode(constraint);
 		const typeNodes = this.typeNodes;
 		const tns = typeNodes.filter((typeNode) => {
 			return ret.equal(typeNode);
@@ -240,12 +240,14 @@ export default class RootNode {
 	__createAlphaNode(rule: Rule, pattern: ObjectPattern, outNode: Node, side: Side) {
 		if (!(pattern instanceof FromPattern)) {
 			const constraints = pattern.constraints;
-			const typeNode = this.__createTypeNode(rule, pattern);
+			const typeNode = this.__createTypeNode(rule, pattern.constraints[0]);
 			const aliasNode = this.__createAliasNode(rule, pattern);
 			typeNode.addOutNode(aliasNode, pattern);
 			aliasNode.addParentNode(typeNode);
 			let parentNode = aliasNode as Node;
-			constraints.forEach((constraint) => {
+			constraints.filter((constraint, idx) => {
+				return idx > 0;
+			}).forEach((constraint) => {
 				let node: Node;
 				if (constraint instanceof HashConstraint) {
 					node = this.__createPropertyNode(rule, constraint);

@@ -1,7 +1,7 @@
 import flattenDeep from 'lodash-ts/flattenDeep';
 import isArray from 'lodash-ts/isArray';
-import {ICondition, IPatternOptions} from './interfaces';
-import {removeDups} from './lang';
+import { ICondition, IPatternOptions } from './interfaces';
+import { removeDups } from './lang';
 
 function getProps(val: (string | string[])[]): string[] {
 	const arr: (string | string[])[] = val.map((val) => {
@@ -75,17 +75,17 @@ export function toJs(rule: ICondition, scope: any, alias: string, equality = fal
 	const js = parse(rule);
 	scope = scope || {};
 	const consts = getIdentifiers(rule);
-	const closureconsts = ["const indexOf = definedFuncs.indexOf; const hasOwnProperty = Object.prototype.hasOwnProperty;"];
-	const funcconsts = consts.filter(function (v) {
+	// const closureconsts = ["const indexOf = definedFuncs.indexOf; const hasOwnProperty = Object.prototype.hasOwnProperty;"];
+	const closureconsts = consts.filter(function (v) {
+		return scope.hasOwnProperty(v);
+	}).map(function (v) {
 		const ret = ["const ", v, " = "];
-		if (scope.hasOwnProperty(v)) {
-			ret.push("scope['", v, "']");
-		} else {
-			return true;
-		}
+		ret.push("scope['", v, "']");
 		ret.push(";");
-		closureconsts.push(ret.join(""));
-		return false;
+		return ret.join("");
+	});
+	const funcconsts = consts.filter(function (v) {
+		return !scope.hasOwnProperty(v);
 	}).map(function (v) {
 		const ret = ["const ", v, " = "];
 		if (equality || v !== alias) {

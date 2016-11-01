@@ -107,23 +107,23 @@ function parseAction(action: string, identifiers: string[], defined: { [name: st
 	const declares: string[] = [];
 	identifiers.forEach(function (i) {
 		if (action.indexOf(i) !== -1) {
-			declares.push("var " + i + "= facts." + i + ";");
+			declares.push(`let ${i} = facts.get("${i}");`);
 		}
 	});
 	Object.keys(defined).forEach(function (i) {
 		if (action.indexOf(i) !== -1) {
-			declares.push("var " + i + "= defined." + i + ";");
+			declares.push(`let ${i} = defined.${i};`);
 		}
 	});
 
 	Object.keys(scope).forEach(function (i) {
 		if (action.indexOf(i) !== -1) {
-			declares.push("var " + i + "= scope." + i + ";");
+			declares.push(`let ${i} = scope.${i};`);
 		}
 	});
 	modifiers.forEach(function (i) {
 		if (action.indexOf(i) !== -1) {
-			declares.push("if(!" + i + "){ var " + i + "= flow." + i + ";}");
+			declares.push(`if(!${i}){ let ${i}= flow.${i};}`);
 		}
 	});
 	const params = ["facts", 'flow'];

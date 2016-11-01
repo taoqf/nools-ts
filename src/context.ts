@@ -120,6 +120,7 @@ export default class Context {
 	}
 
 	clone(fact?: Fact, paths?: Pattern[], match?: Match) {
-		return new Context(fact || this.fact, paths || this.paths, match || this.match);
+		// return new Context(fact || this.fact, paths || this.paths, match || this.match);
+		return new Context(fact || this.fact, paths, match || this.match);
 	}
 }
