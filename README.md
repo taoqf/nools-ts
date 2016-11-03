@@ -1,2 +1,2 @@
 # nools-ts
-nools in TypeScript.
+[nools](https://github.com/C2FO/nools) in TypeScript.
