@@ -79,22 +79,18 @@ export function toJs(rule: ICondition, scope: any, alias: string, equality = fal
 	const closureconsts = consts.filter(function (v) {
 		return scope.hasOwnProperty(v);
 	}).map(function (v) {
-		const ret = ["const ", v, " = "];
-		ret.push("scope['", v, "']");
-		ret.push(";");
-		return ret.join("");
+		return `const ${v}=scope['${v}'];`;
 	});
 	const funcconsts = consts.filter(function (v) {
 		return !scope.hasOwnProperty(v);
 	}).map(function (v) {
-		const ret = ["const ", v, " = "];
 		if (equality || v !== alias) {
-			ret.push("fact." + v);
+			return `const ${v}=fact.get('${v}');`;
 		} else if (v === alias) {
-			ret.push("hash.", v, "");
+			return `const ${v}=hash.${v};`;
+		} else {
+			return ``;
 		}
-		ret.push(";");
-		return ret.join("");
 	});
 	const closureBody = closureconsts.join("") + "return function matcher" + (matcherCount++) + (!equality ? "(fact, hash){" : "(fact){") + funcconsts.join("") + " return " + (wrap ? wrap(js) : js) + ";}";
 	const f = new Function("scope", closureBody)(scope);

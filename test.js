@@ -26,14 +26,14 @@ rule test {
     }
 }
 
-// rule test2 {
-//     when {
-// 		a: String;
-//     }
-//     then {
-//         console.log('*****************', a);
-//     }
-// }
+rule test2 {
+    when {
+		a: String;
+    }
+    then {
+        console.log('*****************', a);
+    }
+}
 
 `;
 
@@ -52,7 +52,7 @@ let session = flow.getSession();
 // session.assert(new Message('hello'));
 // session.assert(new Message('hello world'));
 // session.assert(new Message('goodbye'));
-// session.assert('111');
+session.assert('111');
 session.assert('test');
 session.match().then((data) => {
 	console.log('data', data)
