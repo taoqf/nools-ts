@@ -1,7 +1,7 @@
 import EventEmitter from './EventEmitter';
 import LinkedList from './linked-list';
 import isFunction from 'lodash-ts/isFunction';
-import {IInsert} from './interfaces';
+import { IInsert } from './interfaces';
 import Flow from './flow';
 import AVLTree from './nodes/leafy/avl-tree';
 import TerminalNode from './nodes/terminal-node';
@@ -71,7 +71,7 @@ export default class AgendaTree extends EventEmitter {
 	}
 
 	setFocus(agendaGroup: string) {
-		if (agendaGroup !== this.getFocused()) {
+		if (agendaGroup !== this.getFocused() && this.agendaGroups.has(agendaGroup)) {
 			this.agendaGroupStack.push(agendaGroup);
 			this.emit("focused", agendaGroup);
 		}
