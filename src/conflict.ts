@@ -1,4 +1,4 @@
-import {IInsert} from './interfaces';
+import { IInsert } from './interfaces';
 
 export function salience(a: IInsert, b: IInsert) {
 	return a.rule.priority - b.rule.priority;
@@ -23,6 +23,13 @@ export function factRecency(a: IInsert, b: IInsert) {
 	return ret;
 }
 
+export function factRecencyInverse(a: IInsert, b: IInsert) {
+	// negate fact recency,
+	// but need 0 to produce 1 in ret value of strategy function
+	var fRI = -factRecency(a, b);
+	return (fRI === 0 ? 1 : fRI);
+}
+
 export function activationRecency(a: IInsert, b: IInsert) {
 	return a.recency - b.recency;
 }
@@ -31,7 +38,8 @@ const strategies = {
 	salience: salience,
 	bucketCounter: bucketCounter,
 	factRecency: factRecency,
-	activationRecency: activationRecency
+	activationRecency: activationRecency,
+	factRecencyInverse: factRecencyInverse
 };
 
 export default function strategy(...strats: { (a: IInsert, b: IInsert): number }[]) {

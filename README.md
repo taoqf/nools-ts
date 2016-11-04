@@ -9,7 +9,9 @@ Nools is a [rete](http://en.wikipedia.org/wiki/Rete_algorithm) based rules engin
 
 # Installation
 
-todo:
+```
+npm i nools-ts
+```
 
 # Usage
 
@@ -764,6 +766,7 @@ When declaring a flow it is defined with a default conflict resolution strategy.
 * `activationRecency` - sort activations on activation recency. This is a `LIFO` strategy the latest activation takes precedence.
 * `factRecency` - sort activations based on `fact` recency. Each time a fact is `asserted` or `modified` its recency is incremented.
 * `bucketCounter` - sort activations on the internal `bucket` counter. The bucket counter is incremented after an activation is fired and the internal `workingMemory` is altered.
+* `factRecencyInverse` - sort activations by the oldest fact first. This is a `FIFO` strategy, the earliest fact takes precedence.
 
 The default conflict resolution strategy consists of `salience` and `activationRecency`.
 

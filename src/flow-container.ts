@@ -1,5 +1,5 @@
 import instanceOf from 'lodash-ts/isinstanceof';
-import strategy, { salience, activationRecency } from './conflict';
+import strategy, { salience, activationRecency, factRecencyInverse } from './conflict';
 import Flow from './flow';
 import { IInsert, IRuleContextOptions, ICondition } from './interfaces';
 import Rule, { createRule } from './rule';
@@ -7,7 +7,7 @@ import InitialFact from './facts/initial';
 
 const flows = new Map<string, FlowContainer>();
 
-const conflictResolution = strategy(salience, activationRecency);
+const conflictResolution = strategy(salience, activationRecency, factRecencyInverse);
 
 export default class FlowContainer {
 	private name: string;
