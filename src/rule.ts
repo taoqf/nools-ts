@@ -5,7 +5,7 @@ import isString from 'lodash-ts/isString';
 import isArray from 'lodash-ts/isArray';
 import isFunction from 'lodash-ts/isFunction';
 import isEqual from 'lodash-ts/isEqual';
-import {IRuleContextOptions, ICondition} from './interfaces';
+import { IRuleContextOptions, ICondition } from './interfaces';
 import CompositePattern from './pattern/composite-pattern';
 import Pattern from './pattern/pattern';
 import FromPattern from './pattern/from-pattern';
@@ -16,7 +16,7 @@ import NotPattern from './pattern/not-pattern';
 import ObjectPattern from './pattern/object-pattern';
 import baseParseConstraint from './parser/constraint';
 import Flow from './flow';
-import {Match} from './context';
+import { Match } from './context';
 
 export default class Rule {
 	public name: string;
@@ -43,7 +43,7 @@ export default class Rule {
 
 	fire(flow: Flow, match: Match) {
 		const cb = this.cb;
-		return new Promise((resolve)=>{
+		return new Promise((resolve) => {
 			resolve(cb.call(flow, match.factHash, flow));
 		});
 	}
@@ -259,21 +259,32 @@ export function createRule(name: string, options: IRuleContextOptions, condition
 		isRules = false;
 	}
 	let rules: Rule[] = [];
-	const scope = options.scope || {};
+	const scope = options.scope || new Map<string, any>();
 	(conditions as any).scope = scope;
 	if (isRules) {
 		const patterns: Pattern[][] = [];
-		function _mergePatterns(patt: Pattern, i: number) {
+		function _mergePatterns(patt: Pattern | Pattern[], i: number) {
+			// [pattern], [pattern], ...  in arrays of length 1
+			// we wish to build a single array in order of lhs progression
+			if (isArray(patt)) {
+				if ((patt as Pattern[]).length === 1) {
+					patt = (patt as Pattern[])[0];
+					i = 0;
+				}
+				else {
+					throw new Error('invalid pattern structure');
+				}
+			}
 			if (!patterns[i]) {
 				patterns[i] = i === 0 ? [] : patterns[i - 1].slice();
 				//remove dup
 				if (i !== 0) {
 					patterns[i].pop();
 				}
-				patterns[i].push(patt);
+				patterns[i].push(patt as Pattern);
 			} else {
 				patterns.forEach(function (p) {
-					p.push(patt);
+					p.push(patt as Pattern);
 				});
 			}
 		}

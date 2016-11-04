@@ -5,7 +5,7 @@ export interface ICompileOptions {
 }
 
 export interface ICondition extends Array<any> {
-	scope?: any;
+	scope?: Map<string, any>;
 	from?: any;
 	[0]: string | ICondition;
 	[1]: string | ICondition;	// always be null ???
@@ -54,9 +54,7 @@ export interface IRuleContextOptions {
 	priority?: number;
 	agendaGroup?: string;
 	autoFocus?: boolean;
-	scope?: {
-		[name: string]: any;
-	};
+	scope?: Map<string, any>;
 }
 
 export interface IRuleContext {
