@@ -1,5 +1,4 @@
 import isEqual from 'lodash-ts/isEqual';
-import mixin from 'lodash-ts/mixin';
 import instanceOf from 'lodash-ts/isinstanceof';
 import {IPatternOptions} from '../interfaces';
 

@@ -1,7 +1,7 @@
 export interface ICompileOptions {
 	name?: string;
-	define?: { [name: string]: any };
-	scope?: { [name: string]: any };
+	define?: Map<string, any>;
+	scope?: Map<string, any>;
 }
 
 export interface ICondition extends Array<any> {
@@ -81,13 +81,13 @@ export interface IContext {
 }
 
 export interface IPatternOptions {
-	scope: any;
+	scope: Map<string, any>;
 	pattern: string;
 	alias?: string;
 }
 
 import Rule from './rule';
-import {Match} from './context';
+import { Match } from './context';
 
 export interface IInsert {
 	rule: Rule;

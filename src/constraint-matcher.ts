@@ -68,21 +68,19 @@ export function getIdentifiers(rule: ICondition) {
 	return removeDups(ret);
 }
 
-let matcherCount = 0;
-
-export function toJs(rule: ICondition, scope: any, alias: string, equality = false, wrap?: (src: string) => string) {
+export function toJs(rule: ICondition, scope: Map<string, any>, alias: string, equality = false, wrap?: (src: string) => string) {
 	/*jshint evil:true*/
 	const js = parse(rule);
-	scope = scope || {};
+	scope = scope || new Map<string, any>();
 	const consts = getIdentifiers(rule);
 	// const closureconsts = ["const indexOf = definedFuncs.indexOf; const hasOwnProperty = Object.prototype.hasOwnProperty;"];
 	const closureconsts = consts.filter(function (v) {
-		return scope.hasOwnProperty(v);
+		return scope.has(v);
 	}).map(function (v) {
-		return `const ${v}=scope['${v}'];`;
+		return `const ${v}=scope.get('${v}');`;
 	});
 	const funcconsts = consts.filter(function (v) {
-		return !scope.hasOwnProperty(v);
+		return !scope.has(v);
 	}).map(function (v) {
 		if (equality || v !== alias) {
 			return `const ${v}=fact.get('${v}');`;
@@ -92,10 +90,8 @@ export function toJs(rule: ICondition, scope: any, alias: string, equality = fal
 			return ``;
 		}
 	});
-	const closureBody = closureconsts.join("") + "return function matcher" + (matcherCount++) + (!equality ? "(fact, hash){" : "(fact){") + funcconsts.join("") + " return " + (wrap ? wrap(js) : js) + ";}";
-	const f = new Function("scope", closureBody)(scope);
-	//console.log(f.toString());
-	return f;
+	const closureBody = closureconsts.join("") + "return function" + (!equality ? "(fact, hash){" : "(fact){") + funcconsts.join("") + " return " + (wrap ? wrap(js) : js) + ";}";
+	return new Function("scope", closureBody)(scope);
 }
 
 export function getMatcher(rule: ICondition, options = {} as IPatternOptions, equality = false) {
@@ -170,6 +166,7 @@ function and(lhs: any, rhs: any) {
 function or(lhs: any, rhs: any) {
 	return ["(", parse(lhs), "||", parse(rhs), ")"].join(" ");
 }
+
 function unary(lhs: any): any {
 	return -1 * (parse(lhs) as any);
 }
@@ -319,6 +316,10 @@ function parse(rule: ICondition): string {
 			return and(lhs, rhs);
 		case 'or':
 			return or(lhs, rhs);
+		case 'prop':
+			return prop(lhs, rhs);
+		case 'propLookup':
+			return propLookup(lhs, rhs);
 		case 'unary':
 			return unary(lhs);
 		case 'plus':

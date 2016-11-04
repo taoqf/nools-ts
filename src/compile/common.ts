@@ -1,6 +1,7 @@
 import isString from 'lodash-ts/isString';
+import keys from 'lodash-ts/keys';
 
-export const modifiers = ["assert", "modify", "retract", "emit", "halt", "focus", "getFacts"];
+// export const modifiers = ["assert", "modify", "retract", "emit", "halt", "focus", "getFacts"];
 
 // function createFunction(body: string, defined, scope, scopeNames, definedNames) {
 // 	const declares = [];
@@ -23,20 +24,16 @@ export const modifiers = ["assert", "modify", "retract", "emit", "halt", "focus"
 // 	}
 // };
 
-export function createDefined(action: string | any, defined: {
-	[name: string]: any;
-}, scope: {
-	[name: string]: any;
-}) {
+export function createDefined(action: string | any, defined: Map<string, any>, scope: Map<string, any>) {
 	if (isString(action)) {
-		const declares = Object.keys(defined).filter((name) => {
+		const declares = keys(defined).filter((name) => {
 			return action.indexOf(name) !== -1;
 		}).map((name) => {
-			return "const " + name + "= defined." + name + ";";
-		}).concat(Object.keys(scope).filter((name) => {
+			return `const ${name}=defined.get('${name}');`;
+		}).concat(keys(scope).filter((name) => {
 			return action.indexOf(name) !== -1;
 		}).map((name) => {
-			return "const " + name + "= function(){const prop = scope." + name + "; return __objToStr__.call(prop) === '[object Function]' ? prop.apply(void 0, arguments) : prop;};";
+			return `const ${name}= function(){const prop=scope.get('${name}'); return __objToStr__.call(prop)==='[object Function]' ? prop.apply(void 0, arguments) : prop;};`;
 		}));
 
 		if (declares.length) {
@@ -60,20 +57,18 @@ export function createDefined(action: string | any, defined: {
 	return ret;
 }
 
-export function createFunction(body: string, defined: {
-	[name: string]: any;
-}, scope: {
-	[name: string]: any;
-}, scopeNames: string[], definedNames: string[]) {
-	const declares = definedNames.filter((name) => {
-		return body.indexOf(name) !== -1;
-	}).map((name) => {
-		return "var " + name + "= defined." + name + ";";
-	}).concat(scopeNames.filter((name) => {
-		return body.indexOf(name) !== -1;
-	}).map((name) => {
-		return "var " + name + "= scope." + name + ";";
-	}));
+export function createFunction(body: string, defined: Map<string, any>, scope: Map<string, any>) {
+	const declares: string[] = [];
+	defined.forEach((v, k) => {
+		if (body.indexOf(name) !== -1) {
+			declares.push(`var ${name}= defined.${name};`);
+		}
+	});
+	scope.forEach((v, k) => {
+		if (body.indexOf(name) !== -1) {
+			declares.push(`var ${name}= defined.${name};`);
+		}
+	});
 
 	body = ["((function(){", declares.join(""), "\n\treturn ", body, "\n})())"].join("");
 	try {

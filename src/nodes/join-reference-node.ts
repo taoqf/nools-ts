@@ -2,7 +2,7 @@ import Node from './node';
 import Memory from './misc/memory';
 import ReferenceEqualityConstraint from '../constraint/reference-equality-constraint';
 import ReferenceConstraint from '../constraint/reference-constraint';
-import Context, {Match} from '../context';
+import Context, { Match } from '../context';
 
 const DEFUALT_CONSTRAINT = {
 	assert(it: any, fh?: any) {
@@ -78,8 +78,9 @@ export default class JoinReferenceNode extends Node {
 		} else {
 			this.constraint = this.constraint.merge(constraint);
 		}
-		this.constraintAssert = this.constraint.assert;
-
+		this.constraintAssert = (it: any, fh?: any) => {
+			return this.constraint.assert(it, fh);
+		}
 	}
 
 	equal(node: JoinReferenceNode) {

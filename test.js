@@ -18,34 +18,62 @@ let nools = require('./dist/');
 let rule = `
 rule test {
     when {
-		// a: String;
+		// b: Message;
 		a: String a === "test";
     }
     then {
         console.log('----------------', a);
+        // console.log('----------------', b.text, a);
     }
 }
 
+// rule test3 {
+//     when {
+//     }
+//     then {
+//         console.log('000000000000000000');
+//     }
+// }
+
 rule test2 {
     when {
-		a: String;
+		a: String feidao.test();
     }
     then {
         console.log('*****************', a);
+		feidao.test111();
     }
 }
 
 `;
 
-function Message(msg) {
-	this.text = msg;
+class Message {
+	constructor(msg) {
+		this.text = msg;
+	}
 }
 
+function test() {
+	return true;
+}
+
+
+function test111() {
+	console.log('-*-*-+*-*-*-*-*-*-*-*-*-');
+}
+
+const defines = new Map();
+defines.set('Message', Message);
+const scope = new Map();
+scope.set('feidao', {
+	test: test,
+	test111: test111
+});
+
 let flow = nools.compile(rule, {
-	name: 'test', define: {
-		Message: Message
-	},
-	test: () => { return true; }
+	name: 'test',
+	define: defines,
+	scope: scope
 });
 let session = flow.getSession();
 // session.assert(new Message('t'));
@@ -54,9 +82,10 @@ let session = flow.getSession();
 // session.assert(new Message('goodbye'));
 session.assert('111');
 session.assert('test');
-session.match().then((data) => {
-	console.log('data', data)
-}, (err)=>{
+session.match().then(() => {
+	console.log('done.')
+	process.exit();
+}, (err) => {
 	console.error(err);
 	process.exit();
 });

@@ -2,14 +2,14 @@ import Constraint from './constraint';
 import instanceOf from 'lodash-ts/isinstanceof';
 import mixin from 'lodash-ts/mixin';
 import isEqual from 'lodash-ts/isEqual';
-import {IPatternOptions, ICondition} from '../interfaces';
-import {getMatcher} from '../constraint-matcher';
+import { IPatternOptions, ICondition } from '../interfaces';
+import { getMatcher } from '../constraint-matcher';
 
 export default class ReferenceConstraint extends Constraint {
 	protected type = "reference";
 	protected pattern: string;
 	// protected _options: IPatternOptions;
-	protected _matcher: (fact: any, fh?: any) => any = null;
+	protected _matcher: (fact: any, fh?: any) => boolean = null;
 	constructor(constraint: ICondition, options = {} as IPatternOptions) {
 		super(constraint, options);
 		// this.cache = {};

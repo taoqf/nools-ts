@@ -79,7 +79,7 @@ export function findNextTokenIndex(str: string, startIndex = 0, endIndex?: numbe
 		endIndex = l;
 	}
 	for (; startIndex < endIndex; startIndex++) {
-		var c = str.charAt(startIndex);
+		const c = str.charAt(startIndex);
 		if (!WHITE_SPACE_REG.test(c)) {
 			ret = startIndex;
 			break;

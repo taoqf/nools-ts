@@ -23,6 +23,6 @@
     "lodash-ts": "^1.0.0"
   },
   "dependencies": {
-    "lodash-ts": "^1.0.5"
+    "lodash-ts": "^1.0.6"
   }
 }

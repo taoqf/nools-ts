@@ -781,6 +781,94 @@ declare module 'lodash-ts/_isPrototype' {
 	export default function isPrototype(value: any): boolean;
 
 }
+declare module 'lodash-ts/isMap' {
+	/**
+	 * Checks if `value` is classified as a `Map` object.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 4.3.0
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is correctly classified,
+	 *  else `false`.
+	 * @example
+	 *
+	 * _.isMap(new Map);
+	 * // => true
+	 *
+	 * _.isMap(new WeakMap);
+	 * // => false
+	 */
+	export default function isMap(value: any): boolean;
+
+}
+declare module 'lodash-ts/isWeakMap' {
+	/**
+	 * Checks if `value` is classified as a `WeakMap` object.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 4.3.0
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is correctly classified,
+	 *  else `false`.
+	 * @example
+	 *
+	 * _.isWeakMap(new WeakMap);
+	 * // => true
+	 *
+	 * _.isWeakMap(new Map);
+	 * // => false
+	 */
+	export default function isWeakMap(value: any): boolean;
+
+}
+declare module 'lodash-ts/isSet' {
+	/**
+	 * Checks if `value` is classified as a `Set` object.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 4.3.0
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is correctly classified,
+	 *  else `false`.
+	 * @example
+	 *
+	 * _.isSet(new Set);
+	 * // => true
+	 *
+	 * _.isSet(new WeakSet);
+	 * // => false
+	 */
+	export default function isSet(value: any): boolean;
+
+}
+declare module 'lodash-ts/isWeakSet' {
+	/**
+	 * Checks if `value` is classified as a `WeakSet` object.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 4.3.0
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is correctly classified,
+	 *  else `false`.
+	 * @example
+	 *
+	 * _.isWeakSet(new WeakSet);
+	 * // => true
+	 *
+	 * _.isWeakSet(new Set);
+	 * // => false
+	 */
+	export default function isWeakSet(value: any): boolean;
+
+}
 declare module 'lodash-ts/keys' {
 	/**
 	 * Creates an array of the own enumerable property names of `object`.
@@ -810,7 +898,7 @@ declare module 'lodash-ts/keys' {
 	 * _.keys('hi');
 	 * // => ['0', '1']
 	 */
-	export default function keys(object: any): string[];
+	export default function keys(object: any): any[];
 
 }
 declare module 'lodash-ts/_getAllKeys' {
@@ -821,7 +909,7 @@ declare module 'lodash-ts/_getAllKeys' {
 	 * @param {Object} object The object to query.
 	 * @returns {Array} Returns the array of property names and symbols.
 	 */
-	export default function getAllKeys(object: any): string[];
+	export default function getAllKeys(object: any): any[];
 
 }
 declare module 'lodash-ts/_hasPath' {
@@ -1723,28 +1811,6 @@ declare module 'lodash-ts/isInteger' {
 	export default function isInteger(value: any): boolean;
 
 }
-declare module 'lodash-ts/isMap' {
-	/**
-	 * Checks if `value` is classified as a `Map` object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @since 4.3.0
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified,
-	 *  else `false`.
-	 * @example
-	 *
-	 * _.isMap(new Map);
-	 * // => true
-	 *
-	 * _.isMap(new WeakMap);
-	 * // => false
-	 */
-	export default function isMap(value: any): boolean;
-
-}
 declare module 'lodash-ts/isNumber' {
 	/**
 	 * @module @feidao/core/lodash/isNumber
@@ -1958,28 +2024,6 @@ declare module 'lodash-ts/isSafeInteger' {
 	export default function isSafeInteger(value: any): boolean;
 
 }
-declare module 'lodash-ts/isSet' {
-	/**
-	 * Checks if `value` is classified as a `Set` object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @since 4.3.0
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified,
-	 *  else `false`.
-	 * @example
-	 *
-	 * _.isSet(new Set);
-	 * // => true
-	 *
-	 * _.isSet(new WeakSet);
-	 * // => false
-	 */
-	export default function isSet(value: any): boolean;
-
-}
 declare module 'lodash-ts/isUndefined' {
 	/**
 	 * Checks if `value` is `undefined`.
@@ -1999,50 +2043,6 @@ declare module 'lodash-ts/isUndefined' {
 	 * // => false
 	 */
 	export default function isUndefined(value: any): boolean;
-
-}
-declare module 'lodash-ts/isWeakMap' {
-	/**
-	 * Checks if `value` is classified as a `WeakMap` object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @since 4.3.0
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified,
-	 *  else `false`.
-	 * @example
-	 *
-	 * _.isWeakMap(new WeakMap);
-	 * // => true
-	 *
-	 * _.isWeakMap(new Map);
-	 * // => false
-	 */
-	export default function isWeakMap(value: any): boolean;
-
-}
-declare module 'lodash-ts/isWeakSet' {
-	/**
-	 * Checks if `value` is classified as a `WeakSet` object.
-	 *
-	 * @static
-	 * @memberOf _
-	 * @since 4.3.0
-	 * @category Lang
-	 * @param {*} value The value to check.
-	 * @returns {boolean} Returns `true` if `value` is correctly classified,
-	 *  else `false`.
-	 * @example
-	 *
-	 * _.isWeakSet(new WeakSet);
-	 * // => true
-	 *
-	 * _.isWeakSet(new Set);
-	 * // => false
-	 */
-	export default function isWeakSet(value: any): boolean;
 
 }
 declare module 'lodash-ts/isinstanceof' {

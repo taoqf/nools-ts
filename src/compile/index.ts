@@ -1,17 +1,17 @@
-import {IContext, IRuleContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, ICompileOptions, ICondition} from '../interfaces';
+import { IContext, IRuleContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, ICompileOptions, ICondition } from '../interfaces';
 import Container from '../flow-container';
-import {createDefined, createFunction, modifiers} from './common';
+import { createDefined, createFunction } from './common';
 
-import mixin from 'lodash-ts/mixin';
 import isEmpty from 'lodash-ts/isEmpty';
 import isHash from 'lodash-ts/isHash';
 import isObject from 'lodash-ts/isObject';
 import parseConstraint from '../parser/constraint';
-import {removeDups} from '../lang';
-import {getIdentifiers} from '../constraint-matcher';
-import {createRule} from '../rule';
+import { removeDups } from '../lang';
+import { getIdentifiers } from '../constraint-matcher';
+import { createRule } from '../rule';
+import keys from 'lodash-ts/keys';
 
-const __resolveRule = function (rule: INomalConstraint | IFromstraint, defined: { [name: string]: any }, name: string) {
+const __resolveRule = function (rule: INomalConstraint | IFromstraint, defined: Map<string, any>, name: string) {
 	const condition = [] as any[], alias = rule[1];
 	// const condition = [] as [any, string, string, string], alias = rule[1];
 	let constraint = rule[2], refs = rule[3];
@@ -20,7 +20,7 @@ const __resolveRule = function (rule: INomalConstraint | IFromstraint, defined: 
 		constraint = null;
 	}
 	let definedClass = rule[0];
-	if (definedClass && !!(definedClass = defined[definedClass])) {
+	if (definedClass && !!(definedClass = defined.get(definedClass))) {
 		condition.push(definedClass);
 	} else {
 		throw new Error("Invalid class " + rule[0] + " for rule " + name);
@@ -40,7 +40,7 @@ const __resolveRule = function (rule: INomalConstraint | IFromstraint, defined: 
 	return [identifiers, condition];
 }
 
-function parseRule(rule: ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint, defined: { [name: string]: any }, name: string) {
+function parseRule(rule: ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint, defined: Map<string, any>, name: string) {
 	if (rule.length) {
 		let conditions: any[][] = [];
 		let identifiers: string[] = [];
@@ -79,7 +79,7 @@ function parseRule(rule: ISimpleConstraint | INomalConstraint | INotConstraint |
 			conditions.push(c as any[]);
 			identifiers = identifiers.concat(i as string[]);
 			if (r) {
-				// r is a string[]???
+				// todo: r is a string[]???
 				const idents = r.filter((ident) => {
 					return identifiers.indexOf(ident) == -1;
 				});
@@ -94,6 +94,22 @@ function parseRule(rule: ISimpleConstraint | INomalConstraint | INotConstraint |
 	return [];
 }
 
+function get_append_declares(action: string) {
+	const vars = new Set<string>();
+	return function (arr: string[], scope: string) {
+		return arr.filter(function (v) {
+			return action.indexOf(v) !== -1;
+		}).map((v: string) => {
+			if (vars.has(v)) {
+				return `${scope}.has('${v}') && (${v} = ${scope}.get('${v}'));`;
+			} else {
+				vars.add(v);
+				return `let ${v} = ${scope}.get('${v}');`;
+			}
+		});
+	}
+}
+
 /**
  * @private
  * Parses an action from a rule definition
@@ -103,29 +119,18 @@ function parseRule(rule: ISimpleConstraint | INomalConstraint | INotConstraint |
  * @param scope
  * @return {Object}
  */
-function parseAction(action: string, identifiers: string[], defined: { [name: string]: any }, scope: { [name: string]: any }) {
-	const declares: string[] = [];
-	identifiers.forEach(function (i) {
-		if (action.indexOf(i) !== -1) {
-			declares.push(`let ${i} = facts.get("${i}");`);
-		}
-	});
-	Object.keys(defined).forEach(function (i) {
-		if (action.indexOf(i) !== -1) {
-			declares.push(`let ${i} = defined.${i};`);
-		}
-	});
+function parseAction(action: string, identifiers: string[], defined: Map<string, any>, scope: Map<string, any>) {
+	const append_declares = get_append_declares(action);
 
-	Object.keys(scope).forEach(function (i) {
-		if (action.indexOf(i) !== -1) {
-			declares.push(`let ${i} = scope.${i};`);
-		}
-	});
-	modifiers.forEach(function (i) {
-		if (action.indexOf(i) !== -1) {
-			declares.push(`if(!${i}){ let ${i}= flow.${i};}`);
-		}
-	});
+	const declares = append_declares(identifiers, 'facts')
+		.concat(append_declares(keys(defined), 'defined'))
+		.concat(append_declares(keys(scope), 'scope'));
+
+	// modifiers.forEach(function (i) {
+	// 	if (action.indexOf(i) !== -1) {
+	// 		declares.push(`if(!${i}){ let ${i}= flow.${i};}`);
+	// 	}
+	// });
 	const params = ["facts", 'flow'];
 	if (/next\(.*\)/.test(action)) {
 		params.push("next");
@@ -138,7 +143,7 @@ function parseAction(action: string, identifiers: string[], defined: { [name: st
 	}
 }
 
-function createRuleFromObject(obj: IRuleContext, defined: { [name: string]: any }, scope: { [name: string]: any }) {
+function createRuleFromObject(obj: IRuleContext, defined: Map<string, any>, scope: Map<string, any>) {
 	const name = obj.name;
 	if (isEmpty(obj)) {
 		throw new Error("Rule is empty");
@@ -147,7 +152,7 @@ function createRuleFromObject(obj: IRuleContext, defined: { [name: string]: any 
 	options.scope = scope;
 	let constraints = obj.constraints || [], l = constraints.length;
 	if (!l) {
-		constraints = ["true"] as any;	// todo:::: This is not in the right format.
+		constraints = [["true"]] as ITrueConstraint[];	// todo:::: This is not in the right format.
 	}
 	const action = obj.action;
 	if (action === undefined) {
@@ -170,37 +175,43 @@ export function compile(context: IContext, options: ICompileOptions) {
 		throw new Error("Name must be present in JSON or options");
 	}
 	const flow = new Container(name);
-	const defined = mixin({ Array: Array, String: String, Number: Number, Boolean: Boolean, RegExp: RegExp, Date: Date, Object: Object }, options.define || {});
+	const defined = options.define || new Map<string, any>();
+	defined.set('Array', Array);
+	defined.set('array', Array);
+	defined.set('String', String);
+	defined.set('string', String);
+	defined.set('Number', Number);
+	defined.set('number', Number);
+	defined.set('Boolean', Boolean);
+	defined.set('boolean', Boolean);
+	defined.set('RegExp', RegExp);
+	defined.set('regexp', RegExp);
+	defined.set('reg', RegExp);
+	defined.set('Date', Date);
+	defined.set('date', Date);
+	defined.set('Object', Object);
+	defined.set('object', Object);
 	if (typeof Buffer !== "undefined") {
-		defined['Buffer'] = Buffer;
+		defined.set('Buffer', Buffer);
+		defined.set('buffer', Buffer);
 	}
-	const scope = mixin({ console: console }, options.scope);
+	const scope = options.scope || new Map<string, any>();
 	//add the anything added to the scope as a property
 	context.scope.forEach(function (s) {
-		scope[s.name] = true;
+		scope.set(s.name, true);
 	});
 	//add any defined classes in the parsed context to defined
 	context.define.forEach(function (d) {
-		defined[d.name] = createDefined(d, defined, scope);
+		defined.set(d.name, createDefined(d, defined, scope));
 	});
 
 	//expose any defined classes to the flow.
-	for (const name in defined) {
-		const cls = defined[name];
+	for (const [name, cls] of defined) {
 		flow.addDefined(name, cls);
 	}
 
-	let scopeNames: string[] = [];
-	for (const scope of context.scope) {
-		scopeNames.push(scope.name);
-	}
-	scopeNames = scopeNames.concat(Object.keys(scope));
-
-	const definedNames = Object.keys(defined).map(function (s) {
-		return s;
-	});
 	context.scope.forEach(function (s) {
-		scope[s.name] = createFunction(s.body, defined, scope, scopeNames, definedNames);
+		scope.set(s.name, createFunction(s.body, defined, scope));
 	});
 	const rules = context.rules;
 	if (rules.length) {

@@ -1,8 +1,8 @@
 import instanceOf from 'lodash-ts/isinstanceof';
-import strategy, {salience, activationRecency} from './conflict';
+import strategy, { salience, activationRecency } from './conflict';
 import Flow from './flow';
-import {IInsert, IRuleContextOptions, ICondition} from './interfaces';
-import Rule, {createRule} from './rule';
+import { IInsert, IRuleContextOptions, ICondition } from './interfaces';
+import Rule, { createRule } from './rule';
 import InitialFact from './facts/initial';
 
 const flows = new Map<string, FlowContainer>();
@@ -12,12 +12,12 @@ const conflictResolution = strategy(salience, activationRecency);
 export default class FlowContainer {
 	private name: string;
 	private __rules: Rule[] = [];
-	private __defined: { [name: string]: any };
+	private __defined: Map<string, any>;
 	private conflictResolutionStrategy: (a: IInsert, b: IInsert) => number;
 	constructor(name: string) {
 		this.name = name;
 		// this.cb = cb;
-		this.__defined = {};
+		this.__defined = new Map<string, any>();
 		this.conflictResolutionStrategy = conflictResolution;
 		// if (cb) {
 		// 	cb.call(this, this);
@@ -39,7 +39,7 @@ export default class FlowContainer {
 	}
 
 	getDefined(name: string) {
-		const ret = this.__defined[name.toLowerCase()];
+		const ret = this.__defined.get(name.toLowerCase());
 		if (!ret) {
 			throw new Error(name + " flow class is not defined");
 		}
@@ -48,7 +48,7 @@ export default class FlowContainer {
 
 	addDefined(name: string, cls: any) {
 		//normalize
-		this.__defined[name.toLowerCase()] = cls;
+		this.__defined.set(name.toLowerCase(), cls);
 		return cls;
 	}
 

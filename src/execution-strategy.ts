@@ -49,7 +49,7 @@ export default class ExecutionStragegy {
 		flow.removeListener("retract", this.onAlter);
 	}
 
-	private __handleAsyncNext(next: Promise<any>) {
+	private __handleAsyncNext(next: Promise<any>): Promise<any> {
 		const agenda = this.agenda;
 		return next.then(() => {
 			this.looping = false;
@@ -59,12 +59,16 @@ export default class ExecutionStragegy {
 					this.flowAltered = false;
 				}
 				if (!this.__halted) {
-					this.callNext();
+					return this.callNext();
 				} else {
-					this.callback();
+					return this.callback();
 				}
 			} else if (!this.matchUntilHalt || this.__halted) {
-				this.callback();
+				return this.callback();
+			} else {
+				return new Promise<any>((resolve, reject) => {
+					reject('something must be wrong.');
+				});
 			}
 		});
 	}
