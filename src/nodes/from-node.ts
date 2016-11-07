@@ -34,7 +34,9 @@ export default class FromNode extends JoinNode {
 			return pattern.constraints[0].assert(it);
 		};
 		this.alias = pattern.alias;
-		this.from = pattern.from.assert;
+		this.from = (fact: any, fh?: any) => {
+			return pattern.from.assert(fact, fh);
+		};
 		const eqConstraints = this.__equalityConstraints;
 		let vars: any[] = [];
 		this.constraints = this.pattern.constraints.slice(1);

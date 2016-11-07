@@ -1,18 +1,3 @@
-// function test() {
-// 	return new Promise((resolve) => {
-// 		resolve( new Promise((resolve) => {
-// 			resolve(11);
-// 		}));
-// 	});
-// }
-
-// test().then((data) => {
-// 	console.log(data);
-// }, (err) => {
-// 	console.error('ddddddd', err);
-// })
-
-
 let nools = require('./dist/');
 
 let rule = `
@@ -37,7 +22,7 @@ rule test {
 
 rule test2 {
     when {
-		a: String feidao.test();
+		a: String from feidao.test();
     }
     then {
         console.log('*****************', a);
@@ -54,9 +39,8 @@ class Message {
 }
 
 function test() {
-	return true;
+	return [true, 'false', 123, 'abc'];
 }
-
 
 function test111() {
 	console.log('-*-*-+*-*-*-*-*-*-*-*-*-');

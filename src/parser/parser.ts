@@ -4,7 +4,7 @@ import tokens from './tokens';
 
 export function parse(src: string, keywords: Map<string, (orig: string, context: IContext | IRuleContext) => string>, context: IContext | IRuleContext) {
 	const orig = src;
-	src = src.replace(/\/\/(.*)/g, "").replace(/\r\n|\r|\n/g, " ");	// 去掉注释，换行
+	src = src.replace(/\/\/(.*)/g, "").replace(/\r\n|\r|\n/g, " ");
 	const keys: string[] = [];
 	for (const key of keywords.keys()) {
 		keys.push(key);
