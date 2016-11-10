@@ -74,14 +74,14 @@ export function toJs(rule: ICondition, scope: Map<string, any>, alias: string, e
 	scope = scope || new Map<string, any>();
 	const consts = getIdentifiers(rule);
 	// const closureconsts = ["const indexOf = definedFuncs.indexOf; const hasOwnProperty = Object.prototype.hasOwnProperty;"];
-	const closureconsts = consts.filter(function (v) {
+	const closureconsts = consts.filter((v) => {
 		return scope.has(v);
-	}).map(function (v) {
+	}).map((v) => {
 		return `const ${v}=scope.get('${v}');`;
 	});
-	const funcconsts = consts.filter(function (v) {
+	const funcconsts = consts.filter((v) => {
 		return !scope.has(v);
-	}).map(function (v) {
+	}).map((v) => {
 		if (equality || v !== alias) {
 			return `const ${v}=fact.get('${v}');`;
 		} else if (v === alias) {

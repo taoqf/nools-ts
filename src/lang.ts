@@ -17,7 +17,7 @@ export function plucker<T>(prop: string) {
 	if (props.length === 1) {
 		return plucked(props[0]);
 	} else {
-		const pluckers = props.map(function (prop) {
+		const pluckers = props.map((prop) => {
 			return plucked(prop);
 		});
 		const l = pluckers.length;

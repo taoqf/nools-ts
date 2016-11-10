@@ -40,7 +40,7 @@ export default class FromNode extends JoinNode {
 		const eqConstraints = this.__equalityConstraints;
 		let vars: any[] = [];
 		this.constraints = this.pattern.constraints.slice(1);
-		this.constraints.forEach(function (c) {
+		this.constraints.forEach((c) => {
 			if (c instanceof EqualityConstraint || c instanceof ReferenceConstraint) {
 				eqConstraints.push(c.assert);
 			} else if (c instanceof HashConstraint) {

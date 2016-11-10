@@ -50,7 +50,6 @@ function parseRule(rule: ISimpleConstraint | INomalConstraint | INotConstraint |
 			const [i, c, r] = __resolveRule(rule as INomalConstraint | IFromstraint, defined, name);
 			identifiers = identifiers.concat(i as string[]);
 			if (r) {
-				// r is a string[]???
 				const idents = r.filter((ident) => {
 					return identifiers.indexOf(ident) == -1;
 				});
@@ -68,7 +67,7 @@ function parseRule(rule: ISimpleConstraint | INomalConstraint | INotConstraint |
 			conditions.push(c);
 			conditions = conditions.concat(c);
 			identifiers = identifiers.concat(i as string[]);
-			// rule.forEach(function (cond) {
+			// rule.forEach((cond) => {
 			// 	const [i, c] = parseRule(cond, defined, name);
 			// 	conditions.push(c);
 			// 	identifiers = identifiers.concat(i);
@@ -79,7 +78,6 @@ function parseRule(rule: ISimpleConstraint | INomalConstraint | INotConstraint |
 			conditions.push(c as any[]);
 			identifiers = identifiers.concat(i as string[]);
 			if (r) {
-				// todo: r is a string[]???
 				const idents = r.filter((ident) => {
 					return identifiers.indexOf(ident) == -1;
 				});
@@ -97,7 +95,7 @@ function parseRule(rule: ISimpleConstraint | INomalConstraint | INotConstraint |
 function get_append_declares(action: string) {
 	const vars = new Set<string>();
 	return function (arr: string[], scope: string) {
-		return arr.filter(function (v) {
+		return arr.filter((v) => {
 			return action.indexOf(v) !== -1;
 		}).map((v: string) => {
 			if (vars.has(v)) {
@@ -126,7 +124,7 @@ function parseAction(action: string, identifiers: string[], defined: Map<string,
 		.concat(append_declares(keys(defined), 'defined'))
 		.concat(append_declares(keys(scope), 'scope'));
 
-	// modifiers.forEach(function (i) {
+	// modifiers.forEach((i) => {
 	// 	if (action.indexOf(i) !== -1) {
 	// 		declares.push(`if(!${i}){ let ${i}= flow.${i};}`);
 	// 	}
@@ -160,7 +158,7 @@ function createRuleFromObject(obj: IRuleContext, defined: Map<string, any>, scop
 	}
 	let conditions: ICondition[] = [];
 	let identifiers: string[] = [];
-	constraints.forEach(function (rule) {
+	constraints.forEach((rule) => {
 		const [i, c] = parseRule(rule, defined, name);
 		conditions = conditions.concat(c as ICondition[]);
 		identifiers = identifiers.concat(i as string[]);
@@ -197,11 +195,11 @@ export function compile(context: IContext, options: ICompileOptions) {
 	}
 	const scope = options.scope || new Map<string, any>();
 	//add the anything added to the scope as a property
-	context.scope.forEach(function (s) {
-		scope.set(s.name, true);
-	});
+	// context.scope.forEach((s) => {
+	// 	scope.set(s.name, true);
+	// });
 	//add any defined classes in the parsed context to defined
-	context.define.forEach(function (d) {
+	context.define.forEach((d) => {
 		defined.set(d.name, createDefined(d, defined, scope));
 	});
 
@@ -210,12 +208,12 @@ export function compile(context: IContext, options: ICompileOptions) {
 		flow.addDefined(name, cls);
 	}
 
-	context.scope.forEach(function (s) {
+	context.scope.forEach((s) => {
 		scope.set(s.name, createFunction(s.body, defined, scope));
 	});
 	const rules = context.rules;
 	if (rules.length) {
-		rules.forEach(function (rule) {
+		rules.forEach((rule) => {
 			flow.addRules(createRuleFromObject(rule, defined, scope));
 		});
 	}

@@ -1,5 +1,5 @@
 import ObjectPattern from './object-pattern';
-import {ICondition, IPatternOptions} from '../interfaces';
+import { ICondition, IPatternOptions } from '../interfaces';
 import FromConstraint from '../constraint/from-constraint';
 
 export default class FromPattern extends ObjectPattern {
@@ -10,7 +10,7 @@ export default class FromPattern extends ObjectPattern {
 	}
 
 	hasConstraint(type: any) {
-		return this.constraints.some(function (c) {
+		return this.constraints.some((c) => {
 			return c instanceof type;
 		});
 	}

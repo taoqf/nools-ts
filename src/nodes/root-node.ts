@@ -62,7 +62,7 @@ import EqualityNode from './equality-node';
 //     PropertyNode = require("./propertyNode");
 
 function hasRefernceConstraints(pattern: Pattern) {
-	return (pattern.constraints || []).some(function (c) {
+	return (pattern.constraints || []).some((c) => {
 		return c instanceof ReferenceConstraint;
 	});
 }
@@ -119,7 +119,7 @@ export default class RootNode {
 
 
 	containsRule(name: string) {
-		return this.terminalNodes.some(function (n) {
+		return this.terminalNodes.some((n) => {
 			return n.rule.name === name;
 		});
 	}
@@ -275,7 +275,7 @@ export default class RootNode {
 	}
 
 	print() {
-		this.terminalNodes.forEach(function (t) {
+		this.terminalNodes.forEach((t) => {
 			t.print("    ");
 		});
 	}

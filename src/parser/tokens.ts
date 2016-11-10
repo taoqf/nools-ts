@@ -1,6 +1,6 @@
 import * as utils from './util';
-import {parse} from './parser';
-import {ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, IContext, IRuleContext} from '../interfaces';
+import { parse } from './parser';
+import { ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, IContext, IRuleContext } from '../interfaces';
 
 const predicates = ["not", "or", "exists"];
 const predicateRegExp = new RegExp("^(" + predicates.join("|") + ") *\\((.*)\\)$", "m");
@@ -16,7 +16,7 @@ function joinFunc(m: string, str: string) {
 
 function splitRuleLineByPredicateExpressions(ruleLine: string) {
 	const str = ruleLine.replace(/,\s*(\$?\w+\s*:)/g, joinFunc);
-	const parts = str.split(predicateBeginExp).filter(function (str) {
+	const parts = str.split(predicateBeginExp).filter((str) => {
 		return str !== "";
 	});
 

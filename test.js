@@ -1,10 +1,15 @@
 let nools = require('./dist/');
 
 let rule = `
+
+global gg = 1;
+
 rule test {
     when {
 		// b: Message;
 		a: String a === "test";
+		b: String b === "test";
+		c: String c === "test";
     }
     then {
         console.log('----------------', a);

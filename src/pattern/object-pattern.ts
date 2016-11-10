@@ -2,8 +2,8 @@ import isNumber from 'lodash-ts/isNumber';
 import isEmpty from 'lodash-ts/isEmpty';
 import mixin from 'lodash-ts/mixin';
 import Pattern from './pattern';
-import {IContext, IRuleContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, ICondition, IPatternOptions} from '../interfaces';
-import {getIdentifiers} from '../constraint-matcher';
+import { IContext, IRuleContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, ICondition, IPatternOptions } from '../interfaces';
+import { getIdentifiers } from '../constraint-matcher';
 import Constraint from '../constraint/constraint';
 import ObjectConstraint from '../constraint/object-constraint';
 import ReferenceEqualityConstraint from '../constraint/reference-equality-constraint';
@@ -108,7 +108,7 @@ function toConstraints(constraint: ICondition, options: {
 		rule2 === "propLookup" ||
 		rule2 === "function" ||
 		rule2 === "logicalNot") {
-		const isReference = getIdentifiers(constraint).some(function (i) {
+		const isReference = getIdentifiers(constraint).some((i) => {
 			return i !== alias && !(i in definedFuncs) && !(i in scope);
 		});
 		switch (rule2) {
@@ -170,7 +170,7 @@ export default class ObjectPattern extends Pattern {
 			constraints.push(atm);
 		}
 
-		constraints.forEach(function (constraint) {
+		constraints.forEach((constraint) => {
 			constraint.set_alias(alias);
 		});
 		this.constraints = constraints;
@@ -183,7 +183,7 @@ export default class ObjectPattern extends Pattern {
 	}
 
 	hasConstraint(type: any) {
-		return this.constraints.some(function (c) {
+		return this.constraints.some((c) => {
 			return c instanceof type;
 		});
 	}

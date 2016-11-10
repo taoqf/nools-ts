@@ -140,7 +140,7 @@ function getParamType(type: any, scope = {} as any) {
 
 function parsePattern_or(condition: ICondition): Pattern[] {
 	condition.shift();
-	return flattenDeep(condition.map(function (cond: ICondition) {
+	return flattenDeep(condition.map((cond: ICondition) => {
 		cond.scope = (condition as any).scope;
 		return parsePattern(cond);
 	}));
@@ -251,7 +251,7 @@ function parsePattern(condition: ICondition): Pattern[] {
 }
 
 export function createRule(name: string, options: IRuleContextOptions, conditions: ICondition[], cb: Function) {
-	let isRules = conditions.every(function (cond) {
+	let isRules = conditions.every((cond) => {
 		return isArray(cond);
 	});
 	if (isRules && conditions.length === 1) {
@@ -283,7 +283,7 @@ export function createRule(name: string, options: IRuleContextOptions, condition
 				}
 				patterns[i].push(patt as Pattern);
 			} else {
-				patterns.forEach(function (p) {
+				patterns.forEach((p) => {
 					p.push(patt as Pattern);
 				});
 			}
@@ -292,7 +292,7 @@ export function createRule(name: string, options: IRuleContextOptions, condition
 			condition.scope = scope;
 			parsePattern(condition).forEach(_mergePatterns);
 		});
-		rules = patterns.map(function (patterns) {
+		rules = patterns.map((patterns) => {
 			const compPat = patterns.filter((patt, idx) => {
 				return idx > 0;
 			}).reduce((compPat, patt) => {
@@ -301,7 +301,7 @@ export function createRule(name: string, options: IRuleContextOptions, condition
 			return new Rule(name, options, compPat, cb);
 		});
 	} else {
-		rules = parsePattern(conditions as any).map(function (cond) {
+		rules = parsePattern(conditions as any).map((cond) => {
 			return new Rule(name, options, cond, cb);
 		});
 	}

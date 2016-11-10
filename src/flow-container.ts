@@ -59,7 +59,7 @@ export default class FlowContainer {
 
 	getSession(...facts: any[]) {
 		const flow = new Flow(this.name, this.conflictResolutionStrategy);
-		this.__rules.forEach(function (rule) {
+		this.__rules.forEach((rule) => {
 			flow.rule(rule);
 		});
 		flow.assert(new InitialFact());
@@ -70,7 +70,7 @@ export default class FlowContainer {
 	}
 
 	containsRule(name: string) {
-		return this.__rules.some(function (rule) {
+		return this.__rules.some((rule) => {
 			return rule.name === name;
 		});
 	}

@@ -60,13 +60,13 @@ export function createDefined(action: string | any, defined: Map<string, any>, s
 export function createFunction(body: string, defined: Map<string, any>, scope: Map<string, any>) {
 	const declares: string[] = [];
 	defined.forEach((v, k) => {
-		if (body.indexOf(name) !== -1) {
-			declares.push(`var ${name}= defined.${name};`);
+		if (body.indexOf(k) !== -1) {
+			declares.push(`const ${k}= defined.${k};`);
 		}
 	});
 	scope.forEach((v, k) => {
-		if (body.indexOf(name) !== -1) {
-			declares.push(`var ${name}= defined.${name};`);
+		if (body.indexOf(k) !== -1) {
+			declares.push(`const ${k}= defined.${k};`);
 		}
 	});
 

@@ -1,4 +1,4 @@
-import Context, {Match} from '../context';
+import Context, { Match } from '../context';
 import Rule from '../rule';
 import intersection from 'lodash-ts/intersection';
 import ObjectPattern from '../pattern/object-pattern';
@@ -47,7 +47,7 @@ export default class Node {
 
 	print(tab: string) {
 		console.log(tab + this.toString());
-		this.parentNodes.forEach(function (n) {
+		this.parentNodes.forEach((n) => {
 			n.print("    " + tab);
 		});
 	}
