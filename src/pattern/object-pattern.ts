@@ -2,7 +2,7 @@ import isNumber from 'lodash-ts/isNumber';
 import isEmpty from 'lodash-ts/isEmpty';
 import mixin from 'lodash-ts/mixin';
 import Pattern from './pattern';
-import { IContext, IRuleContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, ICondition, IPatternOptions } from '../interfaces';
+import { IContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, ICondition, IPatternOptions } from '../interfaces';
 import { getIdentifiers } from '../constraint-matcher';
 import Constraint from '../constraint/constraint';
 import ObjectConstraint from '../constraint/object-constraint';

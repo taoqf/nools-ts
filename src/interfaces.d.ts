@@ -57,7 +57,7 @@ export interface IRuleContextOptions {
 	scope?: Map<string, any>;
 }
 
-export interface IRuleContext {
+export interface IConstraintContext {
 	action: string;
 	constraints: (ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint)[];
 	name: string;
@@ -65,7 +65,7 @@ export interface IRuleContext {
 }
 
 export interface IContext {
-	rules: IRuleContext[];
+	constraints: IConstraintContext[];
 	// loaded: string[];
 	file?: string;
 	define: {

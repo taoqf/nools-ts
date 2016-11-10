@@ -1,4 +1,4 @@
-import { IContext, IRuleContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, ICompileOptions, ICondition } from '../interfaces';
+import { IContext, IConstraintContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, ICompileOptions, ICondition } from '../interfaces';
 import Container from '../flow-container';
 import { createDefined, createFunction } from './common';
 
@@ -141,7 +141,7 @@ function parseAction(action: string, identifiers: string[], defined: Map<string,
 	}
 }
 
-function createRuleFromObject(obj: IRuleContext, defined: Map<string, any>, scope: Map<string, any>) {
+function createRuleFromObject(obj: IConstraintContext, defined: Map<string, any>, scope: Map<string, any>) {
 	const name = obj.name;
 	if (isEmpty(obj)) {
 		throw new Error("Rule is empty");
@@ -211,7 +211,7 @@ export function compile(context: IContext, options: ICompileOptions) {
 	context.scope.forEach((s) => {
 		scope.set(s.name, createFunction(s.body, defined, scope));
 	});
-	const rules = context.rules;
+	const rules = context.constraints;
 	if (rules.length) {
 		rules.forEach((rule) => {
 			flow.addRules(createRuleFromObject(rule, defined, scope));
