@@ -42,7 +42,7 @@ const strategies = {
 	factRecencyInverse: factRecencyInverse
 };
 
-export default function strategy(...strats: { (a: IInsert, b: IInsert): number }[]) {
+export function strategy(...strats: { (a: IInsert, b: IInsert): number }[]) {
 	const stratsLength = strats.length;
 
 	return function (a: IInsert, b: IInsert) {
@@ -57,3 +57,5 @@ export default function strategy(...strats: { (a: IInsert, b: IInsert): number }
 		return ret;
 	};
 };
+
+export default strategy(salience, activationRecency, factRecencyInverse);

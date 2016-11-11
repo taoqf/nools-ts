@@ -1,13 +1,11 @@
 import instanceOf from 'lodash-ts/isinstanceof';
-import strategy, { salience, activationRecency, factRecencyInverse } from './conflict';
+import conflictResolution from './conflict';
 import Flow from './flow';
 import { IInsert, IRuleContextOptions, ICondition } from './interfaces';
 import Rule, { createRule } from './rule';
 import InitialFact from './facts/initial';
 
 const flows = new Map<string, FlowContainer>();
-
-const conflictResolution = strategy(salience, activationRecency, factRecencyInverse);
 
 export default class FlowContainer {
 	private name: string;
@@ -31,11 +29,6 @@ export default class FlowContainer {
 
 	addRules(rules: Rule[]) {
 		this.__rules = this.__rules.concat(rules);
-	}
-
-	conflictResolution(...strategies: ((a: IInsert, b: IInsert) => number)[]) {
-		this.conflictResolutionStrategy = strategy(...strategies);
-		return this;
 	}
 
 	getDefined(name: string) {

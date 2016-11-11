@@ -1,6 +1,6 @@
 import * as utils from './util';
 import { parse } from './parser';
-import { ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, IContext, IConstraintContext } from '../interfaces';
+import { ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, IContext, IRuleContext } from '../interfaces';
 
 const predicates = ["not", "or", "exists"];
 const predicateRegExp = new RegExp("^(" + predicates.join("|") + ") *\\((.*)\\)$", "m");
@@ -100,7 +100,7 @@ function parseRules(str: string) {
 	return constraints;
 }
 
-function salience(src: string, context: IConstraintContext) {
+function salience(src: string, context: IRuleContext) {
 	if (salienceRegexp.test(src)) {
 		const parts = src.match(salienceRegexp),
 			priority = parseInt(parts[2], 10);
@@ -114,7 +114,7 @@ function salience(src: string, context: IConstraintContext) {
 		throw new Error("invalid format");
 	}
 }
-function agendaGroup(src: string, context: IConstraintContext) {
+function agendaGroup(src: string, context: IRuleContext) {
 	if (agendaGroupRegexp.test(src)) {
 		const parts = src.match(agendaGroupRegexp),
 			agendaGroup = parts[2];
@@ -129,7 +129,7 @@ function agendaGroup(src: string, context: IConstraintContext) {
 	}
 }
 
-function autoFocus(src: string, context: IConstraintContext) {
+function autoFocus(src: string, context: IRuleContext) {
 	if (autoFocusRegexp.test(src)) {
 		const parts = src.match(autoFocusRegexp),
 			autoFocus = parts[2];
@@ -144,7 +144,7 @@ function autoFocus(src: string, context: IConstraintContext) {
 	}
 }
 
-function when(orig: string, context: IConstraintContext) {
+function when(orig: string, context: IRuleContext) {
 	/*jshint evil:true*/
 	let src = orig.replace(/^when\s*/, "").replace(/^\s*|\s*$/g, "");
 	if (utils.findNextToken(src) === "{") {
@@ -157,7 +157,7 @@ function when(orig: string, context: IConstraintContext) {
 	}
 }
 
-function then(orig: string, context: IConstraintContext) {
+function then(orig: string, context: IRuleContext) {
 	if (!context.action) {
 		let src = orig.replace(/^then\s*/, "").replace(/^\s*|\s*$/g, "");
 		if (utils.findNextToken(src) === "{") {
@@ -177,7 +177,7 @@ function then(orig: string, context: IConstraintContext) {
 		throw new Error("action already defined for rule" + context.name);
 	}
 }
-const ruleTokens = new Map<string, (orig: string, context: IConstraintContext) => string>();
+const ruleTokens = new Map<string, (orig: string, context: IRuleContext) => string>();
 
 ruleTokens.set('salience', salience);
 ruleTokens.set('priority', salience);
@@ -278,11 +278,11 @@ function rule(orig: string, context: IContext) {
 	if (name) {
 		src = src.replace(name[0], "").replace(/^\s*|\s*$/g, "");
 		if (utils.findNextToken(src) === "{") {
-			const rule = { name: name[1].replace(/^["']|["']$/g, ""), options: {}, constraints: null, action: null } as IConstraintContext;
+			const rule = { name: name[1].replace(/^["']|["']$/g, ""), options: {}, constraints: null, action: null } as IRuleContext;
 			const body = utils.getTokensBetween(src, "{", "}", true).join("");
 			src = src.replace(body, "");
 			parse(body.replace(/^\{\s*|\}\s*$/g, ""), ruleTokens, rule);
-			context.constraints.push(rule);
+			context.rules.push(rule);
 			return src;
 		} else {
 			throw new Error("unexpected token : expected : '{' found : '" + utils.findNextToken(src) + "'");

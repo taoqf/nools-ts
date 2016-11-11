@@ -1,5 +1,5 @@
-import { IContext, IConstraintContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, ICompileOptions, ICondition } from '../interfaces';
-import Container from '../flow-container';
+import { IContext, IRuleContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, ICompileOptions, ICondition } from '../interfaces';
+import FlowContainer from '../flow-container';
 import { createDefined, createFunction } from './common';
 
 import isEmpty from 'lodash-ts/isEmpty';
@@ -40,14 +40,14 @@ const __resolveRule = function (rule: INomalConstraint | IFromstraint, defined: 
 	return [identifiers, condition];
 }
 
-function parseRule(rule: ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint, defined: Map<string, any>, name: string) {
-	if (rule.length) {
+function parseConditions(constraint: ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint, defined: Map<string, any>, name: string): [string[], any[]] {
+	if (constraint.length) {
 		let conditions: any[][] = [];
 		let identifiers: string[] = [];
-		const r0 = rule[0];	// OAV
+		const r0 = constraint[0];
 		if (r0 === "not" || r0 === "exists") {
-			rule.shift();
-			const [i, c, r] = __resolveRule(rule as INomalConstraint | IFromstraint, defined, name);
+			constraint.shift();
+			const [i, c, r] = __resolveRule(constraint as INomalConstraint | IFromstraint, defined, name);
 			identifiers = identifiers.concat(i as string[]);
 			if (r) {
 				const idents = r.filter((ident) => {
@@ -62,19 +62,14 @@ function parseRule(rule: ISimpleConstraint | INomalConstraint | INotConstraint |
 			conditions.push(cond);
 		} else if (r0 === "or") {
 			const conds = [r0];
-			rule.shift();
-			const [i, c] = parseRule(rule[1] as ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint, defined, name);
+			constraint.shift();
+			const [i, c] = parseConditions(constraint[1] as ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint, defined, name);
 			conditions.push(c);
 			conditions = conditions.concat(c);
 			identifiers = identifiers.concat(i as string[]);
-			// rule.forEach((cond) => {
-			// 	const [i, c] = parseRule(cond, defined, name);
-			// 	conditions.push(c);
-			// 	identifiers = identifiers.concat(i);
-			// });
 			conditions.push(conds);
 		} else {
-			const [i, c, r] = __resolveRule(rule as INomalConstraint | IFromstraint, defined, name);
+			const [i, c, r] = __resolveRule(constraint as INomalConstraint | IFromstraint, defined, name);
 			conditions.push(c as any[]);
 			identifiers = identifiers.concat(i as string[]);
 			if (r) {
@@ -89,7 +84,7 @@ function parseRule(rule: ISimpleConstraint | INomalConstraint | INotConstraint |
 		}
 		return [identifiers, conditions];
 	}
-	return [];
+	return [[], []];
 }
 
 function get_append_declares(action: string) {
@@ -141,7 +136,7 @@ function parseAction(action: string, identifiers: string[], defined: Map<string,
 	}
 }
 
-function createRuleFromObject(obj: IConstraintContext, defined: Map<string, any>, scope: Map<string, any>) {
+function createRuleFromObject(obj: IRuleContext, defined: Map<string, any>, scope: Map<string, any>) {
 	const name = obj.name;
 	if (isEmpty(obj)) {
 		throw new Error("Rule is empty");
@@ -158,12 +153,12 @@ function createRuleFromObject(obj: IConstraintContext, defined: Map<string, any>
 	}
 	let conditions: ICondition[] = [];
 	let identifiers: string[] = [];
-	constraints.forEach((rule) => {
-		const [i, c] = parseRule(rule, defined, name);
-		conditions = conditions.concat(c as ICondition[]);
-		identifiers = identifiers.concat(i as string[]);
+	constraints.forEach((constraint) => {
+		const [i, c] = parseConditions(constraint, defined, name);
+		conditions = conditions.concat(c);
+		identifiers = identifiers.concat(i);
 	});
-	return createRule(name, options, conditions, parseAction(action, identifiers as string[], defined, scope));
+	return createRule(name, options, conditions, parseAction(action, identifiers, defined, scope));
 }
 
 export function compile(context: IContext, options: ICompileOptions) {
@@ -172,7 +167,7 @@ export function compile(context: IContext, options: ICompileOptions) {
 	if (!name) {
 		throw new Error("Name must be present in JSON or options");
 	}
-	const flow = new Container(name);
+	const flow = new FlowContainer(name);
 	const defined = options.define || new Map<string, any>();
 	defined.set('Array', Array);
 	defined.set('array', Array);
@@ -211,7 +206,7 @@ export function compile(context: IContext, options: ICompileOptions) {
 	context.scope.forEach((s) => {
 		scope.set(s.name, createFunction(s.body, defined, scope));
 	});
-	const rules = context.constraints;
+	const rules = context.rules;
 	if (rules.length) {
 		rules.forEach((rule) => {
 			flow.addRules(createRuleFromObject(rule, defined, scope));
