@@ -1,4 +1,4 @@
-import Tree, {ITreeNode} from './tree';
+import Tree, { ITreeNode } from './tree';
 
 const abs = Math.abs;
 
@@ -156,9 +156,10 @@ export default class AVLTree<T> extends Tree<T> {
 			}
 			while (--top >= 0 && !done.done) {
 				up[top].balance += upd[top] === "left" ? -1 : +1;
-				if (abs(up[top].balance) === 1) {
+				const balance = abs(up[top].balance);
+				if (balance === 1) {
 					break;
-				} else if (abs(up[top].balance) > 1) {
+				} else if (balance > 1) {
 					up[top] = removeAdjustBalance(up[top], upd[top], done);
 					if (top !== 0) {
 						up[top - 1][upd[top - 1]] = up[top];

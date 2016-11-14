@@ -120,7 +120,7 @@ export default class AgendaTree extends EventEmitter {
 		} else {
 			//return false if activation not fired
 			return new Promise((resolve, reject) => {
-				reject(false);
+				resolve();
 			});
 		}
 	}

@@ -31,15 +31,9 @@ const POST_ORDER = "post_order";
 const REVERSE_ORDER = "reverse_order";
 
 export default class Tree<T> {
-	protected __root: ITreeNode<T> = {
-		data: null,
-		parent: null,
-		left: null,
-		right: null
-	};
+	protected __root: ITreeNode<T> = null;
 	constructor(cmp?: (a: T, b: T) => number) {
 		cmp && (this.compare = cmp);
-		this.__root = null;
 	}
 	public compare = compare as any as (a: T, b: T) => number;
 	get_root() {

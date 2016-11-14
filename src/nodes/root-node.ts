@@ -218,7 +218,7 @@ export default class RootNode {
 
 	__addToNetwork(rule: Rule, pattern: Pattern, outNode: Node, side: Side = 'left') {
 		if (pattern instanceof ObjectPattern) {
-			if (!(pattern instanceof InitialFactPattern) && (!side || side === "left")) {
+			if (!(pattern instanceof InitialFactPattern) && side === "left") {
 				this.__createBetaNode(rule, new CompositePattern(new InitialFactPattern(), pattern), outNode, side);
 			} else {
 				this.__createAlphaNode(rule, pattern, outNode, side);

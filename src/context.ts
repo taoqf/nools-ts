@@ -5,14 +5,11 @@ import TerminalNode from './nodes/terminal-node';
 import Pattern from './pattern/pattern';
 
 function createContextHash(paths: Pattern[], hashCode: string) {
-	let ret = "";
-	let i = -1;
-	let l = paths.length;
-	while (++i < l) {
-		ret += paths[i].id + ":";
-	}
-	ret += hashCode;
-	return ret;
+	return paths.map((path) => {
+		return path.id;
+	}).reduce((previousValue, currentValue) => {
+		return `${previousValue}${currentValue}:`;
+	}, "") + hashCode;
 }
 
 function merge<T>(h1: Map<string, T>, h2: Map<string, T>, aliases: string[]) {

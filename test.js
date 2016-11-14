@@ -2,38 +2,39 @@ let nools = require('./dist/');
 
 let rule = `
 
-global gg = 1;
+// global gg = 1;
 
-rule test {
-    when {
-		// b: Message;
-		a: String a === "test";
-		b: String b === "test";
-		c: String c === "test";
-    }
-    then {
-        console.log('----------------', a);
-        // console.log('----------------', b.text, a);
-    }
-}
-
-// rule test3 {
+// rule test {
 //     when {
+// 		// b: Message;
+// 		a: String a === "test";
+// 		// b: String b === "test";
+// 		// c: String c === "test";
 //     }
 //     then {
-//         console.log('000000000000000000');
+//         console.log('----------------', a);
+//         // console.log('----------------', b.text, a);
 //     }
 // }
 
-rule test2 {
+rule test3 {
     when {
-		a: String from feidao.test();
+		a: Object;
     }
     then {
-        console.log('*****************', a);
-		feidao.test111();
+        console.log('000000000000000000', a);
     }
 }
+
+// rule test2 {
+//     when {
+// 		a: String from feidao.test();
+//     }
+//     then {
+//         console.log('*****************', a);
+// 		feidao.test111();
+//     }
+// }
 
 `;
 
@@ -64,13 +65,11 @@ let flow = nools.compile(rule, {
 	define: defines,
 	scope: scope
 });
-let session = flow.getSession();
+let session = flow.getSession('111', 'test');
 // session.assert(new Message('t'));
 // session.assert(new Message('hello'));
 // session.assert(new Message('hello world'));
 // session.assert(new Message('goodbye'));
-session.assert('111');
-session.assert('test');
 session.match().then(() => {
 	console.log('done.')
 	process.exit();

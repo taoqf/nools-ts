@@ -10,6 +10,7 @@ import { removeDups } from '../lang';
 import { getIdentifiers } from '../constraint-matcher';
 import { createRule } from '../rule';
 import keys from 'lodash-ts/keys';
+import InitialFact from '../facts/initial';
 
 const __resolveRule = function (rule: INomalConstraint | IFromstraint, defined: Map<string, any>, name: string) {
 	const condition = [] as any[], alias = rule[1];
@@ -145,7 +146,7 @@ function createRuleFromObject(obj: IRuleContext, defined: Map<string, any>, scop
 	options.scope = scope;
 	let constraints = obj.constraints || [], l = constraints.length;
 	if (!l) {
-		constraints = [["true"]] as ITrueConstraint[];	// todo:::: This is not in the right format.
+		constraints = [['initialfact', '__o__']];
 	}
 	const action = obj.action;
 	if (action === undefined) {
@@ -184,6 +185,8 @@ export function compile(context: IContext, options: ICompileOptions) {
 	defined.set('date', Date);
 	defined.set('Object', Object);
 	defined.set('object', Object);
+	defined.set('InitialFact', InitialFact);
+	defined.set('initialfact', InitialFact);
 	if (typeof Buffer !== "undefined") {
 		defined.set('Buffer', Buffer);
 		defined.set('buffer', Buffer);
