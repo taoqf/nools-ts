@@ -1,41 +1,34 @@
 let nools = require('./dist/');
 
 let rule = `
-
-// global gg = 1;
-
-// rule test {
-//     when {
-// 		// b: Message;
-// 		a: String a === "test";
-// 		// b: String b === "test";
-// 		// c: String c === "test";
-//     }
-//     then {
-//         console.log('----------------', a);
-//         // console.log('----------------', b.text, a);
+// define Message {
+//     text : '',
+//     constructor : function(message){
+//         this.text = message;
 //     }
 // }
 
-rule test3 {
+//find any message that starts with hello
+rule Hello {
     when {
-		a: Object;
+        m : Message m.text =~ /^hello(\\s*world)?$/;
     }
     then {
-        console.log('000000000000000000', a);
+		console.log(333);
+		m.text += " goodbye";
+		modify(m);
     }
 }
 
-// rule test2 {
-//     when {
-// 		a: String from feidao.test();
-//     }
-//     then {
-//         console.log('*****************', a);
-// 		feidao.test111();
-//     }
-// }
-
+//find all messages then end in goodbye
+rule Goodbye {
+    when {
+        m : Message m.text =~ /.*goodbye$/;
+    }
+    then {
+        console.log(m.text);
+    }
+}
 `;
 
 class Message {
@@ -59,13 +52,15 @@ scope.set('feidao', {
 	test: test,
 	test111: test111
 });
+scope.set('test', test);
+scope.set('test111', test111);
 
 let flow = nools.compile(rule, {
 	name: 'test',
 	define: defines,
 	scope: scope
 });
-let session = flow.getSession('111', 'test');
+let session = flow.getSession(new Message('hello world'));
 // session.assert(new Message('t'));
 // session.assert(new Message('hello'));
 // session.assert(new Message('hello world'));

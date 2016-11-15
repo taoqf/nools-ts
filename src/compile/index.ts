@@ -104,6 +104,8 @@ function get_append_declares(action: string) {
 	}
 }
 
+const modifiers = ["assert", "modify", "retract", "emit", "halt", "focus", "getFacts"];
+
 /**
  * @private
  * Parses an action from a rule definition
@@ -120,11 +122,11 @@ function parseAction(action: string, identifiers: string[], defined: Map<string,
 		.concat(append_declares(keys(defined), 'defined'))
 		.concat(append_declares(keys(scope), 'scope'));
 
-	// modifiers.forEach((i) => {
-	// 	if (action.indexOf(i) !== -1) {
-	// 		declares.push(`if(!${i}){ let ${i}= flow.${i};}`);
-	// 	}
-	// });
+	modifiers.forEach((i) => {
+		if (action.indexOf(i) !== -1) {
+			declares.push(`const ${i}=(...args)=>{flow.${i}(...args)};`);
+		}
+	});
 	const params = ["facts", 'flow'];
 	if (/next\(.*\)/.test(action)) {
 		params.push("next");

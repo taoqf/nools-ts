@@ -10,12 +10,11 @@ const flows = new Map<string, FlowContainer>();
 export default class FlowContainer {
 	private name: string;
 	private __rules: Rule[] = [];
-	private __defined: Map<string, any>;
+	private __defined = new Map<string, any>();
 	private conflictResolutionStrategy: (a: IInsert, b: IInsert) => number;
 	constructor(name: string) {
 		this.name = name;
 		// this.cb = cb;
-		this.__defined = new Map<string, any>();
 		this.conflictResolutionStrategy = conflictResolution;
 		// if (cb) {
 		// 	cb.call(this, this);

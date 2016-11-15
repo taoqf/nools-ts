@@ -53,7 +53,7 @@ export function getIdentifiers(rule: ICondition) {
 						propChain = propChain[1];
 					}
 				}
-			} toJs
+			}
 
 		} else {
 			if (rule[0]) {
@@ -96,7 +96,7 @@ export function toJs(rule: ICondition, scope: Map<string, any>, alias: string, e
 
 export function getMatcher(rule: ICondition, options = {} as IPatternOptions, equality = false) {
 	return toJs(rule, options.scope, options.alias, equality, function (src) {
-		return "!!(" + src + ")";
+		return `!!(${src})`;
 	});
 }
 

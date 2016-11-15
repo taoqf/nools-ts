@@ -12,12 +12,16 @@ export default class ExecutionStragegy {
 	private rootNode: RootNode;
 	private __halted = false;
 	private flowAltered = false;
+	onAlter: () => void;
 	constructor(flow: Flow, matchUntilHalt = false) {
 		this.flow = flow;
 		this.agenda = flow.agenda;
 		this.rootNode = flow.rootNode;
 		this.matchUntilHalt = !!(matchUntilHalt);
 		// extd.bindAll(this, ["onAlter", "callNext"]);
+		this.onAlter = () => {
+			this._onAlter();
+		};
 	}
 
 	halt() {
@@ -27,7 +31,7 @@ export default class ExecutionStragegy {
 		}
 	}
 
-	onAlter() {
+	_onAlter() {
 		this.flowAltered = true;
 		if (!this.looping && this.matchUntilHalt && !this.__halted) {
 			this.callNext();
