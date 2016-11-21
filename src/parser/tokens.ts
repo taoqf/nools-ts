@@ -52,17 +52,16 @@ function parseRules(str: string) {
 			if (predicateRegExp.test(ruleLine)) {	// "not", "or", "exists"
 				const m = ruleLine.match(predicateRegExp);
 				const pred = m[1].replace(/^\s*|\s*$/g, "");
-				constraint.push(pred);
+				(constraint as IOrConstraint).push(pred);
 				ruleLine = m[2].replace(/^\s*|\s*$/g, "");
 				if (pred === "or") {
-					constraint = constraint.concat(parseRules(splitRuleLineByPredicateExpressions(ruleLine))) as IOrConstraint;
-					constraints.push(constraint);
+					constraints.push((constraint as IOrConstraint).concat(parseRules(splitRuleLineByPredicateExpressions(ruleLine))) as IOrConstraint);
 					continue;
 				}
 			}
 			const parts = ruleLine.match(ruleRegExp);
 			if (parts && parts.length) {
-				constraint.push(parts[2], parts[1]);
+				(constraint as ISimpleConstraint).push(parts[2], parts[1]);
 				let _constraints = parts[3].replace(/^\s*|\s*$/g, "");
 				const hashParts = _constraints.match(constraintRegExp)
 				let frm: string = null;
@@ -75,10 +74,10 @@ function parseRules(str: string) {
 						_constraint = _constraint.replace(fromMatch[0], "");
 					}
 					if (_constraint) {
-						constraint.push(_constraint.replace(/^\s*|\s*$/g, ""));
+						(constraint as ISimpleConstraint).push(_constraint.replace(/^\s*|\s*$/g, ""));
 					}
 					if (hash) {
-						constraint.push(eval("(" + hash.replace(/(\$?\w+)\s*:\s*(\$?\w+)/g, '"$1" : "$2"') + ")"));
+						(constraint as ISimpleConstraint).push(eval("(" + hash.replace(/(\$?\w+)\s*:\s*(\$?\w+)/g, '"$1" : "$2"') + ")"));
 					}
 				} else if (_constraints && !isWhiteSpace(_constraints)) {
 					if (fromRegExp.test(_constraints)) {
@@ -86,10 +85,10 @@ function parseRules(str: string) {
 						frm = fromMatch[0];
 						_constraints = _constraints.replace(fromMatch[0], "");
 					}
-					constraint.push(_constraints);
+					(constraint as IFromstraint).push(_constraints);
 				}
 				if (frm) {
-					constraint.push(frm);
+					(constraint as IFromstraint).push(frm);
 				}
 				constraints.push(constraint);
 			} else {

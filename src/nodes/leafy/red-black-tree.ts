@@ -1,4 +1,4 @@
-import Tree, {ITreeNode} from './tree';
+import Tree, {ITreeNode, Dir} from './tree';
 
 const RED = "RED", BLACK = "BLACK";
 function isRed<T>(node: ITreeNode<T>) {
@@ -51,9 +51,9 @@ function insert<T>(root: ITreeNode<T>, data: T, compare: (a: T, b: T) => number)
 	return root;
 };
 
-function rotateSingle<T>(root: ITreeNode<T>, dir: string) {
+function rotateSingle<T>(root: ITreeNode<T>, dir: Dir) {
 	const otherDir = dir === "left" ? "right" : "left";
-	const save = root[otherDir] as ITreeNode<T>;
+	const save = root[otherDir];
 	root[otherDir] = save[dir];
 	save[dir] = root;
 	root.red = true;
@@ -61,7 +61,7 @@ function rotateSingle<T>(root: ITreeNode<T>, dir: string) {
 	return save;
 };
 
-function rotateDouble<T>(root: ITreeNode<T>, dir: string) {
+function rotateDouble<T>(root: ITreeNode<T>, dir: Dir) {
 	const otherDir = dir === "left" ? "right" : "left";
 	root[otherDir] = rotateSingle(root[otherDir] as ITreeNode<T>, otherDir);
 	return rotateSingle(root, dir);
@@ -72,7 +72,7 @@ function remove<T>(root: ITreeNode<T>, data: T, done: { done: boolean }, compare
 	if (!root) {
 		done.done = true;
 	} else {
-		let dir: string;
+		let dir: Dir;
 		if (compare(data, root.data) === 0) {
 			if (!root.left || !root.right) {
 				const save = root[!root.left ? "right" : "left"] as ITreeNode<T>;
@@ -108,7 +108,7 @@ function remove<T>(root: ITreeNode<T>, data: T, done: { done: boolean }, compare
 	return root;
 };
 
-function removeBalance<T>(root: ITreeNode<T>, dir: string, done: { done: boolean }) {
+function removeBalance<T>(root: ITreeNode<T>, dir: Dir, done: { done: boolean }) {
 	const notDir = dir === "left" ? "right" : "left";
 	let p = root;
 	let s = p[notDir] as ITreeNode<T>;

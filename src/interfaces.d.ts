@@ -18,7 +18,6 @@ export interface ICondition extends Array<any> {
 
 export interface IOrConstraint extends Array<string | ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint> {
 	[0]: 'or';
-	[1]: ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint;
 }
 
 export interface ITrueConstraint extends Array<string> {

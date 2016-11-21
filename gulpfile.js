@@ -1,13 +1,13 @@
-var gulp = require('gulp');
-var packageJson = require('./package.json');
+const gulp = require('gulp');
+const packageJson = require('./package.json');
 
-var tsc = require('gulp-typescript');
-var del = require('del');
-var sequence = require('gulp-sequence');
+const tsc = require('gulp-typescript');
+const del = require('del');
+const sequence = require('gulp-sequence');
 
-var projectConfig = tsc.createProject('./tsconfig.json');
+const tscProject = tsc.createProject('./tsconfig.json');
 
-const src = projectConfig.config.files || ['./typings/index.d.ts'];
+const src = tscProject.config.files || ['./typings/index.d.ts'];
 const dest = './dist/';
 
 gulp.task('clean', function () {
@@ -16,18 +16,8 @@ gulp.task('clean', function () {
 
 gulp.task('compile-ts', function (cb) {
 	return gulp.src(src.concat('./src/**/*.ts'))
-		.pipe(tsc(projectConfig))
+		.pipe(tscProject())
 		.pipe(gulp.dest(dest));
-	// var tsResult = gulp.src(src.concat('./src/**/*.ts'))
-	// 	.pipe(sourcemaps.init())
-	// 	.pipe(tsc(projectConfig));
-	// tsResult.dts.pipe(gulp.dest(dest));
-	// return tsResult.js
-	// 	.pipe(babel({
-	// 		presets: ['es2015']
-	// 	}))
-	// 	.pipe(sourcemaps.write('.'))
-	// 	.pipe(gulp.dest(dest));
 });
 
 gulp.task('dts-generator', function (cb) {
@@ -44,7 +34,7 @@ gulp.task('dts-generator', function (cb) {
 	cb();
 });
 
-var gulpCopy = require('gulp-copy');
+const gulpCopy = require('gulp-copy');
 
 gulp.task('copy-files', function () {
 	return gulp.src(['./package.json', './typings.json', './readme.md'])

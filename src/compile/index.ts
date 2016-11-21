@@ -62,12 +62,13 @@ function parseConditions(constraint: ISimpleConstraint | INomalConstraint | INot
 			cond.unshift(r0);
 			conditions.push(cond);
 		} else if (r0 === "or") {
-			const conds = [r0];
+			let conds: any[] = [r0];
 			constraint.shift();
-			const [i, c] = parseConditions(constraint[1] as ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint, defined, name);
-			conditions.push(c);
-			conditions = conditions.concat(c);
-			identifiers = identifiers.concat(i as string[]);
+			(constraint as IOrConstraint).forEach((cond)=>{
+				const [i, c] = parseConditions(cond as ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint, defined, name);
+				conds = conds.concat(c);
+				identifiers = identifiers.concat(i as string[]);
+			});
 			conditions.push(conds);
 		} else {
 			const [i, c, r] = __resolveRule(constraint as INomalConstraint | IFromstraint, defined, name);

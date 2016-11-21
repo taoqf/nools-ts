@@ -14,6 +14,8 @@ function isUndefinedOrNull(val: any) {
 	return val === undefined || val === null;
 }
 
+export type Dir = 'left' | 'right';
+
 export interface ITreeNode<T> {
 	data: T;
 	parent?: ITreeNode<T>;

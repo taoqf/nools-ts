@@ -27,17 +27,15 @@ export default class Node {
 
 	merge(that: Node) {
 		for (const [node, patterns] of that.nodes.entries()) {
-			for (let i = 0, l = patterns.length; i < l; i++) {
-				this.addOutNode(node, patterns[i]);
-			}
+			patterns.forEach((pattern) => {
+				this.addOutNode(node, pattern);
+			});
 			that.nodes.delete(node);
 		}
-		const thatParentNodes = that.parentNodes;
-		for (let i = 0, l = that.parentNodes.length; i < l; i++) {
-			const parentNode = thatParentNodes[i];
+		that.parentNodes.forEach((parentNode) => {
 			this.addParentNode(parentNode);
 			parentNode.nodes.delete(that);
-		}
+		});
 		return this;
 	}
 
@@ -57,7 +55,6 @@ export default class Node {
 			this.nodes.set(outNode, []);
 		}
 		this.nodes.get(outNode).push(pattern);
-		// this.__entrySet = this.nodes.entries();
 	}
 
 	addParentNode(n: Node) {
