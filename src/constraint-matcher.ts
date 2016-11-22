@@ -85,7 +85,7 @@ export function toJs(rule: ICondition, scope: Map<string, any>, alias: string, e
 		if (equality || v !== alias) {
 			return `const ${v}=fact.get('${v}');`;
 		} else if (v === alias) {
-			return `const ${v}=hash.${v};`;
+			return `const ${v}=hash.get('${v}');`;
 		} else {
 			return ``;
 		}
