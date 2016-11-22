@@ -33,8 +33,11 @@ const __resolveRule = function (rule: INomalConstraint | IFromstraint, defined: 
 	}
 	if (isObject(refs)) {
 		const idents: string[] = [];
-		for (const ident of refs) {
-			idents.push(ident);
+		for (const j in refs as any) {
+			const ident = (refs as any)[j];
+			if (identifiers.indexOf(ident) === -1) {
+				idents.push(ident);
+			}
 		}
 		return [identifiers, condition, idents];
 	}
@@ -58,13 +61,12 @@ function parseConditions(constraint: ISimpleConstraint | INomalConstraint | INot
 					identifiers = identifiers.concat(idents);
 				}
 			}
-			const cond = c[0] as string[];
-			cond.unshift(r0);
-			conditions.push(cond);
+			c.unshift(r0);
+			conditions.push(c);
 		} else if (r0 === "or") {
 			let conds: any[] = [r0];
 			constraint.shift();
-			(constraint as IOrConstraint).forEach((cond)=>{
+			(constraint as IOrConstraint).forEach((cond) => {
 				const [i, c] = parseConditions(cond as ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint, defined, name);
 				conds = conds.concat(c);
 				identifiers = identifiers.concat(i as string[]);
@@ -214,7 +216,7 @@ export function compile(context: IContext, options: ICompileOptions) {
 	});
 	const rules = context.rules;
 	if (rules.length) {
-		rules.forEach((rule) => {
+		rules.reverse().forEach((rule) => {
 			flow.addRules(createRuleFromObject(rule, defined, scope));
 		});
 	}
