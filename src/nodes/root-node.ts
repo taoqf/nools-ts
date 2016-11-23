@@ -240,7 +240,7 @@ export default class RootNode {
 	__createAlphaNode(rule: Rule, pattern: ObjectPattern, outNode: Node, side: Side) {
 		if (!(pattern instanceof FromPattern)) {
 			const constraints = pattern.constraints;
-			const typeNode = this.__createTypeNode(rule, pattern.constraints[0]);
+			const typeNode = this.__createTypeNode(rule, constraints[0]);
 			const aliasNode = this.__createAliasNode(rule, pattern);
 			typeNode.addOutNode(aliasNode, pattern);
 			aliasNode.addParentNode(typeNode);

@@ -1,3 +1,6 @@
+import isMap from 'lodash-ts/isMap';
+import isWeakMap from 'lodash-ts/isWeakMap';
+
 function plucked(prop: string) {
 	const exec = prop.match(/(\w+)\(\)$/);
 	if (exec) {
@@ -7,7 +10,7 @@ function plucked(prop: string) {
 		};
 	} else {
 		return function (item: any) {
-			return item[prop];
+			return isMap(item) || isWeakMap(item) ? item.get(prop) : item[prop];
 		};
 	}
 }
