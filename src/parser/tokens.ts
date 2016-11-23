@@ -20,14 +20,18 @@ function splitRuleLineByPredicateExpressions(ruleLine: string) {
 		return str !== "";
 	});
 
-	if (parts.length) {
-		return parts.map((part, i) => {
+	const l = parts.length;
+	if (l) {
+		const ret: string[] = [];
+		for (let i = 0; i < l; ++i) {
+			const part = parts[i];
 			if (predicates.indexOf(part) !== -1) {
-				return [part, "(", parts[++i].replace(/, *$/, "")].join("");
+				ret.push([part, "(", parts[++i].replace(/, *$/, "")].join(""));
 			} else {
-				return part.replace(/, *$/, "");
+				ret.push(part.replace(/, *$/, ""));
 			}
-		}).join(";");
+		}
+		return ret.join(";");
 	} else {
 		return str;
 	}
