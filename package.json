@@ -2,7 +2,7 @@
   "name": "nools-ts",
   "version": "1.0.1",
   "description": "nools in TypeScript.",
-  "main": "./src/index.ts",
+  "main": "lodash-ts.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
