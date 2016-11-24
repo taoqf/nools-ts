@@ -46,55 +46,89 @@ gulp.task('copy-parser', function () {
 		.pipe(gulp.dest('./dist/parser/constraint/'));
 });
 
-var wp = require('webpack');
-var webpack = require('webpack-stream');
-var uglyfly = require('gulp-uglyfly');
-var babel = require('gulp-babel');
+const uglyfly = require('gulp-uglyfly');
+const babel = require('gulp-babel');
 
-var through = require('through');
-gulp.task('webpack', function () {
-	return gulp.src('./dist/index.js')
-		.pipe((function (opts) {
-			return through(function (file) {
-				// file.named = path.basename(file.path, path.extname(file.path))
-				file.named = 'nools-ts';
-				this.queue(file);
-			});
-		})())
-		.pipe(webpack({
-			externals: [
-				'fs','path'
-			],
-			output: {
-				publicPath: dest
-			},
-			module: {
-				unknownContextCritical: true,
+// const wp = require('webpack');
+// const webpack = require('webpack-stream');
 
-				exprContextRegExp: /$^/,
-				exprContextCritical: false,
+// const through = require('through');
+// gulp.task('pack', function () {
+// 	return gulp.src('./dist/index.js')
+// 		.pipe((function (opts) {
+// 			return through(function (file) {
+// 				// file.named = path.basename(file.path, path.extname(file.path))
+// 				file.named = 'nools-ts';
+// 				this.queue(file);
+// 			});
+// 		})())
+// 		.pipe(webpack({
+// 			externals: [
+// 				'fs','path', 'Buffer'
+// 			],
+// 			output: {
+// 				publicPath: dest
+// 			},
+// 			module: {
+// 				unknownContextCritical: true,
 
-				wrappedContextCritical: true,
-				loaders: [
-					{ test: /\.(hson|json)$/, loader: 'hson' },
-					{ test: /\.(tpl|nools|md)$/, loader: 'raw' }
-				]
-			}
-		}))
+// 				exprContextRegExp: /$^/,
+// 				exprContextCritical: false,
+
+// 				wrappedContextCritical: true,
+// 				loaders: [
+// 					{ test: /\.(hson|json)$/, loader: 'hson' },
+// 					{ test: /\.(tpl|nools|md)$/, loader: 'raw' }
+// 				]
+// 			}
+// 		}))
+// 		.pipe(babel({
+// 			presets: ['es2015']
+// 		}))
+// 		// .pipe(uglyfly())
+// 		.pipe(gulp.dest(dest));
+// });
+
+// const browserify = require('gulp-browserify');
+// const rename = require('gulp-rename');
+
+// gulp.task('pack', function () {
+// 	return gulp.src('./dist/index.js', { read: false })
+// 		.pipe(browserify({
+// 			read: false,
+// 			standalone: 'nools'
+// 		}))
+// 		.pipe(rename('nools-ts.js'))
+// 		.pipe(gulp.dest('./dist/'))
+// });
+
+// browserify ./dist/index.js -s nools -o ./dist/nools-ts.js
+const browserify = require('browserify');
+const fs = require('fs');
+
+gulp.task('browserify', function () {
+	return browserify(['./dist/index.js'], {
+		standalone: 'nools'
+	})
+		.bundle()
+		.pipe(fs.createWriteStream('./dist/nools-ts.js'));
+});
+
+const rename = require('gulp-rename');
+gulp.task('min', function () {
+	return gulp.src('./dist/nools-ts.js')
 		.pipe(babel({
 			presets: ['es2015']
 		}))
 		.pipe(uglyfly())
-		.pipe(gulp.dest(dest));
+		.pipe(rename('nools-ts.min.js'))
+		.pipe(gulp.dest('./dist/'));
+});
+
+gulp.task('pack', function (cb) {
+	sequence('browserify', 'min', cb);
 });
 
 gulp.task('default', function (cb) {
-	sequence('clean', 'copy-files', 'compile-ts', 'dts-generator', 'copy-parser', 'webpack', cb);
-});
-
-let jsdoc = require('gulp-jsdoc3');
-gulp.task('api', (cb) => {
-	let config = require('./jsdoc.json');
-	return gulp.src('./package.json')
-		.pipe(jsdoc(config));
+	sequence('clean', 'copy-files', 'compile-ts', 'dts-generator', 'copy-parser', 'pack', cb);
 });

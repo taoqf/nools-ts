@@ -13,21 +13,19 @@
   "license": "MIT",
   "devDependencies": {
     "babel-preset-es2015": "^6.9.0",
+    "browserify": "^13.1.1",
     "del": "^2.2.2",
     "dts-generator": "^2.0.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-copy": "^0.0.2",
-    "gulp-jsdoc3": "^1.0.1",
+    "gulp-rename": "^1.2.2",
     "gulp-sequence": "^0.4.6",
     "gulp-typescript": "^3.1.3",
     "gulp-uglyfly": "^1.4.2",
     "jison": "^0.4.17",
     "lodash-ts": "^1.0.10",
-    "through": "^2.3.8",
-    "typescript": "^2.2.0-dev.20161123",
-    "webpack": "^1.13.1",
-    "webpack-stream": "^3.2.0"
+    "typescript": "^2.2.0-dev.20161123"
   },
   "dependencies": {
     "lodash-ts": "^1.1.0"

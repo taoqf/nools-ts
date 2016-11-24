@@ -66,7 +66,6 @@ export interface IRuleContext {
 export interface IContext {
 	rules: IRuleContext[];
 	// loaded: string[];
-	file?: string;
 	define: {
 		name: string;
 		properties: string;

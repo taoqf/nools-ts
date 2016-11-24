@@ -192,10 +192,10 @@ export function compile(context: IContext, options: ICompileOptions) {
 	defined.set('object', Object);
 	defined.set('InitialFact', InitialFact);
 	defined.set('initialfact', InitialFact);
-	if (typeof Buffer !== "undefined") {
-		defined.set('Buffer', Buffer);
-		defined.set('buffer', Buffer);
-	}
+	// if (typeof Buffer !== "undefined") {
+	// 	defined.set('Buffer', Buffer);
+	// 	defined.set('buffer', Buffer);
+	// }
 	const scope = options.scope || new Map<string, any>();
 	//add the anything added to the scope as a property
 	// context.scope.forEach((s) => {
