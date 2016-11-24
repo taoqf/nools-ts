@@ -1,11 +1,11 @@
-import {compile} from './compile/index';
+import {compile as __compile} from './compile/index';
 import parse from './parser/parser';
 import uuid from 'lodash-ts/uuid';
 import isString from 'lodash-ts/isString';
 import {ICompileOptions} from './interfaces';
 import FlowContainer from './flow-container';
 
-export default function(src: string, options: ICompileOptions) {
+export function compile(src: string, options: ICompileOptions) {
 	if (!isString(src)) {
 		return null;
 	}
@@ -14,5 +14,7 @@ export default function(src: string, options: ICompileOptions) {
 	if (!options.name) {
 		throw new Error("Name required when compiling nools source");
 	}
-	return compile(context, options);
+	return __compile(context, options);
 }
+
+export default compile;

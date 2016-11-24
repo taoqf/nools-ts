@@ -5,6 +5,7 @@ import { createDefined, createFunction } from './common';
 import isEmpty from 'lodash-ts/isEmpty';
 import isHash from 'lodash-ts/isHash';
 import isObject from 'lodash-ts/isObject';
+import isMap from 'lodash-ts/isMap';
 import parseConstraint from '../parser/constraint';
 import { removeDups } from '../lang';
 import { getIdentifiers } from '../constraint-matcher';
@@ -167,6 +168,23 @@ function createRuleFromObject(obj: IRuleContext, defined: Map<string, any>, scop
 	return createRule(name, options, conditions, parseAction(action, identifiers, defined, scope));
 }
 
+function to_map(m: any) {
+	if (isMap(m)) {
+		return m as Map<string, any>;
+	} else if (isObject(m)) {
+		const map = new Map<string, any>();
+		for (const n in m) {
+			if ((m as Object).hasOwnProperty(n)) {
+				map.set(n, m[n]);
+				(map as any)[n] = m[n];
+			}
+		}
+		return map;
+	} else {
+		return new Map<string, any>();
+	}
+}
+
 export function compile(context: IContext, options: ICompileOptions) {
 	const name = options.name;
 	//if !name throw an error
@@ -174,7 +192,7 @@ export function compile(context: IContext, options: ICompileOptions) {
 		throw new Error("Name must be present in JSON or options");
 	}
 	const flow = new FlowContainer(name);
-	const defined = options.define || new Map<string, any>();
+	const defined = to_map(options.define);
 	defined.set('Array', Array);
 	defined.set('array', Array);
 	defined.set('String', String);
@@ -196,7 +214,7 @@ export function compile(context: IContext, options: ICompileOptions) {
 	// 	defined.set('Buffer', Buffer);
 	// 	defined.set('buffer', Buffer);
 	// }
-	const scope = options.scope || new Map<string, any>();
+	const scope = to_map(options.scope);
 	//add the anything added to the scope as a property
 	// context.scope.forEach((s) => {
 	// 	scope.set(s.name, true);
