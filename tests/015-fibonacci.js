@@ -91,4 +91,5 @@ const r3 = new Result(),
 session3.match().then(function () {
 	console.log("1000, %d [%dms]", r3.result, +(new Date()) - s3);
 	session3.dispose();
+	process.exit();
 });
