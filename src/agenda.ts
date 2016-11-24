@@ -7,42 +7,48 @@ import AVLTree from './leafy/avl-tree';
 import TerminalNode from './nodes/terminal-node';
 import Context from './context';
 
-class FactHash {
-	memory = new Map<string, IInsert | Context>();
-	memoryValues = new LinkedList<IInsert>();
-
-	clear() {
-		this.memoryValues.clear();
-		this.memory = new Map<string, IInsert>();
-	}
-
-	remove(v: Context | IInsert) {
-		const hashCode = v.hashCode;
-		const memory = this.memory;
-		const ret = memory.get(hashCode);
-		if (ret) {
-			this.memoryValues.remove(ret);
-			memory.delete(hashCode);
-		}
-		return ret;
-	}
-
-	insert(insert: IInsert) {
-		const hashCode = insert.hashCode;
-		if (this.memory.has(hashCode)) {
-			throw new Error("Activation already in agenda " + insert.rule.name + " agenda");
-		}
-		this.memory.set(hashCode, insert);
-		this.memoryValues.push(insert);
-	}
+interface IFactHash {
+	memory: Map<string, IInsert | Context>;
+	memoryValues: LinkedList<IInsert>;
 }
-
 
 interface IAgendaRule {
 	[name: string]: {
 		tree: AVLTree<IInsert>;
-		factTable: FactHash;
+		factTable: IFactHash;
 	};
+}
+
+function fh_create(): IFactHash {
+	return {
+		memory: new Map<string, IInsert | Context>(),
+		memoryValues: new LinkedList<IInsert>()
+	};
+}
+
+function fh_clear(fh: IFactHash) {
+	fh.memoryValues.clear();
+	fh.memory = new Map<string, IInsert>();
+}
+
+function fh_remove(fh: IFactHash, v: Context | IInsert) {
+	const hashCode = v.hashCode;
+	const memory = fh.memory;
+	const ret = memory.get(hashCode);
+	if (ret) {
+		fh.memoryValues.remove(ret);
+		memory.delete(hashCode);
+	}
+	return ret;
+}
+
+function fh_insert(fh: IFactHash, insert: IInsert) {
+	const hashCode = insert.hashCode;
+	if (fh.memory.has(hashCode)) {
+		throw new Error("Activation already in agenda " + insert.rule.name + " agenda");
+	}
+	fh.memory.set(hashCode, insert);
+	fh.memoryValues.push(insert);
 }
 
 const DEFAULT_AGENDA_GROUP = "main";
@@ -89,7 +95,7 @@ export default class AgendaTree extends EventEmitter {
 
 	register(node: TerminalNode) {
 		const agendaGroup = node.rule.agendaGroup;
-		this.rules[node.name] = { tree: new AVLTree(this.comparator), factTable: new FactHash() };
+		this.rules[node.name] = { tree: new AVLTree(this.comparator), factTable: fh_create() };
 		if (agendaGroup) {
 			this.addAgendaGroup(agendaGroup);
 		}
@@ -135,7 +141,7 @@ export default class AgendaTree extends EventEmitter {
 		tree.remove(v);
 		const rule = this.rules[v.name];
 		rule.tree.remove(v);
-		rule.factTable.remove(v);
+		fh_remove(rule.factTable, v);
 		return v;
 	}
 
@@ -156,7 +162,7 @@ export default class AgendaTree extends EventEmitter {
 	retract(node: TerminalNode, retract: Context | IInsert) {
 		const rule = this.rules[node.name];
 		retract.rule = node;
-		const activation = rule.factTable.remove(retract);
+		const activation = fh_remove(rule.factTable, retract);
 		if (activation) {
 			this.getAgendaGroup(node.rule.agendaGroup).remove(activation as IInsert);
 			rule.tree.remove(activation as IInsert);
@@ -173,7 +179,7 @@ export default class AgendaTree extends EventEmitter {
 			}
 		}
 
-		rule.factTable.insert(insert);
+		fh_insert(rule.factTable, insert);
 	}
 
 	dispose() {
@@ -183,7 +189,7 @@ export default class AgendaTree extends EventEmitter {
 		const rules = this.rules;
 		for (const i in rules) {
 			rules[i].tree.clear();
-			rules[i].factTable.clear();
+			fh_clear(rules[i].factTable);
 		}
 		this.rules = {};
 	}
