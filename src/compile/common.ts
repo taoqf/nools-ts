@@ -61,12 +61,12 @@ export function createFunction(body: string, defined: Map<string, any>, scope: M
 	const declares: string[] = [];
 	defined.forEach((v, k) => {
 		if (body.indexOf(k) !== -1) {
-			declares.push(`const ${k}= defined.${k};`);
+			declares.push(`const ${k}= defined.get('${k}');`);
 		}
 	});
 	scope.forEach((v, k) => {
 		if (body.indexOf(k) !== -1) {
-			declares.push(`const ${k}= defined.${k};`);
+			declares.push(`const ${k}= scope.get('${k}');`);
 		}
 	});
 
