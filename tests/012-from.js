@@ -1,27 +1,31 @@
 let nools = require('../dist/');
 
 let rule = `
+function myarr(){
+	return [1, 2, 'abc', 3]
+}
 rule test {
-    when {
-    }
-    then {
-        console.log('----------------', a);
-    }
+	when {
+		n: Number from myarr();
+	}
+	then {
+		console.log(n);
+	}
 }
 `;
 
 const defines = new Map();
 const scope = new Map();
 
-let flow = nools.compile(rule, {
+const flow = nools.compile(rule, {
 	name: 'test',
 	define: defines,
 	scope: scope
 });
-let session = flow.getSession();
-session.assert('test');
+const session = flow.getSession();
 session.match().then(() => {
-	console.log('done.')
+	console.log('done');
+	session.dispose();
 	process.exit();
 }, (err) => {
 	console.error(err);
