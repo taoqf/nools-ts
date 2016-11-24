@@ -4,12 +4,13 @@ import mixin from 'lodash-ts/mixin';
 import isEqual from 'lodash-ts/isEqual';
 import { IPatternOptions, ICondition } from '../interfaces';
 import { getMatcher } from '../constraint-matcher';
+import Fact from '../facts/fact';
 
 export default class ReferenceConstraint extends Constraint {
 	protected type = "reference";
 	protected pattern: string;
 	// protected _options: IPatternOptions;
-	protected _matcher: (fact: any, fh?: any) => boolean = null;
+	protected _matcher: (factHanle1: Map<string, Fact>, factHandle2: Map<string, Fact>) => boolean = null;
 	constructor(constraint: ICondition, options = {} as IPatternOptions) {
 		super(constraint, options);
 		// this.cache = {};
@@ -18,9 +19,9 @@ export default class ReferenceConstraint extends Constraint {
 		this._matcher = getMatcher(constraint, options, false);
 	}
 
-	assert(fact: any, fh?: any) {
+	assert(factHanle1: Map<string, Fact>, factHandle2: Map<string, Fact>) {
 		try {
-			return this._matcher(fact, fh);
+			return this._matcher(factHanle1, factHandle2);
 		} catch (e) {
 			throw new Error("Error with evaluating pattern " + this.pattern + " " + e.message);
 		}

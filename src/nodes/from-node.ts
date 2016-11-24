@@ -42,7 +42,9 @@ export default class FromNode extends JoinNode {
 		this.constraints = this.pattern.constraints.slice(1);
 		this.constraints.forEach((c) => {
 			if (c instanceof EqualityConstraint || c instanceof ReferenceConstraint) {
-				eqConstraints.push(c.assert);
+				eqConstraints.push((factHanle1: Map<string, Fact>, factHandle2: Map<string, Fact>) => {
+					return (c as EqualityConstraint).assert(factHanle1, factHandle2);
+				});
 			} else if (c instanceof HashConstraint) {
 				// todo: need debug
 				vars = vars.concat(c.get_vars());
