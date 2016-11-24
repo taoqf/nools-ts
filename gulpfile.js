@@ -132,3 +132,7 @@ gulp.task('pack', function (cb) {
 gulp.task('default', function (cb) {
 	sequence('clean', 'copy-files', 'compile-ts', 'dts-generator', 'copy-parser', 'pack', cb);
 });
+
+gulp.task('dev', function (cb) {
+	sequence('compile-ts', 'copy-parser', cb);
+});
