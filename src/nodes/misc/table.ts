@@ -1,5 +1,5 @@
-import {ITreeNode} from '../leafy/tree';
-import AVLTree from '../leafy/avl-tree';
+import {ITreeNode} from '../../leafy/tree';
+import AVLTree from '../../leafy/avl-tree';
 import TupleEntry, {ITuple} from './tuple-entry';
 
 export interface IEntry {

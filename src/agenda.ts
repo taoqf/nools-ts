@@ -3,7 +3,7 @@ import LinkedList from './linked-list';
 import isFunction from 'lodash-ts/isFunction';
 import { IInsert } from './interfaces';
 import Flow from './flow';
-import AVLTree from './nodes/leafy/avl-tree';
+import AVLTree from './leafy/avl-tree';
 import TerminalNode from './nodes/terminal-node';
 import Context from './context';
 
