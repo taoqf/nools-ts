@@ -1,14 +1,14 @@
 import { IInsert } from './interfaces';
 
-export function salience(a: IInsert, b: IInsert) {
+function salience(a: IInsert, b: IInsert) {
 	return a.rule.priority - b.rule.priority;
 }
 
-export function bucketCounter(a: IInsert, b: IInsert) {
+function bucketCounter(a: IInsert, b: IInsert) {
 	return a.counter - b.counter;
 }
 
-export function factRecency(a: IInsert, b: IInsert) {
+function factRecency(a: IInsert, b: IInsert) {
 	/*jshint noempty: false*/
 
 	let i = 0;
@@ -23,14 +23,14 @@ export function factRecency(a: IInsert, b: IInsert) {
 	return ret;
 }
 
-export function factRecencyInverse(a: IInsert, b: IInsert) {
+function factRecencyInverse(a: IInsert, b: IInsert) {
 	// negate fact recency,
 	// but need 0 to produce 1 in ret value of strategy function
 	var fRI = -factRecency(a, b);
 	return (fRI === 0 ? 1 : fRI);
 }
 
-export function activationRecency(a: IInsert, b: IInsert) {
+function activationRecency(a: IInsert, b: IInsert) {
 	return a.recency - b.recency;
 }
 
@@ -42,7 +42,7 @@ const strategies = {
 	factRecencyInverse: factRecencyInverse
 };
 
-export function strategy(...strats: { (a: IInsert, b: IInsert): number }[]) {
+function strategy(...strats: { (a: IInsert, b: IInsert): number }[]) {
 	const stratsLength = strats.length;
 
 	return function (a: IInsert, b: IInsert) {
