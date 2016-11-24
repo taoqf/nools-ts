@@ -46,8 +46,50 @@ gulp.task('copy-parser', function () {
 		.pipe(gulp.dest('./dist/parser/constraint/'));
 });
 
+var wp = require('webpack');
+var webpack = require('webpack-stream');
+var uglyfly = require('gulp-uglyfly');
+var babel = require('gulp-babel');
+
+var through = require('through');
+gulp.task('webpack', function () {
+	return gulp.src('./dist/index.js')
+		.pipe((function (opts) {
+			return through(function (file) {
+				// file.named = path.basename(file.path, path.extname(file.path))
+				file.named = 'nools-ts';
+				this.queue(file);
+			});
+		})())
+		.pipe(webpack({
+			externals: [
+				'fs','path'
+			],
+			output: {
+				publicPath: dest
+			},
+			module: {
+				unknownContextCritical: true,
+
+				exprContextRegExp: /$^/,
+				exprContextCritical: false,
+
+				wrappedContextCritical: true,
+				loaders: [
+					{ test: /\.(hson|json)$/, loader: 'hson' },
+					{ test: /\.(tpl|nools|md)$/, loader: 'raw' }
+				]
+			}
+		}))
+		.pipe(babel({
+			presets: ['es2015']
+		}))
+		.pipe(uglyfly())
+		.pipe(gulp.dest(dest));
+});
+
 gulp.task('default', function (cb) {
-	sequence('clean', 'copy-files', 'compile-ts', 'dts-generator', 'copy-parser', cb);
+	sequence('clean', 'copy-files', 'compile-ts', 'dts-generator', 'copy-parser', 'webpack', cb);
 });
 
 let jsdoc = require('gulp-jsdoc3');
