@@ -1,5 +1,5 @@
 import * as utils from './util';
-import { parse } from './parser';
+import parser from './parser';
 import { ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, IContext, IRuleContext } from '../interfaces';
 
 const predicates = ["not", "or", "exists"];
@@ -284,7 +284,7 @@ function rule(orig: string, context: IContext) {
 			const rule = { name: name[1].replace(/^["']|["']$/g, ""), options: {}, constraints: null, action: null } as IRuleContext;
 			const body = utils.getTokensBetween(src, "{", "}", true).join("");
 			src = src.replace(body, "");
-			parse(body.replace(/^\{\s*|\}\s*$/g, ""), ruleTokens, rule);
+			parser(body.replace(/^\{\s*|\}\s*$/g, ""), ruleTokens, rule);
 			context.rules.push(rule);
 			return src;
 		} else {

@@ -1,8 +1,7 @@
 import {IRuleContext, IContext} from '../interfaces';
 import {findNextTokenIndex} from './util';
-import tokens from './tokens';
 
-export function parse(src: string, keywords: Map<string, (orig: string, context: IContext | IRuleContext) => string>, context: IContext | IRuleContext) {
+export default function parse(src: string, keywords: Map<string, (orig: string, context: IContext | IRuleContext) => string>, context: IContext | IRuleContext) {
 	const orig = src;
 	src = src.replace(/\/\/(.*)/g, "").replace(/\r\n|\r|\n/g, " ");
 	const keys: string[] = [];
@@ -30,11 +29,5 @@ export function parse(src: string, keywords: Map<string, (orig: string, context:
 			throw new Error("Error parsing " + src);
 		}
 	}
-	return context;
-}
-
-export default function (src: string) {
-	const context = { define: [], rules: [], scope: [] } as IContext;
-	parse(src, tokens, context);
 	return context;
 }
