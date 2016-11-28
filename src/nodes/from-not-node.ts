@@ -1,5 +1,5 @@
 import JoinNode from './join-node';
-import FromNotPattern from '../pattern/from-not-pattern';
+import { IFromPattern } from '../interfaces';
 import Context from '../context';
 import WorkingMemory from '../working-memory';
 import Fact from '../facts/fact';
@@ -12,7 +12,7 @@ import isArray from 'lodash-ts/isArray';
 export default class FromNotNode extends JoinNode {
 	nodeType = "FromNotNode";
 	workingMemory: WorkingMemory;
-	pattern: FromNotPattern;
+	pattern: IFromPattern;
 	fromMemory = {} as { [id: number]: { [hashCode: string]: Context }; };
 	protected __variables: any[];
 	type: (it: any) => boolean;
@@ -21,7 +21,7 @@ export default class FromNotNode extends JoinNode {
 	protected __equalityConstraints: { (factHanle1: Map<string, Fact>, factHandle2?: Map<string, Fact>): boolean; }[] = [];
 	constraints: Constraint[];
 
-	constructor(pattern: FromNotPattern, workingMemory: WorkingMemory) {
+	constructor(pattern: IFromPattern, workingMemory: WorkingMemory) {
 		super();
 		this.workingMemory = workingMemory;
 		this.pattern = pattern;

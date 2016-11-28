@@ -1,11 +1,11 @@
 import Context, { Match } from '../context';
 import Rule from '../rule';
 import intersection from 'lodash-ts/intersection';
-import ObjectPattern from '../pattern/object-pattern';
+import { IObjectPattern } from '../interfaces';
 
 let count = 0;
 export default class Node {
-	protected nodes = new Map<Node, ObjectPattern[]>();
+	protected nodes = new Map<Node, IObjectPattern[]>();
 	protected rules: Rule[] = [];
 	protected parentNodes: Node[] = [];
 	protected __count = count++;
@@ -50,7 +50,7 @@ export default class Node {
 		});
 	}
 
-	addOutNode(outNode: Node, pattern: ObjectPattern) {
+	addOutNode(outNode: Node, pattern: IObjectPattern) {
 		if (!this.nodes.has(outNode)) {
 			this.nodes.set(outNode, []);
 		}

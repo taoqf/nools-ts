@@ -1,10 +1,10 @@
 import AlphaNode from './alpha-node';
-import ObjectPattern from '../pattern/object-pattern';
+import { IObjectPattern } from '../interfaces';
 import Context from '../context';
 
 export default class AliasNode extends AlphaNode {
 	protected alias: string;
-	constructor(constraint: ObjectPattern) {
+	constructor(constraint: IObjectPattern) {
 		super(constraint as any);
 		this.alias = constraint.alias;
 	}

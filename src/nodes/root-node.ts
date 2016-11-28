@@ -1,3 +1,5 @@
+import { IPattern, IObjectPattern, IFromPattern, ICompositePattern } from '../interfaces';
+import { enumPatternType, composite_pattern, initial_fact_pattern } from '../pattern';
 import WorkingMemory from '../working-memory';
 import AgendaTree from '../agenda';
 import Fact from '../facts/fact';
@@ -7,16 +9,6 @@ import Constraint from '../constraint/constraint';
 import ReferenceConstraint from '../constraint/reference-constraint';
 import HashConstraint from '../constraint/hash-constraint';
 import ObjectConstraint from '../constraint/object-constraint';
-
-import Pattern from '../pattern/pattern';
-import ObjectPattern from '../pattern/object-pattern';
-import InitialFactPattern from '../pattern/initial-fact-pattern';
-import CompositePattern from '../pattern/composite-pattern';
-import NotPattern from '../pattern/not-pattern';
-import FromExistsPattern from '../pattern/from-exists-pattern';
-import ExistsPattern from '../pattern/exists-pattern';
-import FromNotPattern from '../pattern/from-not-pattern';
-import FromPattern from '../pattern/from-pattern';
 
 import Node from './node';
 import NotNode from './not-node';
@@ -61,7 +53,7 @@ import EqualityNode from './equality-node';
 //     TypeNode = require("./typeNode"),
 //     PropertyNode = require("./propertyNode");
 
-function hasRefernceConstraints(pattern: Pattern) {
+function hasRefernceConstraints(pattern: IObjectPattern) {
 	return (pattern.constraints || []).some((c) => {
 		return c instanceof ReferenceConstraint;
 	});
@@ -177,7 +169,7 @@ export default class RootNode {
 		return this.__checkEqual(new PropertyNode(constraint)).addRule(rule);
 	}
 
-	__createAliasNode(rule: Rule, pattern: ObjectPattern) {
+	__createAliasNode(rule: Rule, pattern: IObjectPattern) {
 		// return this.__checkEqual(new AliasNode(pattern)).addRule(rule);
 		return this.__checkEqual(new AliasNode(pattern)).addRule(rule);
 	}
@@ -186,19 +178,20 @@ export default class RootNode {
 		return (side === "left" ? new LeftAdapterNode() : new RightAdapterNode()).addRule(rule);
 	}
 
-	__createJoinNode(rule: Rule, pattern: CompositePattern, outNode: Node, side: Side) {
+	__createJoinNode(rule: Rule, pattern: ICompositePattern, outNode: Node, side: Side) {
 		let joinNode: Node;
-		if (pattern.rightPattern instanceof NotPattern) {
+		const right_type = pattern.rightPattern.type;
+		if (right_type === enumPatternType.not) {
 			joinNode = new NotNode();
-		} else if (pattern.rightPattern instanceof FromExistsPattern) {
-			joinNode = new ExistsFromNode(pattern.rightPattern as FromExistsPattern, this.workingMemory);
-		} else if (pattern.rightPattern instanceof ExistsPattern) {
+		} else if (right_type === enumPatternType.from_exists) {
+			joinNode = new ExistsFromNode(pattern.rightPattern as IFromPattern, this.workingMemory);
+		} else if (right_type === enumPatternType.exists) {
 			joinNode = new ExistsNode();
-		} else if (pattern.rightPattern instanceof FromNotPattern) {
-			joinNode = new FromNotNode(pattern.rightPattern as FromNotPattern, this.workingMemory);
-		} else if (pattern.rightPattern instanceof FromPattern) {
-			joinNode = new FromNode(pattern.rightPattern as FromPattern, this.workingMemory);
-		} else if (pattern instanceof CompositePattern && !hasRefernceConstraints(pattern.leftPattern) && !hasRefernceConstraints(pattern.rightPattern)) {
+		} else if (right_type === enumPatternType.from_not) {
+			joinNode = new FromNotNode(pattern.rightPattern as IFromPattern, this.workingMemory);
+		} else if (right_type === enumPatternType.from) {
+			joinNode = new FromNode(pattern.rightPattern as IFromPattern, this.workingMemory);
+		} else if (pattern.type === enumPatternType.composite && !hasRefernceConstraints(pattern.leftPattern as IObjectPattern) && !hasRefernceConstraints(pattern.rightPattern as IObjectPattern)) {
 			const bn = joinNode = new BetaNode();
 			this.joinNodes.push(bn);
 		} else {
@@ -216,19 +209,18 @@ export default class RootNode {
 		return joinNode.addRule(rule);
 	}
 
-	__addToNetwork(rule: Rule, pattern: Pattern, outNode: Node, side: Side = 'left') {
-		if (pattern instanceof ObjectPattern) {
-			if (!(pattern instanceof InitialFactPattern) && side === "left") {
-				this.__createBetaNode(rule, new CompositePattern(new InitialFactPattern(), pattern), outNode, side);
-			} else {
-				this.__createAlphaNode(rule, pattern, outNode, side);
-			}
-		} else if (pattern instanceof CompositePattern) {
-			this.__createBetaNode(rule, pattern, outNode, side);
+	__addToNetwork(rule: Rule, pattern: IPattern, outNode: Node, side: Side = 'left') {
+		const type = pattern.type;
+		if (type === enumPatternType.composite) {
+			this.__createBetaNode(rule, pattern as ICompositePattern, outNode, side);
+		} else if (type !== enumPatternType.initial_fact && side === 'left') {
+			this.__createBetaNode(rule, composite_pattern(initial_fact_pattern(), pattern), outNode, side);
+		} else {
+			this.__createAlphaNode(rule, pattern as IObjectPattern, outNode, side);
 		}
 	}
 
-	__createBetaNode(rule: Rule, pattern: CompositePattern, outNode: Node, side: Side) {
+	__createBetaNode(rule: Rule, pattern: ICompositePattern, outNode: Node, side: Side) {
 		const joinNode = this.__createJoinNode(rule, pattern, outNode, side);
 		this.__addToNetwork(rule, pattern.rightPattern, joinNode, "right");
 		this.__addToNetwork(rule, pattern.leftPattern, joinNode, "left");
@@ -237,8 +229,9 @@ export default class RootNode {
 	}
 
 
-	__createAlphaNode(rule: Rule, pattern: ObjectPattern, outNode: Node, side: Side) {
-		if (!(pattern instanceof FromPattern)) {
+	__createAlphaNode(rule: Rule, pattern: IObjectPattern, outNode: Node, side: Side) {
+		const type = pattern.type;
+		if (type !== enumPatternType.from && type !== enumPatternType.from_exists && type !== enumPatternType.from_not) {
 			const constraints = pattern.constraints;
 			const typeNode = this.__createTypeNode(rule, constraints[0]);
 			const aliasNode = this.__createAliasNode(rule, pattern);
@@ -255,7 +248,7 @@ export default class RootNode {
 					(outNode as JoinNode).constraint.addConstraint(constraint as any as ReferenceConstraint);	// todo: wrong type
 					return;
 				} else {
-					node = this.__createEqualityNode(rule, constraint);
+					node = this.__createEqualityNode(rule, constraint as ObjectConstraint);
 				}
 				parentNode.addOutNode(node, pattern);
 				node.addParentNode(parentNode);

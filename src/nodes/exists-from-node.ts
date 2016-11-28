@@ -2,13 +2,13 @@ import FromNotNode from './from-not-node';
 import Context from '../context';
 import isArray from 'lodash-ts/isArray';
 import WorkingMemory from '../working-memory';
-import FromExistsPattern from '../pattern/from-exists-pattern';
+import { IFromPattern } from '../interfaces';
 
 export default class ExistsFromNode extends FromNotNode {
 
 	nodeType = "ExistsFromNode";
 
-	constructor(pattern: FromExistsPattern, wm: WorkingMemory) {
+	constructor(pattern: IFromPattern, wm: WorkingMemory) {
 		super(pattern, wm)
 	}
 

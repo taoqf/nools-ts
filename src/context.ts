@@ -2,9 +2,9 @@ import isBoolean from 'lodash-ts/isBoolean';
 import Fact from './facts/fact';
 import LinkedList from './linked-list';
 import TerminalNode from './nodes/terminal-node';
-import Pattern from './pattern/pattern';
+import { IPattern } from './interfaces';
 
-function createContextHash(paths: Pattern[], hashCode: string) {
+function createContextHash(paths: IPattern[], hashCode: string) {
 	return paths.map((path) => {
 		return path.id;
 	}).reduce((previousValue, currentValue) => {
@@ -65,7 +65,7 @@ export default class Context {
 	aliases: string[] = null;
 	fact: Fact = null;
 	hashCode: string = null;
-	paths: Pattern[] = null;
+	paths: IPattern[] = null;
 	pathsHash: string = null;
 	rightMatches: { [id: string]: Context };
 	leftMatches: { [id: string]: Context };
@@ -75,7 +75,7 @@ export default class Context {
 	blocked = false;
 	rule: TerminalNode;
 
-	constructor(fact: Fact, paths?: Pattern[], mr?: Match) {
+	constructor(fact: Fact, paths?: IPattern[], mr?: Match) {
 		this.fact = fact;
 		if (mr) {
 			this.match = mr;
@@ -116,7 +116,7 @@ export default class Context {
 		return this;
 	}
 
-	clone(fact?: Fact, paths?: Pattern[], match?: Match) {
+	clone(fact?: Fact, paths?: IPattern[], match?: Match) {
 		// return new Context(fact || this.fact, paths || this.paths, match || this.match);
 		return new Context(fact || this.fact, paths, match || this.match);
 	}

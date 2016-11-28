@@ -1,5 +1,10 @@
-import {IRuleContext, IContext} from '../interfaces';
-import {findNextTokenIndex} from './util';
+import isString from 'lodash-ts/isString';
+import uuid from 'lodash-ts/uuid';
+import { IRuleContext, IContext, ICompileOptions } from '../interfaces';
+import { findNextTokenIndex } from './util';
+import { compile as __compile } from '../compile/index';
+import tokens from './tokens';
+import FlowContainer from '../flow-container';
 
 export default function parse(src: string, keywords: Map<string, (orig: string, context: IContext | IRuleContext) => string>, context: IContext | IRuleContext) {
 	const orig = src;
@@ -30,4 +35,15 @@ export default function parse(src: string, keywords: Map<string, (orig: string, 
 		}
 	}
 	return context;
+}
+
+export function parse_rules(src: string, options: ICompileOptions) {
+	if (!isString(src)) {
+		return null;
+	}
+	options.name = options.name || uuid();
+	const context = { define: [], rules: [], scope: [] } as IContext;
+	parse(src, tokens, context);
+	return __compile(context, options);
+
 }

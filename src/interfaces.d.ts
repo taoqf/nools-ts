@@ -99,3 +99,31 @@ export interface IBucket {
 	counter: number;
 	recency: number;
 }
+
+import { enumPatternType } from './pattern';
+
+export interface IPattern {
+	id: number;
+	type: enumPatternType;
+}
+
+import Constraint from './constraint/constraint';
+
+export interface IObjectPattern extends IPattern {
+	id: number;
+	class_type: any;
+	alias: string;
+	pattern: string;
+	constraints: Constraint[];
+}
+import FromConstraint from './constraint/from-constraint';
+
+export interface IFromPattern extends IObjectPattern {
+	from: FromConstraint;
+}
+
+export interface ICompositePattern extends IPattern {
+	id: number;
+	leftPattern: IPattern;
+	rightPattern: IPattern;
+}

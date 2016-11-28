@@ -1,5 +1,5 @@
 import JoinNode from './join-node';
-import FromPattern from '../pattern/from-pattern';
+import { IFromPattern } from '../interfaces';
 import Context from '../context';
 import WorkingMemory from '../working-memory';
 import Constraint from '../constraint/constraint';
@@ -18,7 +18,7 @@ const DEFAULT_MATCH = {
 export default class FromNode extends JoinNode {
 	nodeType = "FromNode";
 	workingMemory: WorkingMemory;
-	pattern: FromPattern;
+	pattern: IFromPattern;
 	alias: string;
 	type: (it: any) => boolean;
 	from: (fact: any, fh?: any) => any;
@@ -26,7 +26,7 @@ export default class FromNode extends JoinNode {
 	fromMemory = {} as { [id: number]: { [hashCode: string]: [Context, Context] }; };
 	protected __equalityConstraints: { (factHanle1: Map<string, Fact>, factHandle2: Map<string, Fact>): boolean; }[] = [];
 	protected __variables: any[];
-	constructor(pattern: FromPattern, wm: WorkingMemory) {
+	constructor(pattern: IFromPattern, wm: WorkingMemory) {
 		super();
 		this.workingMemory = wm;
 		this.pattern = pattern;
