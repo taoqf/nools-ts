@@ -71,7 +71,6 @@ export function getParamList(str: string) {
 // };
 
 export function findNextTokenIndex(str: string, startIndex = 0, endIndex?: number) {
-	startIndex = startIndex || 0;
 	endIndex = endIndex || str.length;
 	let ret = -1;
 	const l = str.length;
