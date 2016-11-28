@@ -16,12 +16,8 @@ export interface ICondition extends Array<any> {
 	};
 }
 
-export interface IOrConstraint extends Array<string | ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint> {
+export interface IOrConstraint extends Array<string | ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint> {
 	[0]: 'or';
-}
-
-export interface ITrueConstraint extends Array<string> {
-	[0]: 'true';	// true
 }
 
 export interface ISimpleConstraint extends Array<string> {
@@ -58,7 +54,7 @@ export interface IRuleContextOptions {
 
 export interface IRuleContext {
 	action: string;
-	constraints: (ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint)[];
+	constraints: (ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint)[];
 	name: string;
 	options: IRuleContextOptions;
 }

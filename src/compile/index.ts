@@ -1,4 +1,4 @@
-import { IContext, IRuleContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, ICompileOptions, ICondition } from '../interfaces';
+import { IContext, IRuleContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ICompileOptions, ICondition } from '../interfaces';
 import FlowContainer from '../flow-container';
 import { createDefined, createFunction } from './common';
 
@@ -45,7 +45,7 @@ const __resolveRule = function (rule: INomalConstraint | IFromstraint, defined: 
 	return [identifiers, condition];
 }
 
-function parseConditions(constraint: ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint, defined: Map<string, any>, name: string): [string[], any[]] {
+function parseConditions(constraint: ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint, defined: Map<string, any>, name: string): [string[], any[]] {
 	if (constraint.length) {
 		let conditions: any[][] = [];
 		let identifiers: string[] = [];
@@ -68,7 +68,7 @@ function parseConditions(constraint: ISimpleConstraint | INomalConstraint | INot
 			let conds: any[] = [r0];
 			constraint.shift();
 			(constraint as IOrConstraint).forEach((cond) => {
-				const [i, c] = parseConditions(cond as ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint, defined, name);
+				const [i, c] = parseConditions(cond as ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint, defined, name);
 				conds = conds.concat(c);
 				identifiers = identifiers.concat(i as string[]);
 			});

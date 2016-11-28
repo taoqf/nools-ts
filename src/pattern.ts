@@ -8,7 +8,7 @@ import flattenDeep from 'lodash-ts/flattenDeep';
 // import isBoolean from 'lodash-ts/isBoolean';
 // import isArray from 'lodash-ts/isArray';
 import mixin from 'lodash-ts/mixin';
-import { IContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, ICondition, IPatternOptions, IPattern, IObjectPattern, IFromPattern, ICompositePattern, INotPattern, IExistsPattern, IFromNotPattern, IFromExistsPattern, IInitialFactPattern } from './interfaces';
+import { IContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ICondition, IPatternOptions, IPattern, IObjectPattern, IFromPattern, ICompositePattern, INotPattern, IExistsPattern, IFromNotPattern, IFromExistsPattern, IInitialFactPattern } from './interfaces';
 import { getIdentifiers } from './constraint-matcher';
 import Constraint from './constraint/constraint';
 import ObjectConstraint from './constraint/object-constraint';

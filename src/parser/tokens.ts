@@ -1,6 +1,6 @@
 import * as utils from './util';
 import parser from './parser';
-import { ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, IContext, IRuleContext } from '../interfaces';
+import { ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, IContext, IRuleContext } from '../interfaces';
 
 const predicates = ["not", "or", "exists"];
 const predicateRegExp = new RegExp("^(" + predicates.join("|") + ") *\\((.*)\\)$", "m");
@@ -47,12 +47,12 @@ const ruleRegExp = /^(\$?\w+) *: *(\w+)(.*)/;
 const constraintRegExp = /(\{ *(?:["']?\$?\w+["']?\s*:\s*["']?\$?\w+["']? *(?:, *["']?\$?\w+["']?\s*:\s*["']?\$?\w+["']?)*)+ *\})/;
 const fromRegExp = /(\bfrom\s+.*)/;
 function parseRules(str: string) {
-	const constraints: (ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint)[] = [];
+	const constraints: (ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint)[] = [];
 	const ruleLines = str.split(";"), l = ruleLines.length;
 	let ruleLine: string;
 	for (let i = 0; i < l && (ruleLine = ruleLines[i].replace(/^\s*|\s*$/g, "").replace(/\n/g, "")); i++) {
 		if (!isWhiteSpace(ruleLine)) {
-			let constraint = [] as ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint | ITrueConstraint;
+			let constraint = [] as ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint;
 			if (predicateRegExp.test(ruleLine)) {	// "not", "or", "exists"
 				const m = ruleLine.match(predicateRegExp);
 				const pred = m[1].replace(/^\s*|\s*$/g, "");
