@@ -122,6 +122,21 @@ export interface IFromPattern extends IObjectPattern {
 	from: FromConstraint;
 }
 
+export interface IExistsPattern extends IObjectPattern {
+}
+
+export interface IFromExistsPattern extends IFromPattern {
+}
+
+export interface IFromNotPattern extends IFromPattern {
+}
+
+export interface INotPattern extends IObjectPattern {
+}
+
+export interface IInitialFactPattern extends IObjectPattern {
+}
+
 export interface ICompositePattern extends IPattern {
 	id: number;
 	leftPattern: IPattern;

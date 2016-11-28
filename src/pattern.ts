@@ -8,7 +8,7 @@ import flattenDeep from 'lodash-ts/flattenDeep';
 // import isBoolean from 'lodash-ts/isBoolean';
 // import isArray from 'lodash-ts/isArray';
 import mixin from 'lodash-ts/mixin';
-import { IContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, ICondition, IPatternOptions, IPattern, IObjectPattern, IFromPattern, ICompositePattern } from './interfaces';
+import { IContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ITrueConstraint, ICondition, IPatternOptions, IPattern, IObjectPattern, IFromPattern, ICompositePattern, INotPattern, IExistsPattern, IFromNotPattern, IFromExistsPattern, IInitialFactPattern } from './interfaces';
 import { getIdentifiers } from './constraint-matcher';
 import Constraint from './constraint/constraint';
 import ObjectConstraint from './constraint/object-constraint';
@@ -164,7 +164,7 @@ function toConstraints(constraint: ICondition, options: {
 }
 
 let id = 0;
-function object_pattern(type: enumPatternType, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions): IObjectPattern {
+function _object_pattern(type: enumPatternType, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions): IObjectPattern {
 	// this.conditions = conditions;
 	let constraints = [new ObjectConstraint(class_type)];
 	const constrnts = toConstraints(conditions, mixin({ alias: alias }, options));
@@ -193,11 +193,15 @@ function object_pattern(type: enumPatternType, class_type: any, alias: string, c
 }
 
 export function initial_fact_pattern() {
-	return object_pattern(enumPatternType.initial_fact, InitialFact, "__i__", [] as any, {});
+	return _object_pattern(enumPatternType.initial_fact, InitialFact, "__i__", [] as any, {});
 }
 
-function from_pattern(type: enumPatternType, class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions): IFromPattern {
-	return mixin(object_pattern(type, class_type, alias, conditions, store, options), {
+function object_pattern(class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
+	return _object_pattern(enumPatternType.object, class_type, alias, conditions, store, options);
+}
+
+function _from_pattern(type: enumPatternType, class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions): IFromPattern {
+	return mixin(_object_pattern(type, class_type, alias, conditions, store, options), {
 		from: new FromConstraint(from, options)
 	});
 }
@@ -316,13 +320,20 @@ function parseConstraint(constraint: string) {
 	return baseParseConstraint(constraint);
 }
 
+function from_not_pattern(class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions) {
+	return _from_pattern(enumPatternType.from_not, class_type, alias, conditions, store, from, options) as IFromNotPattern;
+}
+
+function not_pattern(class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
+	return _object_pattern(enumPatternType.not, class_type, alias, conditions, store, options) as INotPattern;
+}
+
 function parsePattern_not(condition: ICondition): [IPattern] {
 	condition.shift();
 	condition = normailizeConstraint(condition);
 	if (condition[4] && condition[4].from) {
 		return [
-			from_pattern(
-				enumPatternType.from_not,
+			from_not_pattern(
 				getParamType(condition[0], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
@@ -333,8 +344,7 @@ function parsePattern_not(condition: ICondition): [IPattern] {
 		];
 	} else {
 		return [
-			object_pattern(
-				enumPatternType.not,
+			not_pattern(
 				getParamType(condition[0], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
@@ -343,6 +353,14 @@ function parsePattern_not(condition: ICondition): [IPattern] {
 			)
 		];
 	}
+}
+
+function from_exists_pattern(class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions) {
+	return _from_pattern(enumPatternType.from_exists, class_type, alias, conditions, store, from, options) as IFromExistsPattern;
+}
+
+function exists_pattern(class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
+	return _object_pattern(enumPatternType.exists, class_type, alias, conditions, store, options) as IExistsPattern;
 }
 
 function parsePattern_exists(condition: ICondition): [IPattern] {
@@ -350,8 +368,7 @@ function parsePattern_exists(condition: ICondition): [IPattern] {
 	condition = normailizeConstraint(condition);
 	if (condition[4] && condition[4].from) {
 		return [
-			from_pattern(
-				enumPatternType.from_exists,
+			from_exists_pattern(
 				getParamType(condition[0], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
@@ -362,8 +379,7 @@ function parsePattern_exists(condition: ICondition): [IPattern] {
 		];
 	} else {
 		return [
-			object_pattern(
-				enumPatternType.exists,
+			exists_pattern(
 				getParamType(condition[0], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
@@ -374,7 +390,11 @@ function parsePattern_exists(condition: ICondition): [IPattern] {
 	}
 }
 
-function parsePattern_def(condition: ICondition): [IPattern] {
+function from_pattern(class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions) {
+	return _from_pattern(enumPatternType.from, class_type, alias, conditions, store, from, options);
+}
+
+function parsePattern_def(condition: ICondition): [IFromPattern | IObjectPattern] {
 	if (typeof condition === 'function') {
 		return [condition] as any;
 	}
@@ -382,7 +402,6 @@ function parsePattern_def(condition: ICondition): [IPattern] {
 	if (condition[4] && condition[4].from) {
 		return [
 			from_pattern(
-				enumPatternType.from,
 				getParamType(condition[0], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
@@ -394,7 +413,6 @@ function parsePattern_def(condition: ICondition): [IPattern] {
 	} else {
 		return [
 			object_pattern(
-				enumPatternType.object,
 				getParamType(condition[0], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
