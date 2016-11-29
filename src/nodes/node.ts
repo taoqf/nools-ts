@@ -1,16 +1,16 @@
 import Context, { Match } from '../context';
-import Rule from '../rule';
+import { IRule } from '../rule';
 import intersection from 'lodash-ts/intersection';
 import { IObjectPattern } from '../pattern';
 
 let count = 0;
 export default class Node {
 	protected nodes = new Map<Node, IObjectPattern[]>();
-	protected rules: Rule[] = [];
+	protected rules: IRule[] = [];
 	protected parentNodes: Node[] = [];
 	protected __count = count++;
-	protected __rule__: Rule;
-	set_rule(rule: Rule) {
+	protected __rule__: IRule;
+	set_rule(rule: IRule) {
 		this.__rule__ = rule;
 	}
 
@@ -18,7 +18,7 @@ export default class Node {
 		return this.__rule__;
 	}
 
-	addRule(rule: Rule) {
+	addRule(rule: IRule) {
 		if (this.rules.indexOf(rule) === -1) {
 			this.rules.push(rule);
 		}

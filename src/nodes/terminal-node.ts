@@ -1,16 +1,16 @@
 import Node from './node';
-import {IBucket} from '../interfaces';
-import Rule from '../rule';
+import { IBucket } from '../interfaces';
+import { IRule } from '../rule';
 import AgendaTree from '../agenda';
 import Context from '../context';
 
 export default class TerminalNode extends Node {
-	public rule: Rule;
+	public rule: IRule;
 	protected index: number;
 	public name: string;
 	protected agenda: AgendaTree;
 	protected bucket: IBucket;
-	constructor(bucket: IBucket, index: number, rule: Rule, agenda: AgendaTree) {
+	constructor(bucket: IBucket, index: number, rule: IRule, agenda: AgendaTree) {
 		super();
 		this.rule = rule;
 		this.index = index;

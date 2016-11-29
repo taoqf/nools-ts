@@ -2,14 +2,14 @@ import instanceOf from 'lodash-ts/isinstanceof';
 import conflictResolution from './conflict';
 import Flow from './flow';
 import { IInsert, IRuleContextOptions, ICondition } from './interfaces';
-import Rule, { createRule } from './rule';
+import { IRule, createRule } from './rule';
 import InitialFact from './facts/initial';
 
 const flows = new Map<string, FlowContainer>();
 
 export default class FlowContainer {
 	private name: string;
-	private __rules: Rule[] = [];
+	private __rules: IRule[] = [];
 	private __defined = new Map<string, any>();
 	private conflictResolutionStrategy: (a: IInsert, b: IInsert) => number;
 	constructor(name: string) {
@@ -26,7 +26,7 @@ export default class FlowContainer {
 		}
 	}
 
-	addRules(rules: Rule[]) {
+	addRules(rules: IRule[]) {
 		this.__rules = this.__rules.concat(rules);
 	}
 

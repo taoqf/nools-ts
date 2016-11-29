@@ -2,7 +2,7 @@ import { IPattern, IObjectPattern, IFromPattern, ICompositePattern, composite_pa
 import WorkingMemory from '../working-memory';
 import AgendaTree from '../agenda';
 import Fact from '../facts/fact';
-import Rule from '../rule';
+import { IRule } from '../rule';
 
 import { IConstraint, IObjectConstraint, IHashConstraint, IReferenceConstraint, is_instance_of_reference_constraint, is_instance_of_hash } from '../constraint';
 
@@ -74,7 +74,7 @@ export default class RootNode {
 		this.agendaTree = agendaTree;
 		this.workingMemory = wm;
 	}
-	assertRule(rule: Rule) {
+	assertRule(rule: IRule) {
 		const terminalNode = new TerminalNode(this.bucket, this.__ruleCount++, rule, this.agendaTree);
 		this.__addToNetwork(rule, rule.pattern, terminalNode);
 		this.__mergeJoinNodes();
@@ -146,7 +146,7 @@ export default class RootNode {
 		}
 	}
 
-	__createTypeNode(rule: Rule, constraint: IConstraint) {
+	__createTypeNode(rule: IRule, constraint: IConstraint) {
 		const ret = new TypeNode(constraint);
 		const typeNodes = this.typeNodes;
 		let index = -1;
@@ -162,24 +162,24 @@ export default class RootNode {
 		}
 	}
 
-	__createEqualityNode(rule: Rule, constraint: IObjectConstraint) {
+	__createEqualityNode(rule: IRule, constraint: IObjectConstraint) {
 		return this.__checkEqual(new EqualityNode(constraint)).addRule(rule);
 	}
 
-	__createPropertyNode(rule: Rule, constraint: IHashConstraint) {
+	__createPropertyNode(rule: IRule, constraint: IHashConstraint) {
 		return this.__checkEqual(new PropertyNode(constraint)).addRule(rule);
 	}
 
-	__createAliasNode(rule: Rule, pattern: IObjectPattern) {
+	__createAliasNode(rule: IRule, pattern: IObjectPattern) {
 		// return this.__checkEqual(new AliasNode(pattern)).addRule(rule);
 		return this.__checkEqual(new AliasNode(pattern)).addRule(rule);
 	}
 
-	__createAdapterNode(rule: Rule, side: Side = 'right') {
+	__createAdapterNode(rule: IRule, side: Side = 'right') {
 		return (side === "left" ? new LeftAdapterNode() : new RightAdapterNode()).addRule(rule);
 	}
 
-	__createJoinNode(rule: Rule, pattern: ICompositePattern, outNode: Node, side: Side) {
+	__createJoinNode(rule: IRule, pattern: ICompositePattern, outNode: Node, side: Side) {
 		let joinNode: Node;
 		const right_type = pattern.rightPattern.type;
 		if (right_type === 'not') {
@@ -210,7 +210,7 @@ export default class RootNode {
 		return joinNode.addRule(rule);
 	}
 
-	__addToNetwork(rule: Rule, pattern: IPattern, outNode: Node, side: Side = 'left') {
+	__addToNetwork(rule: IRule, pattern: IPattern, outNode: Node, side: Side = 'left') {
 		const type = pattern.type;
 		if (type === 'composite') {
 			this.__createBetaNode(rule, pattern as ICompositePattern, outNode, side);
@@ -221,7 +221,7 @@ export default class RootNode {
 		}
 	}
 
-	__createBetaNode(rule: Rule, pattern: ICompositePattern, outNode: Node, side: Side) {
+	__createBetaNode(rule: IRule, pattern: ICompositePattern, outNode: Node, side: Side) {
 		const joinNode = this.__createJoinNode(rule, pattern, outNode, side);
 		this.__addToNetwork(rule, pattern.rightPattern, joinNode, "right");
 		this.__addToNetwork(rule, pattern.leftPattern, joinNode, "left");
@@ -230,7 +230,7 @@ export default class RootNode {
 	}
 
 
-	__createAlphaNode(rule: Rule, pattern: IObjectPattern, outNode: Node, side: Side) {
+	__createAlphaNode(rule: IRule, pattern: IObjectPattern, outNode: Node, side: Side) {
 		const type = pattern.type;
 		if (type !== 'from' && type !== 'from_exists' && type !== 'from_not') {
 			const constraints = pattern.constraints;

@@ -5,35 +5,36 @@ import Flow from './flow';
 import { Match } from './context';
 import pattern, { IPattern, composite_pattern } from './pattern';
 
-export default class Rule {
-	public name: string;
-	public agendaGroup: string;
-	public priority: number;
-	public autoFocus: boolean;
-	private cb: Function;
-	public pattern: IPattern;
-	constructor(name: string, options: {
-		agendaGroup?: string;
-		autoFocus?: boolean;
-		priority?: number;
-		salience?: number;
-	}, pattern: IPattern, cb: Function) {
-		this.name = name;
-		this.pattern = pattern;
-		this.cb = cb;
-		if (options.agendaGroup) {
-			this.agendaGroup = options.agendaGroup;
-			this.autoFocus = isBoolean(options.autoFocus) ? options.autoFocus : false;
-		}
-		this.priority = options.priority || options.salience || 0;
-	}
+export interface IRule {
+	name: string;
+	agendaGroup: string;
+	priority: number;
+	autoFocus: boolean;
+	cb: Function;
+	pattern: IPattern;
+	fire(flow: Flow, match: Match): Promise<{}>;
+}
 
-	fire(flow: Flow, match: Match) {
-		const cb = this.cb;
-		return new Promise((resolve) => {
-			resolve(cb.call(flow, match.factHash, flow));
-		});
+function _create_rule(name: string, options: IRuleContextOptions, pattern: IPattern, cb: Function) {
+	let agendaGroup: string = null;
+	let autoFocus = false;
+	if (options.agendaGroup) {
+		agendaGroup = options.agendaGroup;
+		autoFocus = isBoolean(options.autoFocus) ? options.autoFocus : false;
 	}
+	return {
+		name: name,
+		pattern: pattern,
+		cb: cb,
+		priority: options.priority || options.salience || 0,
+		agendaGroup: agendaGroup,
+		autoFocus: autoFocus,
+		fire(flow: Flow, match: Match) {
+			return new Promise((resolve) => {
+				resolve(cb.call(flow, match.factHash, flow));
+			});
+		}
+	};
 }
 
 export function createRule(name: string, options: IRuleContextOptions, conditions: ICondition[], cb: Function) {
@@ -44,7 +45,7 @@ export function createRule(name: string, options: IRuleContextOptions, condition
 		conditions = conditions[0];
 		isRules = false;
 	}
-	let rules: Rule[] = [];
+	let rules: IRule[] = [];
 	const scope = options.scope || new Map<string, any>();
 	(conditions as any).scope = scope;
 	if (isRules) {
@@ -84,11 +85,11 @@ export function createRule(name: string, options: IRuleContextOptions, condition
 			}).reduce((compPat, patt) => {
 				return composite_pattern(compPat, patt);
 			}, patterns[0]);
-			return new Rule(name, options, compPat, cb);
+			return _create_rule(name, options, compPat, cb);
 		});
 	} else {
 		rules = pattern(conditions as any).map((cond) => {
-			return new Rule(name, options, cond, cb);
+			return _create_rule(name, options, cond, cb);
 		});
 	}
 	return rules;

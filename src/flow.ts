@@ -1,9 +1,9 @@
-import {IInsert} from './interfaces';
+import { IInsert } from './interfaces';
 import WorkingMemory from './working-memory';
 import AgendaTree from './agenda';
 import EventEmitter from './EventEmitter';
 import RootNode from './nodes/root-node';
-import Rule from './rule';
+import { IRule } from './rule';
 import ExecutionStrategy from './execution-strategy';
 
 export default class Flow extends EventEmitter {
@@ -87,7 +87,7 @@ export default class Flow extends EventEmitter {
 		return this.rootNode.containsRule(name);
 	}
 
-	rule(rule: Rule) {
+	rule(rule: IRule) {
 		this.rootNode.assertRule(rule);
 	}
 

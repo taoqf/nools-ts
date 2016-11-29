@@ -47,6 +47,7 @@ export interface IFromstraint extends Array<string> {
 
 export interface IRuleContextOptions {
 	priority?: number;
+	salience?: number;
 	agendaGroup?: string;
 	autoFocus?: boolean;
 	scope?: Map<string, any>;
@@ -78,11 +79,11 @@ export interface IPatternOptions {
 	alias?: string;
 }
 
-import Rule from './rule';
+import { IRule } from './rule';
 import { Match } from './context';
 
 export interface IInsert {
-	rule: Rule;
+	rule: IRule;
 	hashCode: string;
 	index: number;
 	name: string;
