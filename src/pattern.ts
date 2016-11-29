@@ -8,26 +8,11 @@ import flattenDeep from 'lodash-ts/flattenDeep';
 // import isBoolean from 'lodash-ts/isBoolean';
 // import isArray from 'lodash-ts/isArray';
 import mixin from 'lodash-ts/mixin';
-import { IContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ICondition, IPatternOptions, IPattern, IObjectPattern, IFromPattern, ICompositePattern, INotPattern, IExistsPattern, IFromNotPattern, IFromExistsPattern, IInitialFactPattern } from './interfaces';
+import { IContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ICondition, IPatternOptions } from './interfaces';
 import { getIdentifiers } from './constraint-matcher';
-import Constraint from './constraint/constraint';
-import ObjectConstraint from './constraint/object-constraint';
-import ReferenceEqualityConstraint from './constraint/reference-equality-constraint';
-import EqualityConstraint from './constraint/equality-constraint';
-import CustomConstraint from './constraint/custom-constraint';
-import FromConstraint from './constraint/from-constraint';
-import ReferenceInequalityConstraint from './constraint/reference-inequality-constraint';
-import InequalityConstraint from './constraint/inequality-constraint';
-import ComparisonConstraint from './constraint/comparison-constraint';
-import ReferenceGTConstraint from './constraint/reference-gt-constraint';
-import ReferenceGTEConstraint from './constraint/reference-gte-constraint';
-import ReferenceLTConstraint from './constraint/reference-lt-constraint';
-import ReferenceLTEConstraint from './constraint/reference-lte-constraint';
-import ReferenceConstraint from './constraint/reference-constraint';
-import TrueConstraint from './constraint/true-constraint';
-import HashConstraint from './constraint/hash-constraint';
 import InitialFact from './facts/initial';
 import baseParseConstraint from './parser/constraint';
+import { IConstraint, create_true_constraint, create_custom_constraint, create_equality_constraint, create_inequality_constraint, create_comparison_constraint, create_object_constraint, create_hash_constraint, create_from_constraint, create_reference_constraint, create_reference_equality_constraint, create_reference_inequality_constraint, create_reference_gt_constraint, create_reference_lt_constraint, create_reference_gte_constraint, create_reference_lte_constraint } from './constraint';
 
 export enum enumPatternType {
 	composite,
@@ -38,6 +23,45 @@ export enum enumPatternType {
 	from_not,
 	initial_fact,
 	not
+}
+
+export interface IPattern {
+	id: number;
+	type: enumPatternType;
+}
+
+export interface IObjectPattern extends IPattern {
+	id: number;
+	class_type: any;
+	alias: string;
+	pattern: string;
+	constraints: IConstraint[];
+}
+import { IFromConstraint } from './constraint';
+
+export interface IFromPattern extends IObjectPattern {
+	from: IFromConstraint;
+}
+
+export interface IExistsPattern extends IObjectPattern {
+}
+
+export interface IFromExistsPattern extends IFromPattern {
+}
+
+export interface IFromNotPattern extends IFromPattern {
+}
+
+export interface INotPattern extends IObjectPattern {
+}
+
+export interface IInitialFactPattern extends IObjectPattern {
+}
+
+export interface ICompositePattern extends IPattern {
+	id: number;
+	leftPattern: IPattern;
+	rightPattern: IPattern;
 }
 
 const definedFuncs = {
@@ -98,12 +122,12 @@ const definedFuncs = {
 function toConstraints(constraint: ICondition, options: {
 	alias: string;
 } & IPatternOptions) {
+	const alias = options.alias;
 	if (typeof constraint === 'function') {
-		return [new CustomConstraint(constraint as any, options)];
+		return [create_custom_constraint(alias, constraint as any)];
 	}
 	//constraint.split("&&")
 	let ret: any[] = [];
-	const alias = options.alias;
 	const scope = options.scope || {};
 	const rule2 = constraint[2];
 
@@ -133,31 +157,31 @@ function toConstraints(constraint: ICondition, options: {
 		});
 		switch (rule2) {
 			case "eq":
-				ret.push(isReference ? new ReferenceEqualityConstraint(constraint, options) : new EqualityConstraint(constraint, options));
+				ret.push(isReference ? create_reference_equality_constraint(alias, constraint, options) : create_equality_constraint(alias, constraint, options));
 				break;
 			case "seq":
-				ret.push(isReference ? new ReferenceEqualityConstraint(constraint, options) : new EqualityConstraint(constraint, options));
+				ret.push(isReference ? create_reference_equality_constraint(alias, constraint, options) : create_equality_constraint(alias, constraint, options));
 				break;
 			case "neq":
-				ret.push(isReference ? new ReferenceInequalityConstraint(constraint, options) : new InequalityConstraint(constraint, options));
+				ret.push(isReference ? create_reference_inequality_constraint(alias, constraint, options) : create_inequality_constraint(alias, constraint, options));
 				break;
 			case "sneq":
-				ret.push(isReference ? new ReferenceInequalityConstraint(constraint, options) : new InequalityConstraint(constraint, options));
+				ret.push(isReference ? create_reference_inequality_constraint(alias, constraint, options) : create_inequality_constraint(alias, constraint, options));
 				break;
 			case "gt":
-				ret.push(isReference ? new ReferenceGTConstraint(constraint, options) : new ComparisonConstraint(constraint, options));
+				ret.push(isReference ? create_reference_gt_constraint(alias, constraint, options) : create_comparison_constraint(alias, constraint, options));
 				break;
 			case "gte":
-				ret.push(isReference ? new ReferenceGTEConstraint(constraint, options) : new ComparisonConstraint(constraint, options));
+				ret.push(isReference ? create_reference_gte_constraint(alias, constraint, options) : create_comparison_constraint(alias, constraint, options));
 				break;
 			case "lt":
-				ret.push(isReference ? new ReferenceLTConstraint(constraint, options) : new ComparisonConstraint(constraint, options));
+				ret.push(isReference ? create_reference_lt_constraint(alias, constraint, options) : create_comparison_constraint(alias, constraint, options));
 				break;
 			case "lte":
-				ret.push(isReference ? new ReferenceLTEConstraint(constraint, options) : new ComparisonConstraint(constraint, options));
+				ret.push(isReference ? create_reference_lte_constraint(alias, constraint, options) : create_comparison_constraint(alias, constraint, options));
 				break;
 			default:
-				ret.push(isReference ? new ReferenceConstraint(constraint, options) : new ComparisonConstraint(constraint, options));
+				ret.push(isReference ? create_reference_constraint(alias, constraint, options) : create_comparison_constraint(alias, constraint, options));
 		}
 	}
 	return ret;
@@ -166,22 +190,19 @@ function toConstraints(constraint: ICondition, options: {
 let id = 0;
 function _object_pattern(type: enumPatternType, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions): IObjectPattern {
 	// this.conditions = conditions;
-	let constraints = [new ObjectConstraint(class_type)];
+	let constraints: IConstraint[] = [create_object_constraint(alias, class_type)];
 	const constrnts = toConstraints(conditions, mixin({ alias: alias }, options));
 	if (constrnts.length) {
 		constraints = constraints.concat(constrnts);
 	} else {
-		const cnstrnt = new TrueConstraint();
+		const cnstrnt = create_true_constraint(alias);
 		constraints.push(cnstrnt);
 	}
 	if (store && !isEmpty(store)) {
-		const atm = new HashConstraint(store);
+		const atm = create_hash_constraint(alias, store);
 		constraints.push(atm);
 	}
 
-	constraints.forEach((constraint) => {
-		constraint.set_alias(alias);
-	});
 	return {
 		type: type,
 		id: ++id,
@@ -202,7 +223,7 @@ function object_pattern(class_type: any, alias: string, conditions: ICondition, 
 
 function _from_pattern(type: enumPatternType, class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions): IFromPattern {
 	return mixin(_object_pattern(type, class_type, alias, conditions, store, options), {
-		from: new FromConstraint(from, options)
+		from: create_from_constraint(alias, from, options)
 	});
 }
 

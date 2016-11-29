@@ -1,12 +1,9 @@
 import JoinNode from './join-node';
-import { IFromPattern } from '../interfaces';
+import { IFromPattern } from '../pattern';
 import Context from '../context';
 import WorkingMemory from '../working-memory';
 import Fact from '../facts/fact';
-import Constraint from '../constraint/constraint';
-import ReferenceConstraint from '../constraint/reference-constraint';
-import EqualityConstraint from '../constraint/equality-constraint';
-import HashConstraint from '../constraint/hash-constraint';
+import { IConstraint, is_instance_of_equality, is_instance_of_reference_constraint, is_instance_of_hash } from '../constraint';
 import isArray from 'lodash-ts/isArray';
 
 export default class FromNotNode extends JoinNode {
@@ -19,7 +16,7 @@ export default class FromNotNode extends JoinNode {
 	from: (fact: any, fh?: any) => any;
 	alias: string;
 	protected __equalityConstraints: { (factHanle1: Map<string, Fact>, factHandle2?: Map<string, Fact>): boolean; }[] = [];
-	constraints: Constraint[];
+	constraints: IConstraint[];
 
 	constructor(pattern: IFromPattern, workingMemory: WorkingMemory) {
 		super();
@@ -35,10 +32,11 @@ export default class FromNotNode extends JoinNode {
 		let vars: any[] = [];
 		this.constraints = this.pattern.constraints.slice(1);
 		this.constraints.forEach((c) => {
-			if (c instanceof EqualityConstraint || c instanceof ReferenceConstraint) {
+			if (is_instance_of_equality(c) || is_instance_of_reference_constraint(c)) {
 				eqConstraints.push(c.assert);
-			} else if (c instanceof HashConstraint) {
-				vars = vars.concat(c.get_vars());
+			} else if (is_instance_of_hash(c)) {
+				debugger;
+				vars = vars.concat(c.constraint);
 			}
 		});
 		this.__variables = vars;

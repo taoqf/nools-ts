@@ -1,14 +1,10 @@
-import { IPattern, IObjectPattern, IFromPattern, ICompositePattern } from '../interfaces';
-import { enumPatternType, composite_pattern, initial_fact_pattern } from '../pattern';
+import { IPattern, IObjectPattern, IFromPattern, ICompositePattern, enumPatternType, composite_pattern, initial_fact_pattern } from '../pattern';
 import WorkingMemory from '../working-memory';
 import AgendaTree from '../agenda';
 import Fact from '../facts/fact';
 import Rule from '../rule';
 
-import Constraint from '../constraint/constraint';
-import ReferenceConstraint from '../constraint/reference-constraint';
-import HashConstraint from '../constraint/hash-constraint';
-import ObjectConstraint from '../constraint/object-constraint';
+import { IConstraint, IObjectConstraint, IHashConstraint, IReferenceConstraint, is_instance_of_reference_constraint, is_instance_of_hash } from '../constraint';
 
 import Node from './node';
 import NotNode from './not-node';
@@ -55,7 +51,7 @@ import EqualityNode from './equality-node';
 
 function hasRefernceConstraints(pattern: IObjectPattern) {
 	return (pattern.constraints || []).some((c) => {
-		return c instanceof ReferenceConstraint;
+		return is_instance_of_reference_constraint(c);
 	});
 }
 
@@ -136,36 +132,41 @@ export default class RootNode {
 
 	__checkEqual<T extends AlphaNode>(node: T): T {
 		const constraints = this.constraints;
-		const nodes = constraints.filter((constraint) => {
-			return node.equal(constraint);
-		});
-		if (nodes.length > 0) {
-			return nodes[0] as T;
+		let index = -1;
+
+		if (constraints.some((constraint, idx) => {
+			const r = node.equal(constraint);
+			r && (index = idx);
+			return r;
+		})) {
+			return constraints[index] as T;
 		} else {
 			constraints.push(node);
 			return node;
 		}
 	}
 
-	__createTypeNode(rule: Rule, constraint: Constraint) {
+	__createTypeNode(rule: Rule, constraint: IConstraint) {
 		const ret = new TypeNode(constraint);
 		const typeNodes = this.typeNodes;
-		const tns = typeNodes.filter((typeNode) => {
-			return ret.equal(typeNode);
-		});
-		if (tns.length > 0) {
-			return tns[0];
+		let index = -1;
+		if (typeNodes.some((typeNode, idx) => {
+			const r = ret.equal(typeNode);
+			r && (index = idx);
+			return r;
+		})) {
+			return typeNodes[index];
 		} else {
 			typeNodes.push(ret);
 			return ret;
 		}
 	}
 
-	__createEqualityNode(rule: Rule, constraint: ObjectConstraint) {
+	__createEqualityNode(rule: Rule, constraint: IObjectConstraint) {
 		return this.__checkEqual(new EqualityNode(constraint)).addRule(rule);
 	}
 
-	__createPropertyNode(rule: Rule, constraint: HashConstraint) {
+	__createPropertyNode(rule: Rule, constraint: IHashConstraint) {
 		return this.__checkEqual(new PropertyNode(constraint)).addRule(rule);
 	}
 
@@ -242,13 +243,13 @@ export default class RootNode {
 				return idx > 0;
 			}).forEach((constraint) => {
 				let node: Node;
-				if (constraint instanceof HashConstraint) {
+				if (is_instance_of_hash(constraint)) {
 					node = this.__createPropertyNode(rule, constraint);
-				} else if (constraint instanceof ReferenceConstraint) {
-					(outNode as JoinNode).constraint.addConstraint(constraint as any as ReferenceConstraint);	// todo: wrong type
+				} else if (is_instance_of_reference_constraint(constraint)) {
+					(outNode as JoinNode).constraint.addConstraint(constraint as IReferenceConstraint);
 					return;
 				} else {
-					node = this.__createEqualityNode(rule, constraint as ObjectConstraint);
+					node = this.__createEqualityNode(rule, constraint as IObjectConstraint);
 				}
 				parentNode.addOutNode(node, pattern);
 				node.addParentNode(parentNode);

@@ -2,7 +2,7 @@ import FromNotNode from './from-not-node';
 import Context from '../context';
 import isArray from 'lodash-ts/isArray';
 import WorkingMemory from '../working-memory';
-import { IFromPattern } from '../interfaces';
+import { IFromPattern } from '../pattern';
 
 export default class ExistsFromNode extends FromNotNode {
 

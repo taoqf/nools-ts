@@ -1,7 +1,6 @@
 import Node from './node';
 import Memory from './misc/memory';
-import ReferenceEqualityConstraint from '../constraint/reference-equality-constraint';
-import ReferenceConstraint from '../constraint/reference-constraint';
+import { IReferenceConstraint, is_instance_of_reference_eq_constraint } from '../constraint';
 import Context, { Match } from '../context';
 
 const DEFUALT_CONSTRAINT = {
@@ -31,7 +30,7 @@ function normalizeIndexConstraint(index: string, indexes: string[], op: string) 
 }
 
 export default class JoinReferenceNode extends Node {
-	constraint = DEFUALT_CONSTRAINT as any as ReferenceConstraint;
+	constraint = DEFUALT_CONSTRAINT as any as IReferenceConstraint;
 	constraintAssert = DEFUALT_CONSTRAINT.assert;
 	// rightIndexes = [];
 	// leftIndexes = [];
@@ -45,10 +44,10 @@ export default class JoinReferenceNode extends Node {
 		this.rightMemory = rightMemory;
 	}
 
-	addConstraint(constraint: ReferenceConstraint) {
-		if (constraint instanceof ReferenceEqualityConstraint) {
+	addConstraint(constraint: IReferenceConstraint) {
+		if (is_instance_of_reference_eq_constraint(constraint)) {
 			const identifiers = constraint.getIndexableProperties();
-			const alias = constraint.get_alias();
+			const alias = constraint.alias;
 			if (identifiers.length === 2 && alias) {
 				let leftIndex: string;
 				let rightIndex: string;

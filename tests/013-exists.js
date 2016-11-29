@@ -3,7 +3,7 @@ let nools = require('../dist/');
 let rule = `
 rule test {
 	when {
-		exists(n1: Number n1 > 3);
+		exists(n1: Number n1 > 2);
 	}
 	then {
 		console.log('matched.');
@@ -19,7 +19,7 @@ const flow = nools.compile(rule, {
 	define: defines,
 	scope: scope
 });
-const session = flow.getSession(1, 2, 3);
+const session = flow.getSession(1, 2, 3, 4);
 session.match().then(() => {
 	console.log('done');
 	session.dispose();

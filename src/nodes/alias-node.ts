@@ -1,5 +1,5 @@
 import AlphaNode from './alpha-node';
-import { IObjectPattern } from '../interfaces';
+import { IObjectPattern } from '../pattern';
 import Context from '../context';
 
 export default class AliasNode extends AlphaNode {

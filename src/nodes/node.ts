@@ -1,7 +1,7 @@
 import Context, { Match } from '../context';
 import Rule from '../rule';
 import intersection from 'lodash-ts/intersection';
-import { IObjectPattern } from '../interfaces';
+import { IObjectPattern } from '../pattern';
 
 let count = 0;
 export default class Node {

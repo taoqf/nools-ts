@@ -1,15 +1,14 @@
 import AlphaNode from './alpha-node';
 import Context from '../context';
-import Constraint from '../constraint/constraint';
-import toArray from 'lodash-ts/toArray';
+import { IHashConstraint } from '../constraint';
 
 export default class PropertyNode extends AlphaNode {
 	protected alias: string;
 	protected constiables: any;
-	constructor(constraint: Constraint) {
+	constructor(constraint: IHashConstraint) {
 		super(constraint);
-		this.alias = this.constraint.get_alias();
-		this.constiables = this.constraint.get_vars();
+		this.constiables = constraint.constraint;
+		this.alias = constraint.alias;
 	}
 
 	assert(context: Context) {

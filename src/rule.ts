@@ -1,9 +1,9 @@
 import isBoolean from 'lodash-ts/isBoolean';
 import isArray from 'lodash-ts/isArray';
-import { IRuleContextOptions, ICondition, IPattern } from './interfaces';
+import { IRuleContextOptions, ICondition } from './interfaces';
 import Flow from './flow';
 import { Match } from './context';
-import pattern, { composite_pattern } from './pattern';
+import pattern, { IPattern, composite_pattern } from './pattern';
 
 export default class Rule {
 	public name: string;
