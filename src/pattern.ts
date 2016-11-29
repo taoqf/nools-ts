@@ -14,20 +14,19 @@ import InitialFact from './facts/initial';
 import baseParseConstraint from './parser/constraint';
 import { IConstraint, create_true_constraint, create_custom_constraint, create_equality_constraint, create_inequality_constraint, create_comparison_constraint, create_object_constraint, create_hash_constraint, create_from_constraint, create_reference_constraint, create_reference_equality_constraint, create_reference_inequality_constraint, create_reference_gt_constraint, create_reference_lt_constraint, create_reference_gte_constraint, create_reference_lte_constraint } from './constraint';
 
-export enum enumPatternType {
-	composite,
-	object,
-	exists,
-	from,
-	from_exists,
-	from_not,
-	initial_fact,
-	not
-}
+export type PatternType =
+	'composite' |
+	'object' |
+	'exists' |
+	'from' |
+	'from_exists' |
+	'from_not' |
+	'initial_fact' |
+	'not';
 
 export interface IPattern {
 	id: number;
-	type: enumPatternType;
+	type: PatternType;
 }
 
 export interface IObjectPattern extends IPattern {
@@ -188,7 +187,7 @@ function toConstraints(constraint: ICondition, options: {
 }
 
 let id = 0;
-function _object_pattern(type: enumPatternType, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions): IObjectPattern {
+function _object_pattern(type: PatternType, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions): IObjectPattern {
 	// this.conditions = conditions;
 	let constraints: IConstraint[] = [create_object_constraint(alias, class_type)];
 	const constrnts = toConstraints(conditions, mixin({ alias: alias }, options));
@@ -214,14 +213,14 @@ function _object_pattern(type: enumPatternType, class_type: any, alias: string, 
 }
 
 export function initial_fact_pattern() {
-	return _object_pattern(enumPatternType.initial_fact, InitialFact, "__i__", [] as any, {});
+	return _object_pattern('initial_fact', InitialFact, "__i__", [] as any, {});
 }
 
 function object_pattern(class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
-	return _object_pattern(enumPatternType.object, class_type, alias, conditions, store, options);
+	return _object_pattern('object', class_type, alias, conditions, store, options);
 }
 
-function _from_pattern(type: enumPatternType, class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions): IFromPattern {
+function _from_pattern(type: PatternType, class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions): IFromPattern {
 	return mixin(_object_pattern(type, class_type, alias, conditions, store, options), {
 		from: create_from_constraint(alias, from, options)
 	});
@@ -229,7 +228,7 @@ function _from_pattern(type: enumPatternType, class_type: any, alias: string, co
 
 export function composite_pattern(left: IPattern, right: IPattern): ICompositePattern {
 	return {
-		type: enumPatternType.composite,
+		type: 'composite',
 		id: ++id,
 		leftPattern: left,
 		rightPattern: right
@@ -342,11 +341,11 @@ function parseConstraint(constraint: string) {
 }
 
 function from_not_pattern(class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions) {
-	return _from_pattern(enumPatternType.from_not, class_type, alias, conditions, store, from, options) as IFromNotPattern;
+	return _from_pattern('from_not', class_type, alias, conditions, store, from, options) as IFromNotPattern;
 }
 
 function not_pattern(class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
-	return _object_pattern(enumPatternType.not, class_type, alias, conditions, store, options) as INotPattern;
+	return _object_pattern('not', class_type, alias, conditions, store, options) as INotPattern;
 }
 
 function parsePattern_not(condition: ICondition): [IPattern] {
@@ -377,11 +376,11 @@ function parsePattern_not(condition: ICondition): [IPattern] {
 }
 
 function from_exists_pattern(class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions) {
-	return _from_pattern(enumPatternType.from_exists, class_type, alias, conditions, store, from, options) as IFromExistsPattern;
+	return _from_pattern('from_exists', class_type, alias, conditions, store, from, options) as IFromExistsPattern;
 }
 
 function exists_pattern(class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
-	return _object_pattern(enumPatternType.exists, class_type, alias, conditions, store, options) as IExistsPattern;
+	return _object_pattern('exists', class_type, alias, conditions, store, options) as IExistsPattern;
 }
 
 function parsePattern_exists(condition: ICondition): [IPattern] {
@@ -412,7 +411,7 @@ function parsePattern_exists(condition: ICondition): [IPattern] {
 }
 
 function from_pattern(class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions) {
-	return _from_pattern(enumPatternType.from, class_type, alias, conditions, store, from, options);
+	return _from_pattern('from', class_type, alias, conditions, store, from, options);
 }
 
 function parsePattern_def(condition: ICondition): [IFromPattern | IObjectPattern] {

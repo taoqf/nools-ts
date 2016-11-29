@@ -1,4 +1,4 @@
-import { IPattern, IObjectPattern, IFromPattern, ICompositePattern, enumPatternType, composite_pattern, initial_fact_pattern } from '../pattern';
+import { IPattern, IObjectPattern, IFromPattern, ICompositePattern, composite_pattern, initial_fact_pattern } from '../pattern';
 import WorkingMemory from '../working-memory';
 import AgendaTree from '../agenda';
 import Fact from '../facts/fact';
@@ -182,17 +182,17 @@ export default class RootNode {
 	__createJoinNode(rule: Rule, pattern: ICompositePattern, outNode: Node, side: Side) {
 		let joinNode: Node;
 		const right_type = pattern.rightPattern.type;
-		if (right_type === enumPatternType.not) {
+		if (right_type === 'not') {
 			joinNode = new NotNode();
-		} else if (right_type === enumPatternType.from_exists) {
+		} else if (right_type === 'from_exists') {
 			joinNode = new ExistsFromNode(pattern.rightPattern as IFromPattern, this.workingMemory);
-		} else if (right_type === enumPatternType.exists) {
+		} else if (right_type === 'exists') {
 			joinNode = new ExistsNode();
-		} else if (right_type === enumPatternType.from_not) {
+		} else if (right_type === 'from_not') {
 			joinNode = new FromNotNode(pattern.rightPattern as IFromPattern, this.workingMemory);
-		} else if (right_type === enumPatternType.from) {
+		} else if (right_type === 'from') {
 			joinNode = new FromNode(pattern.rightPattern as IFromPattern, this.workingMemory);
-		} else if (pattern.type === enumPatternType.composite && !hasRefernceConstraints(pattern.leftPattern as IObjectPattern) && !hasRefernceConstraints(pattern.rightPattern as IObjectPattern)) {
+		} else if (pattern.type === 'composite' && !hasRefernceConstraints(pattern.leftPattern as IObjectPattern) && !hasRefernceConstraints(pattern.rightPattern as IObjectPattern)) {
 			const bn = joinNode = new BetaNode();
 			this.joinNodes.push(bn);
 		} else {
@@ -212,9 +212,9 @@ export default class RootNode {
 
 	__addToNetwork(rule: Rule, pattern: IPattern, outNode: Node, side: Side = 'left') {
 		const type = pattern.type;
-		if (type === enumPatternType.composite) {
+		if (type === 'composite') {
 			this.__createBetaNode(rule, pattern as ICompositePattern, outNode, side);
-		} else if (type !== enumPatternType.initial_fact && side === 'left') {
+		} else if (type !== 'initial_fact' && side === 'left') {
 			this.__createBetaNode(rule, composite_pattern(initial_fact_pattern(), pattern), outNode, side);
 		} else {
 			this.__createAlphaNode(rule, pattern as IObjectPattern, outNode, side);
@@ -232,7 +232,7 @@ export default class RootNode {
 
 	__createAlphaNode(rule: Rule, pattern: IObjectPattern, outNode: Node, side: Side) {
 		const type = pattern.type;
-		if (type !== enumPatternType.from && type !== enumPatternType.from_exists && type !== enumPatternType.from_not) {
+		if (type !== 'from' && type !== 'from_exists' && type !== 'from_not') {
 			const constraints = pattern.constraints;
 			const typeNode = this.__createTypeNode(rule, constraints[0]);
 			const aliasNode = this.__createAliasNode(rule, pattern);
