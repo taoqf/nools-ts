@@ -9,14 +9,6 @@ export default class Node {
 	protected rules: IRule[] = [];
 	protected parentNodes: Node[] = [];
 	protected __id = count++;
-	protected __rule__: IRule;
-	set_rule(rule: IRule) {
-		this.__rule__ = rule;
-	}
-
-	get_rule() {
-		return this.__rule__;
-	}
 
 	addRule(rule: IRule) {
 		if (this.rules.indexOf(rule) === -1) {

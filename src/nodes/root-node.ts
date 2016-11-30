@@ -192,7 +192,6 @@ function __createJoinNode(root: IRootNode, rule: IRule, pattern: ICompositePatte
 		const jn = joinNode = new JoinNode();
 		root.joinNodes.push(root.nodes.push(jn) - 1);
 	}
-	joinNode.set_rule(rule);
 	let parentNode = joinNode;
 	if (outNode instanceof BetaNode) {
 		const adapterNode = __createAdapterNode(root, rule, side);
