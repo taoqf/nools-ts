@@ -22,9 +22,7 @@ export default class FromNotNode extends JoinNode {
 		super();
 		this.workingMemory = workingMemory;
 		this.pattern = pattern;
-		this.type = (it: any) => {
-			return pattern.constraints[0].assert(it);
-		}
+		this.type = pattern.constraints[0].assert;
 		this.alias = pattern.alias;
 		this.from = pattern.from.assert;
 		this.fromMemory = {};

@@ -77,9 +77,7 @@ export default class JoinReferenceNode extends Node {
 		} else {
 			this.constraint = this.constraint.merge(constraint);
 		}
-		this.constraintAssert = (it: any, fh?: any) => {
-			return this.constraint.assert(it, fh);
-		}
+		this.constraintAssert = this.constraint.assert;
 	}
 
 	equal(node: JoinReferenceNode) {

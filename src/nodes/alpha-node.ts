@@ -7,9 +7,7 @@ export default class AlphaNode extends Node {
 	constructor(constraint: IConstraint) {
 		super();
 		this.constraint = constraint;
-		this.constraintAssert = (it: any, fh?: any) => {
-			return this.constraint.assert(it, fh);
-		};
+		this.constraintAssert = constraint.assert;
 	}
 
 	toString() {
