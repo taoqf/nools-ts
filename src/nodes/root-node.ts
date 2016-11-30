@@ -44,11 +44,9 @@ export interface IRootNode {
 	typeNodes: number[];
 	__ruleCount: number;
 	bucket: IBucket;
-	workingMemory: WorkingMemory;
-	agendaTree: AgendaTree;
 }
 
-export function create_root_node(wm: WorkingMemory, agendaTree: AgendaTree): IRootNode {
+export function create_root_node(): IRootNode {
 	return {
 		nodes: [],
 		terminalNodes: [],
@@ -59,15 +57,13 @@ export function create_root_node(wm: WorkingMemory, agendaTree: AgendaTree): IRo
 		bucket: {
 			counter: 0,
 			recency: 0
-		},
-		workingMemory: wm,	// todo: need to be removed
-		agendaTree: agendaTree	// todo: need to be removed
+		}
 	};
 }
 
-export function assertRule(root: IRootNode, rule: IRule) {
-	const terminalNode = new TerminalNode(root.bucket, root.__ruleCount++, rule, root.agendaTree);
-	__addToNetwork(root, rule, rule.pattern, terminalNode);
+export function assertRule(root: IRootNode, rule: IRule, wm: WorkingMemory, agendaTree: AgendaTree) {
+	const terminalNode = new TerminalNode(root.bucket, root.__ruleCount++, rule, agendaTree);
+	__addToNetwork(wm, root, rule, rule.pattern, terminalNode);
 	__mergeJoinNodes(root);
 	root.terminalNodes.push(root.nodes.push(terminalNode) - 1);
 }
@@ -78,7 +74,6 @@ export function assertFact(root: IRootNode, fact: Fact) {
 		typeNode.assert(fact);
 	});
 }
-
 
 export function retractFact(root: IRootNode, fact: Fact) {
 	root.typeNodes.forEach((id) => {
@@ -172,19 +167,19 @@ function __createAdapterNode(root: IRootNode, rule: IRule, side: Side = 'right')
 	return (side === "left" ? new LeftAdapterNode() : new RightAdapterNode()).addRule(rule);
 }
 
-function __createJoinNode(root: IRootNode, rule: IRule, pattern: ICompositePattern, outNode: Node, side: Side) {
+function __createJoinNode(root: IRootNode, rule: IRule, pattern: ICompositePattern, outNode: Node, side: Side, wm: WorkingMemory) {
 	let joinNode: Node;
 	const right_type = pattern.rightPattern.type;
 	if (right_type === 'not') {
 		joinNode = new NotNode();
 	} else if (right_type === 'from_exists') {
-		joinNode = new ExistsFromNode(pattern.rightPattern as IFromPattern, root.workingMemory);
+		joinNode = new ExistsFromNode(pattern.rightPattern as IFromPattern, wm);
 	} else if (right_type === 'exists') {
 		joinNode = new ExistsNode();
 	} else if (right_type === 'from_not') {
-		joinNode = new FromNotNode(pattern.rightPattern as IFromPattern, root.workingMemory);
+		joinNode = new FromNotNode(pattern.rightPattern as IFromPattern, wm);
 	} else if (right_type === 'from') {
-		joinNode = new FromNode(pattern.rightPattern as IFromPattern, root.workingMemory);
+		joinNode = new FromNode(pattern.rightPattern as IFromPattern, wm);
 	} else if (pattern.type === 'composite' && !hasRefernceConstraints(pattern.leftPattern as IObjectPattern) && !hasRefernceConstraints(pattern.rightPattern as IObjectPattern)) {
 		const bn = joinNode = new BetaNode();
 		root.joinNodes.push(root.nodes.push(bn) - 1);
@@ -202,21 +197,21 @@ function __createJoinNode(root: IRootNode, rule: IRule, pattern: ICompositePatte
 	return joinNode.addRule(rule);
 }
 
-function __addToNetwork(root: IRootNode, rule: IRule, pattern: IPattern, outNode: Node, side: Side = 'left') {
+function __addToNetwork(wm: WorkingMemory, root: IRootNode, rule: IRule, pattern: IPattern, outNode: Node, side: Side = 'left') {
 	const type = pattern.type;
 	if (type === 'composite') {
-		__createBetaNode(root, rule, pattern as ICompositePattern, outNode, side);
+		__createBetaNode(root, rule, pattern as ICompositePattern, outNode, side, wm);
 	} else if (type !== 'initial_fact' && side === 'left') {
-		__createBetaNode(root, rule, composite_pattern(initial_fact_pattern(), pattern), outNode, side);
+		__createBetaNode(root, rule, composite_pattern(initial_fact_pattern(), pattern), outNode, side, wm);
 	} else {
 		__createAlphaNode(root, rule, pattern as IObjectPattern, outNode, side);
 	}
 }
 
-function __createBetaNode(root: IRootNode, rule: IRule, pattern: ICompositePattern, outNode: Node, side: Side) {
-	const joinNode = __createJoinNode(root, rule, pattern, outNode, side);
-	__addToNetwork(root, rule, pattern.rightPattern, joinNode, "right");
-	__addToNetwork(root, rule, pattern.leftPattern, joinNode, "left");
+function __createBetaNode(root: IRootNode, rule: IRule, pattern: ICompositePattern, outNode: Node, side: Side, wm: WorkingMemory) {
+	const joinNode = __createJoinNode(root, rule, pattern, outNode, side, wm);
+	__addToNetwork(wm, root, rule, pattern.rightPattern, joinNode, "right");
+	__addToNetwork(wm, root, rule, pattern.leftPattern, joinNode, "left");
 	outNode.addParentNode(joinNode);
 	return joinNode;
 }

@@ -26,7 +26,7 @@ export default class Flow extends EventEmitter {
 		this.agenda.on("focused", (...args: any[]) => {
 			this.emit('focused', ...args);
 		});
-		this.rootNode = create_root_node(this.workingMemory, this.agenda);
+		this.rootNode = create_root_node();
 		// extd.bindAll(this, "halt", "assert", "retract", "modify", "focus",
 		// 	"emit", "getFacts", "getFact");
 	}
@@ -88,7 +88,7 @@ export default class Flow extends EventEmitter {
 	}
 
 	rule(rule: IRule) {
-		assertRule(this.rootNode, rule);
+		assertRule(this.rootNode, rule, this.workingMemory, this.agenda);
 	}
 
 	matchUntilHalt() {
