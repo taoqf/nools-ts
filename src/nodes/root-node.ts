@@ -23,32 +23,6 @@ import AlphaNode from './alpha-node';
 import PropertyNode from './property-node';
 import EqualityNode from './equality-node';
 
-// const extd = require("../extended"),
-//     forEach = extd.forEach,
-//     some = extd.some,
-//     declare = extd.declare,
-//     FromPattern = pattern.FromPattern,
-//     FromNotPattern = pattern.FromNotPattern,
-//     ExistsPattern = pattern.ExistsPattern,
-//     FromExistsPattern = pattern.FromExistsPattern,
-//     NotPattern = pattern.NotPattern,
-//     constraints = require("../constraint"),
-//     HashConstraint = constraints.HashConstraint,
-//     ReferenceConstraint = constraints.ReferenceConstraint,
-//     AliasNode = require("./aliasNode"),
-//     EqualityNode = require("./equalityNode"),
-//     JoinNode = require("./joinNode"),
-//     BetaNode = require("./betaNode"),
-//     NotNode = require("./notNode"),
-//     FromNode = require("./fromNode"),
-//     FromNotNode = require("./fromNotNode"),
-//     ExistsNode = require("./existsNode"),
-//     ExistsFromNode = require("./existsFromNode"),
-//     LeftAdapterNode = require("./leftAdapterNode"),
-//     RightAdapterNode = require("./rightAdapterNode"),
-//     TypeNode = require("./typeNode"),
-//     PropertyNode = require("./propertyNode");
-
 function hasRefernceConstraints(pattern: IObjectPattern) {
 	return (pattern.constraints || []).some((c) => {
 		return is_instance_of_reference_constraint(c);
@@ -57,220 +31,239 @@ function hasRefernceConstraints(pattern: IObjectPattern) {
 
 export type Side = 'left' | 'right';
 
-export default class RootNode {
-	protected terminalNodes: TerminalNode[] = [];
-	protected joinNodes: (BetaNode | JoinNode)[] = [];
-	// protected nodes = [];
-	protected constraints: AlphaNode[] = [];
-	protected typeNodes: TypeNode[] = [];
-	protected __ruleCount = 0;
-	protected bucket = {
-		counter: 0,
-		recency: 0
+export interface IBucket {
+	counter: number;
+	recency: number;
+}
+
+export interface IRootNode {
+	nodes: Node[];
+	terminalNodes: number[];
+	joinNodes: number[];
+	constraints: number[];
+	typeNodes: number[];
+	__ruleCount: number;
+	bucket: IBucket;
+	workingMemory: WorkingMemory;
+	agendaTree: AgendaTree;
+}
+
+export function create_root_node(wm: WorkingMemory, agendaTree: AgendaTree): IRootNode {
+	return {
+		nodes: [],
+		terminalNodes: [],
+		joinNodes: [],
+		constraints: [],
+		typeNodes: [],
+		__ruleCount: 0,
+		bucket: {
+			counter: 0,
+			recency: 0
+		},
+		workingMemory: wm,	// todo: need to be removed
+		agendaTree: agendaTree	// todo: need to be removed
 	};
-	protected workingMemory: WorkingMemory;
-	protected agendaTree: AgendaTree;
-	constructor(wm: WorkingMemory, agendaTree: AgendaTree) {
-		this.agendaTree = agendaTree;
-		this.workingMemory = wm;
-	}
-	assertRule(rule: IRule) {
-		const terminalNode = new TerminalNode(this.bucket, this.__ruleCount++, rule, this.agendaTree);
-		this.__addToNetwork(rule, rule.pattern, terminalNode);
-		this.__mergeJoinNodes();
-		this.terminalNodes.push(terminalNode);
-	}
+}
 
-	resetCounter() {
-		this.bucket.counter = 0;
-	}
-	incrementCounter() {
-		this.bucket.counter++;
-	}
-	assertFact(fact: Fact) {
-		this.typeNodes.forEach((typeNode) => {
-			typeNode.assert(fact);
-		});
-	}
+export function assertRule(root: IRootNode, rule: IRule) {
+	const terminalNode = new TerminalNode(root.bucket, root.__ruleCount++, rule, root.agendaTree);
+	__addToNetwork(root, rule, rule.pattern, terminalNode);
+	__mergeJoinNodes(root);
+	root.terminalNodes.push(root.nodes.push(terminalNode) - 1);
+}
 
-	retractFact(fact: Fact) {
-		this.typeNodes.forEach((typeNode) => {
-			typeNode.retract(fact);
-		});
-	}
-
-	modifyFact(fact: Fact) {
-		this.typeNodes.forEach((typeNode) => {
-			typeNode.modify(fact);
-		});
-	}
+export function assertFact(root: IRootNode, fact: Fact) {
+	root.typeNodes.forEach((id) => {
+		const typeNode = root.nodes[id];
+		typeNode.assert(fact);
+	});
+}
 
 
-	containsRule(name: string) {
-		return this.terminalNodes.some((n) => {
-			return n.rule.name === name;
-		});
-	}
+export function retractFact(root: IRootNode, fact: Fact) {
+	root.typeNodes.forEach((id) => {
+		const typeNode = root.nodes[id];
+		typeNode.retract(fact);
+	});
+}
 
-	dispose() {
-		this.typeNodes.forEach((typeNode) => {
-			typeNode.dispose();
-		})
-	}
+export function modifyFact(root: IRootNode, fact: Fact) {
+	root.typeNodes.forEach((id) => {
+		const typeNode = root.nodes[id];
+		typeNode.modify(fact);
+	});
+}
 
-	__mergeJoinNodes() {
-		const joinNodes = this.joinNodes;
-		for (let i = 0; i < joinNodes.length; i++) {
-			const j1 = joinNodes[i] as JoinNode;
-			const j2 = joinNodes[i + 1] as JoinNode;
-			if (j1 && j2 && (j1.constraint && j2.constraint && j1.constraint.equal(j2.constraint))) {
-				j1.merge(j2);
-				joinNodes.splice(i + 1, 1);
-			}
+export function dispose(root: IRootNode) {
+	root.typeNodes.forEach((id) => {
+		const typeNode = root.nodes[id] as TypeNode;
+		typeNode.dispose();
+	})
+}
+
+export function containsRule(root: IRootNode, name: string) {
+	return root.terminalNodes.some((id) => {
+		const terminalNode = root.nodes[id] as TerminalNode;
+		return terminalNode.rule.name === name;
+	});
+}
+
+function __mergeJoinNodes(root: IRootNode) {
+	const joinNodes = root.joinNodes;
+	const nodes = root.nodes;
+	for (let i = 0; i < joinNodes.length; i++) {
+		const j1 = nodes[joinNodes[i]] as JoinNode;
+		const j2 = nodes[joinNodes[i + 1]] as JoinNode;
+		if (j1 && j2 && (j1.constraint && j2.constraint && j1.constraint.equal(j2.constraint))) {
+			j1.merge(j2);
+			joinNodes.splice(i + 1, 1);
 		}
-	}
-
-	__checkEqual<T extends AlphaNode>(node: T): T {
-		const constraints = this.constraints;
-		let index = -1;
-
-		if (constraints.some((constraint, idx) => {
-			const r = node.equal(constraint);
-			r && (index = idx);
-			return r;
-		})) {
-			return constraints[index] as T;
-		} else {
-			constraints.push(node);
-			return node;
-		}
-	}
-
-	__createTypeNode(rule: IRule, constraint: IConstraint) {
-		const ret = new TypeNode(constraint);
-		const typeNodes = this.typeNodes;
-		let index = -1;
-		if (typeNodes.some((typeNode, idx) => {
-			const r = ret.equal(typeNode);
-			r && (index = idx);
-			return r;
-		})) {
-			return typeNodes[index];
-		} else {
-			typeNodes.push(ret);
-			return ret;
-		}
-	}
-
-	__createEqualityNode(rule: IRule, constraint: IObjectConstraint) {
-		return this.__checkEqual(new EqualityNode(constraint)).addRule(rule);
-	}
-
-	__createPropertyNode(rule: IRule, constraint: IHashConstraint) {
-		return this.__checkEqual(new PropertyNode(constraint)).addRule(rule);
-	}
-
-	__createAliasNode(rule: IRule, pattern: IObjectPattern) {
-		// return this.__checkEqual(new AliasNode(pattern)).addRule(rule);
-		return this.__checkEqual(new AliasNode(pattern)).addRule(rule);
-	}
-
-	__createAdapterNode(rule: IRule, side: Side = 'right') {
-		return (side === "left" ? new LeftAdapterNode() : new RightAdapterNode()).addRule(rule);
-	}
-
-	__createJoinNode(rule: IRule, pattern: ICompositePattern, outNode: Node, side: Side) {
-		let joinNode: Node;
-		const right_type = pattern.rightPattern.type;
-		if (right_type === 'not') {
-			joinNode = new NotNode();
-		} else if (right_type === 'from_exists') {
-			joinNode = new ExistsFromNode(pattern.rightPattern as IFromPattern, this.workingMemory);
-		} else if (right_type === 'exists') {
-			joinNode = new ExistsNode();
-		} else if (right_type === 'from_not') {
-			joinNode = new FromNotNode(pattern.rightPattern as IFromPattern, this.workingMemory);
-		} else if (right_type === 'from') {
-			joinNode = new FromNode(pattern.rightPattern as IFromPattern, this.workingMemory);
-		} else if (pattern.type === 'composite' && !hasRefernceConstraints(pattern.leftPattern as IObjectPattern) && !hasRefernceConstraints(pattern.rightPattern as IObjectPattern)) {
-			const bn = joinNode = new BetaNode();
-			this.joinNodes.push(bn);
-		} else {
-			const jn = joinNode = new JoinNode();
-			this.joinNodes.push(jn);
-		}
-		joinNode.set_rule(rule);
-		let parentNode = joinNode;
-		if (outNode instanceof BetaNode) {
-			const adapterNode = this.__createAdapterNode(rule, side);
-			parentNode.addOutNode(adapterNode, pattern as any);	// todo:: type of pattern should be 'ObjectPattern'
-			parentNode = adapterNode;
-		}
-		parentNode.addOutNode(outNode, pattern as any);
-		return joinNode.addRule(rule);
-	}
-
-	__addToNetwork(rule: IRule, pattern: IPattern, outNode: Node, side: Side = 'left') {
-		const type = pattern.type;
-		if (type === 'composite') {
-			this.__createBetaNode(rule, pattern as ICompositePattern, outNode, side);
-		} else if (type !== 'initial_fact' && side === 'left') {
-			this.__createBetaNode(rule, composite_pattern(initial_fact_pattern(), pattern), outNode, side);
-		} else {
-			this.__createAlphaNode(rule, pattern as IObjectPattern, outNode, side);
-		}
-	}
-
-	__createBetaNode(rule: IRule, pattern: ICompositePattern, outNode: Node, side: Side) {
-		const joinNode = this.__createJoinNode(rule, pattern, outNode, side);
-		this.__addToNetwork(rule, pattern.rightPattern, joinNode, "right");
-		this.__addToNetwork(rule, pattern.leftPattern, joinNode, "left");
-		outNode.addParentNode(joinNode);
-		return joinNode;
-	}
-
-
-	__createAlphaNode(rule: IRule, pattern: IObjectPattern, outNode: Node, side: Side) {
-		const type = pattern.type;
-		if (type !== 'from' && type !== 'from_exists' && type !== 'from_not') {
-			const constraints = pattern.constraints;
-			const typeNode = this.__createTypeNode(rule, constraints[0]);
-			const aliasNode = this.__createAliasNode(rule, pattern);
-			typeNode.addOutNode(aliasNode, pattern);
-			aliasNode.addParentNode(typeNode);
-			let parentNode = aliasNode as Node;
-			constraints.filter((constraint, idx) => {
-				return idx > 0;
-			}).forEach((constraint) => {
-				let node: Node;
-				if (is_instance_of_hash(constraint)) {
-					node = this.__createPropertyNode(rule, constraint);
-				} else if (is_instance_of_reference_constraint(constraint)) {
-					(outNode as JoinNode).constraint.addConstraint(constraint as IReferenceConstraint);
-					return;
-				} else {
-					node = this.__createEqualityNode(rule, constraint as IObjectConstraint);
-				}
-				parentNode.addOutNode(node, pattern);
-				node.addParentNode(parentNode);
-				parentNode = node;
-			});
-
-			if (outNode instanceof BetaNode) {
-				const adapterNode = this.__createAdapterNode(rule, side);
-				adapterNode.addParentNode(parentNode);
-				parentNode.addOutNode(adapterNode, pattern);
-				parentNode = adapterNode;
-			}
-			outNode.addParentNode(parentNode);
-			parentNode.addOutNode(outNode, pattern);
-			return typeNode;
-		}
-	}
-
-	print() {
-		this.terminalNodes.forEach((t) => {
-			t.print("    ");
-		});
 	}
 }
+
+function __checkEqual<T extends AlphaNode>(root: IRootNode, node: T): T {
+	const constraints = root.constraints;
+	let index = -1;
+
+	if (constraints.some((id) => {
+		const constraint = root.nodes[id] as AlphaNode;
+		const r = node.equal(constraint);
+		r && (index = id);
+		return r;
+	})) {
+		return root.nodes[index] as T;
+	} else {
+		constraints.push(root.nodes.push(node) - 1);
+		return node;
+	}
+}
+
+function __createTypeNode(root: IRootNode, rule: IRule, constraint: IConstraint) {
+	const ret = new TypeNode(constraint);
+	const typeNodes = root.typeNodes;
+	let index = -1;
+	if (typeNodes.some((id) => {
+		const typeNode = root.nodes[id] as AlphaNode;
+		const r = ret.equal(typeNode);
+		r && (index = id);
+		return r;
+	})) {
+		return root.nodes[index] as TypeNode;
+	} else {
+		typeNodes.push(root.nodes.push(ret) - 1);
+		return ret;
+	}
+}
+
+function __createEqualityNode(root: IRootNode, rule: IRule, constraint: IObjectConstraint) {
+	return __checkEqual(root, new EqualityNode(constraint)).addRule(rule);
+}
+
+function __createPropertyNode(root: IRootNode, rule: IRule, constraint: IHashConstraint) {
+	return __checkEqual(root, new PropertyNode(constraint)).addRule(rule);
+}
+
+function __createAliasNode(root: IRootNode, rule: IRule, pattern: IObjectPattern) {
+	// return __checkEqual(new AliasNode(pattern)).addRule(rule);
+	return __checkEqual(root, new AliasNode(pattern)).addRule(rule);
+}
+
+function __createAdapterNode(root: IRootNode, rule: IRule, side: Side = 'right') {
+	return (side === "left" ? new LeftAdapterNode() : new RightAdapterNode()).addRule(rule);
+}
+
+function __createJoinNode(root: IRootNode, rule: IRule, pattern: ICompositePattern, outNode: Node, side: Side) {
+	let joinNode: Node;
+	const right_type = pattern.rightPattern.type;
+	if (right_type === 'not') {
+		joinNode = new NotNode();
+	} else if (right_type === 'from_exists') {
+		joinNode = new ExistsFromNode(pattern.rightPattern as IFromPattern, root.workingMemory);
+	} else if (right_type === 'exists') {
+		joinNode = new ExistsNode();
+	} else if (right_type === 'from_not') {
+		joinNode = new FromNotNode(pattern.rightPattern as IFromPattern, root.workingMemory);
+	} else if (right_type === 'from') {
+		joinNode = new FromNode(pattern.rightPattern as IFromPattern, root.workingMemory);
+	} else if (pattern.type === 'composite' && !hasRefernceConstraints(pattern.leftPattern as IObjectPattern) && !hasRefernceConstraints(pattern.rightPattern as IObjectPattern)) {
+		const bn = joinNode = new BetaNode();
+		root.joinNodes.push(root.nodes.push(bn) - 1);
+	} else {
+		const jn = joinNode = new JoinNode();
+		root.joinNodes.push(root.nodes.push(jn) - 1);
+	}
+	joinNode.set_rule(rule);
+	let parentNode = joinNode;
+	if (outNode instanceof BetaNode) {
+		const adapterNode = __createAdapterNode(root, rule, side);
+		parentNode.addOutNode(adapterNode, pattern as any);	// todo:: type of pattern should be 'ObjectPattern'
+		parentNode = adapterNode;
+	}
+	parentNode.addOutNode(outNode, pattern as any);
+	return joinNode.addRule(rule);
+}
+
+function __addToNetwork(root: IRootNode, rule: IRule, pattern: IPattern, outNode: Node, side: Side = 'left') {
+	const type = pattern.type;
+	if (type === 'composite') {
+		__createBetaNode(root, rule, pattern as ICompositePattern, outNode, side);
+	} else if (type !== 'initial_fact' && side === 'left') {
+		__createBetaNode(root, rule, composite_pattern(initial_fact_pattern(), pattern), outNode, side);
+	} else {
+		__createAlphaNode(root, rule, pattern as IObjectPattern, outNode, side);
+	}
+}
+
+function __createBetaNode(root: IRootNode, rule: IRule, pattern: ICompositePattern, outNode: Node, side: Side) {
+	const joinNode = __createJoinNode(root, rule, pattern, outNode, side);
+	__addToNetwork(root, rule, pattern.rightPattern, joinNode, "right");
+	__addToNetwork(root, rule, pattern.leftPattern, joinNode, "left");
+	outNode.addParentNode(joinNode);
+	return joinNode;
+}
+
+
+function __createAlphaNode(root: IRootNode, rule: IRule, pattern: IObjectPattern, outNode: Node, side: Side) {
+	const type = pattern.type;
+	if (type !== 'from' && type !== 'from_exists' && type !== 'from_not') {
+		const constraints = pattern.constraints;
+		const typeNode = __createTypeNode(root, rule, constraints[0]);
+		const aliasNode = __createAliasNode(root, rule, pattern);
+		typeNode.addOutNode(aliasNode, pattern);
+		aliasNode.addParentNode(typeNode);
+		let parentNode = aliasNode as Node;
+		constraints.filter((constraint, idx) => {
+			return idx > 0;
+		}).forEach((constraint) => {
+			let node: Node;
+			if (is_instance_of_hash(constraint)) {
+				node = __createPropertyNode(root, rule, constraint);
+			} else if (is_instance_of_reference_constraint(constraint)) {
+				(outNode as JoinNode).constraint.addConstraint(constraint as IReferenceConstraint);
+				return;
+			} else {
+				node = __createEqualityNode(root, rule, constraint as IObjectConstraint);
+			}
+			parentNode.addOutNode(node, pattern);
+			node.addParentNode(parentNode);
+			parentNode = node;
+		});
+
+		if (outNode instanceof BetaNode) {
+			const adapterNode = __createAdapterNode(root, rule, side);
+			adapterNode.addParentNode(parentNode);
+			parentNode.addOutNode(adapterNode, pattern);
+			parentNode = adapterNode;
+		}
+		outNode.addParentNode(parentNode);
+		parentNode.addOutNode(outNode, pattern);
+		return typeNode;
+	}
+}
+
+export function print(root: IRootNode) {
+	root.terminalNodes.forEach((t) => {
+		root.nodes[t].print("    ");
+	});
+}
+

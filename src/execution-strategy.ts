@@ -1,5 +1,5 @@
 import Flow from './flow';
-import RootNode from './nodes/root-node';
+import { IRootNode } from './nodes/root-node';
 import AgendaTree from './agenda';
 import nextTick from './next-tick';
 
@@ -9,7 +9,7 @@ export default class ExecutionStragegy {
 	private matchUntilHalt = false;
 	private flow: Flow;
 	private agenda: AgendaTree;
-	private rootNode: RootNode;
+	private rootNode: IRootNode;
 	private __halted = false;
 	private flowAltered = false;
 	onAlter: () => void;
@@ -40,7 +40,7 @@ export default class ExecutionStragegy {
 
 	setup() {
 		const flow = this.flow;
-		this.rootNode.resetCounter();
+		this.rootNode.bucket.counter = 0;
 		flow.on("assert", this.onAlter);
 		flow.on("modify", this.onAlter);
 		flow.on("retract", this.onAlter);
@@ -59,7 +59,7 @@ export default class ExecutionStragegy {
 			this.looping = false;
 			if (!agenda.isEmpty()) {
 				if (this.flowAltered) {
-					this.rootNode.incrementCounter();
+					++this.rootNode.bucket.counter;
 					this.flowAltered = false;
 				}
 				if (!this.__halted) {
@@ -76,24 +76,6 @@ export default class ExecutionStragegy {
 			}
 		});
 	}
-
-	// private __handleSyncNext(next: boolean) {
-	// 	this.looping = false;
-	// 	if (!this.agenda.isEmpty()) {
-	// 		if (this.flowAltered) {
-	// 			this.rootNode.incrementCounter();
-	// 			this.flowAltered = false;
-	// 		}
-	// 	}
-	// 	if (next && !this.__halted) {
-	// 		nextTick(() => {
-	// 			this.callNext();
-	// 		});
-	// 	} else if (!this.matchUntilHalt || this.__halted) {
-	// 		this.callback();
-	// 	}
-	// 	return next;
-	// }
 
 	callback() {
 		this.tearDown();

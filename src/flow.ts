@@ -2,7 +2,7 @@ import { IInsert } from './interfaces';
 import WorkingMemory from './working-memory';
 import AgendaTree from './agenda';
 import EventEmitter from './EventEmitter';
-import RootNode from './nodes/root-node';
+import { IRootNode, create_root_node, dispose, assertFact, retractFact, modifyFact, print, assertRule, containsRule } from './nodes/root-node';
 import { IRule } from './rule';
 import ExecutionStrategy from './execution-strategy';
 
@@ -11,7 +11,7 @@ export default class Flow extends EventEmitter {
 	// conflictResolutionStrategy: (a, b) => number;
 	private workingMemory = new WorkingMemory();
 	public agenda: AgendaTree;
-	public rootNode: RootNode;
+	public rootNode: IRootNode;
 	private executionStrategy: ExecutionStrategy;
 	constructor(name: string, conflictResolutionStrategy: (a: IInsert, b: IInsert) => number) {
 		super();
@@ -26,7 +26,7 @@ export default class Flow extends EventEmitter {
 		this.agenda.on("focused", (...args: any[]) => {
 			this.emit('focused', ...args);
 		});
-		this.rootNode = new RootNode(this.workingMemory, this.agenda);
+		this.rootNode = create_root_node(this.workingMemory, this.agenda);
 		// extd.bindAll(this, "halt", "assert", "retract", "modify", "focus",
 		// 	"emit", "getFacts", "getFact");
 	}
@@ -53,11 +53,11 @@ export default class Flow extends EventEmitter {
 	dispose() {
 		this.workingMemory.dispose();
 		this.agenda.dispose();
-		this.rootNode.dispose();
+		dispose(this.rootNode);
 	}
 
 	assert(fact: any) {
-		this.rootNode.assertFact(this.workingMemory.assertFact(fact));
+		assertFact(this.rootNode, this.workingMemory.assertFact(fact));
 		this.emit("assert", fact);
 		return fact;
 	}
@@ -65,7 +65,7 @@ export default class Flow extends EventEmitter {
 	// This method is called to remove an existing fact from working memory
 	retract(fact: any) {
 		//fact = this.workingMemory.getFact(fact);
-		this.rootNode.retractFact(this.workingMemory.retractFact(fact));
+		retractFact(this.rootNode, this.workingMemory.retractFact(fact));
 		this.emit("retract", fact);
 		return fact;
 	}
@@ -74,21 +74,21 @@ export default class Flow extends EventEmitter {
 	// retract followed by an assert.
 	modify(fact: any) {
 		//fact = this.workingMemory.getFact(fact);
-		this.rootNode.modifyFact(this.workingMemory.modifyFact(fact));
+		modifyFact(this.rootNode, this.workingMemory.modifyFact(fact));
 		this.emit("modify", fact);
 		return fact;
 	}
 
 	print() {
-		this.rootNode.print();
+		print(this.rootNode);
 	}
 
 	containsRule(name: string) {
-		return this.rootNode.containsRule(name);
+		return containsRule(this.rootNode, name);
 	}
 
 	rule(rule: IRule) {
-		this.rootNode.assertRule(rule);
+		assertRule(this.rootNode, rule);
 	}
 
 	matchUntilHalt() {
