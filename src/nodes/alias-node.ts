@@ -10,7 +10,7 @@ export default class AliasNode extends AlphaNode {
 	}
 
 	toString() {
-		return "AliasNode" + this.__count;
+		return "AliasNode" + this.__id;
 	}
 
 	assert(context: Context) {

@@ -60,11 +60,11 @@ export default class BetaNode extends Node {
 	}
 
 	hashCode() {
-		return this.nodeType + " " + this.__count;
+		return this.nodeType + " " + this.__id;
 	}
 
 	toString() {
-		return this.nodeType + " " + this.__count;
+		return this.nodeType + " " + this.__id;
 	}
 
 	retractLeft(context: Context) {

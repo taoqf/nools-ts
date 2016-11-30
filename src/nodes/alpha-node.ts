@@ -13,7 +13,7 @@ export default class AlphaNode extends Node {
 	}
 
 	toString() {
-		return "AlphaNode " + this.__count;
+		return "AlphaNode " + this.__id;
 	}
 
 	equal(constraint: AlphaNode) {

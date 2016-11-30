@@ -28,6 +28,6 @@ export default class LeftAdapterNode extends AdapterNode {
 	}
 
 	toString() {
-		return "LeftAdapterNode " + this.__count;
+		return "LeftAdapterNode " + this.__id;
 	}
 }

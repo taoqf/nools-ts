@@ -40,6 +40,6 @@ export default class EqualityNode extends AlphaNode{
 	}
 
 	toString() {
-		return "EqualityNode" + this.__count;
+		return "EqualityNode" + this.__id;
 	}
 }

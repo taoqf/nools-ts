@@ -39,6 +39,6 @@ export default class PropertyNode extends AlphaNode {
 
 
 	toString() {
-		return "PropertyNode" + this.__count;
+		return "PropertyNode" + this.__id;
 	}
 }

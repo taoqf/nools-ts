@@ -8,7 +8,7 @@ export default class Node {
 	protected nodes = new Map<Node, IObjectPattern[]>();
 	protected rules: IRule[] = [];
 	protected parentNodes: Node[] = [];
-	protected __count = count++;
+	protected __id = count++;
 	protected __rule__: IRule;
 	set_rule(rule: IRule) {
 		this.__rule__ = rule;

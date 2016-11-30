@@ -22,7 +22,7 @@ export default class TypeNode extends AlphaNode {
 	}
 
 	toString() {
-		return "TypeNode" + this.__count;
+		return "TypeNode" + this.__id;
 	}
 
 	dispose() {
