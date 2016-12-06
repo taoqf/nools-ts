@@ -1,21 +1,19 @@
 import isBoolean from 'lodash-ts/isBoolean';
 import isArray from 'lodash-ts/isArray';
-import { IRuleContextOptions, ICondition } from './interfaces';
-import Flow from './flow';
-import { Match } from './context';
-import pattern, { IPattern, composite_pattern } from './pattern';
+
+import { IRuleContextOptions, ICondition } from '../interfaces';
+import pattern, { IPattern, composite_pattern } from '../pattern';
 
 export interface IRule {
 	name: string;
 	agendaGroup: string;
 	priority: number;
 	autoFocus: boolean;
-	cb: Function;
+	action: string;
 	pattern: IPattern;
-	fire(flow: Flow, match: Match): Promise<{}>;
 }
 
-function _create_rule(name: string, options: IRuleContextOptions, pattern: IPattern, cb: Function) {
+function _create_rule(name: string, options: IRuleContextOptions, pattern: IPattern, action: string):IRule {
 	let agendaGroup: string = null;
 	let autoFocus = false;
 	if (options.agendaGroup) {
@@ -25,19 +23,14 @@ function _create_rule(name: string, options: IRuleContextOptions, pattern: IPatt
 	return {
 		name: name,
 		pattern: pattern,
-		cb: cb,
+		action: action,
 		priority: options.priority || options.salience || 0,
 		agendaGroup: agendaGroup,
-		autoFocus: autoFocus,
-		fire(flow: Flow, match: Match) {
-			return new Promise((resolve) => {
-				resolve(cb.call(flow, match.factHash, flow));
-			});
-		}
+		autoFocus: autoFocus
 	};
 }
 
-export function createRule(name: string, options: IRuleContextOptions, conditions: ICondition[], cb: Function) {
+export function createRule(name: string, options: IRuleContextOptions, conditions: ICondition[], cb: string) {
 	let isRules = conditions.every((cond) => {
 		return isArray(cond);
 	});

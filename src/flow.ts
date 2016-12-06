@@ -3,7 +3,7 @@ import WorkingMemory from './working-memory';
 import AgendaTree from './agenda';
 import EventEmitter from './EventEmitter';
 import { IRootNode, create_root_node, dispose, assertFact, retractFact, modifyFact, assertRule, containsRule } from './nodes/root-node';
-import { IRule } from './rule';
+import { IRule } from './runtime/rule';
 import ExecutionStrategy from './execution-strategy';
 
 export default class Flow extends EventEmitter {
@@ -15,10 +15,7 @@ export default class Flow extends EventEmitter {
 	private executionStrategy: ExecutionStrategy;
 	constructor(name: string, conflictResolutionStrategy: (a: IInsert, b: IInsert) => number) {
 		super();
-		// this.env = null;
 		this.name = name;
-		// this.__rules = {};
-		// this.conflictResolutionStrategy = conflictResolutionStrategy;
 		this.agenda = new AgendaTree(this, conflictResolutionStrategy);
 		this.agenda.on("fire", (...args: any[]) => {
 			this.emit('fire', ...args);
@@ -27,8 +24,6 @@ export default class Flow extends EventEmitter {
 			this.emit('focused', ...args);
 		});
 		this.rootNode = create_root_node();
-		// extd.bindAll(this, "halt", "assert", "retract", "modify", "focus",
-		// 	"emit", "getFacts", "getFact");
 	}
 
 	getFacts(Type: any) {

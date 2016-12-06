@@ -1,6 +1,6 @@
 import mixin from 'lodash-ts/mixin';
 import { INode, create_node } from './node';
-import { IRule } from '../rule';
+import { IRule } from '../runtime/rule';
 import { IBucket } from './root-node';
 import AgendaTree from '../agenda';
 import Context from '../context';

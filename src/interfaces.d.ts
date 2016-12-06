@@ -79,7 +79,7 @@ export interface IPatternOptions {
 	alias?: string;
 }
 
-import { IRule } from './rule';
+import { IRule } from './runtime/rule';
 import { Match } from './context';
 
 export interface IInsert {
@@ -95,4 +95,11 @@ export interface IInsert {
 export interface IBucket {
 	counter: number;
 	recency: number;
+}
+
+import { IRule as IParsedRule } from './compile/rule';
+
+export interface IFlow {
+	name: string;
+	rules: IParsedRule[];
 }

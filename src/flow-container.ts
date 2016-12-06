@@ -2,7 +2,7 @@ import instanceOf from 'lodash-ts/isinstanceof';
 import conflictResolution from './conflict';
 import Flow from './flow';
 import { IInsert, IRuleContextOptions, ICondition } from './interfaces';
-import { IRule, createRule } from './rule';
+import { IRule } from './runtime/rule';
 import InitialFact from './facts/initial';
 
 const flows = new Map<string, FlowContainer>();
@@ -42,11 +42,6 @@ export default class FlowContainer {
 		//normalize
 		this.__defined.set(name.toLowerCase(), cls);
 		return cls;
-	}
-
-	rule(name: string, options: IRuleContextOptions, conditions: ICondition[], cb: Function) {
-		this.__rules = this.__rules.concat(createRule(name, options, conditions, cb));
-		return this;
 	}
 
 	getSession(...facts: any[]) {

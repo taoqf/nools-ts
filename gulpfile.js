@@ -42,7 +42,7 @@ gulp.task('copy-files', function () {
 });
 
 gulp.task('copy-parser', function () {
-	require('./dist/parser/constraint/grammar.js');
+	require('./dist/compile/parser/constraint/grammar.js');
 });
 
 const uglyfly = require('gulp-uglyfly');

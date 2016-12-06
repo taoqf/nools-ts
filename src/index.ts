@@ -1,3 +1,17 @@
-import {parse_rules} from './parser/parser';
-export const compile = parse_rules;
-export default parse_rules;
+import parse from './compile/index';
+// import { parse_rules } from './compile/index';
+import FlowContainer from './flow-container';
+
+import runtime_compile from './runtime/compile';
+
+import { ICompileOptions } from './interfaces';
+
+export function compile(src: string, options: ICompileOptions) {
+	const flow = parse(src, options);
+	// console.log('----------------------------------');
+	// console.info(JSON.stringify(flow));
+	// console.log('++++++++++++++++++++++++++++++++++');
+	return runtime_compile(flow.rules, options);
+}
+
+export default compile;

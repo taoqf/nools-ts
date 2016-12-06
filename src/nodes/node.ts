@@ -1,19 +1,6 @@
-// import Context, { Match } from '../context';
-// import { IRule } from '../rule';
-// import mixin from 'lodash-ts/mixin';
-// import { IObjectPattern, IFromPattern, IFromNotPattern } from '../pattern';
-// import { IBucket } from './root-node';
-// import AgendaTree from '../agenda';
-// import { IConstraint, IReferenceConstraint, is_instance_of_equality, is_instance_of_reference_constraint, is_instance_of_hash } from '../constraint';
-// import LeftMemory from './misc/left-memory';
-// import RightMemory from './misc/right-memory';
-// import { ITuple } from './misc/tuple-entry';
-// import Memory from './misc/memory';
-// import { ILinkNode } from '../linked-list';
-
 import intersection from 'lodash-ts/intersection';
 import Context from '../context';
-import { IRule } from '../rule';
+import { IRule } from '../runtime/rule';
 import { IObjectPattern } from '../pattern';
 import Fact from '../facts/fact';
 

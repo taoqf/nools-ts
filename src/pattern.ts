@@ -11,7 +11,7 @@ import mixin from 'lodash-ts/mixin';
 import { IContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ICondition, IPatternOptions } from './interfaces';
 import { getIdentifiers } from './constraint-matcher';
 import InitialFact from './facts/initial';
-import baseParseConstraint from './parser/constraint';
+import baseParseConstraint from './compile/parser/constraint';
 import { IConstraint, create_true_constraint, create_custom_constraint, create_equality_constraint, create_inequality_constraint, create_comparison_constraint, create_object_constraint, create_hash_constraint, create_from_constraint, create_reference_constraint, create_reference_equality_constraint, create_reference_inequality_constraint, create_reference_gt_constraint, create_reference_lt_constraint, create_reference_gte_constraint, create_reference_lte_constraint } from './constraint';
 
 export type PatternType =

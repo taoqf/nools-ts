@@ -1,6 +1,6 @@
+import { ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, IContext, IRuleContext } from '../../interfaces';
 import * as utils from './util';
-import parser from './parser';
-import { ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, IContext, IRuleContext } from '../interfaces';
+import parse from './parse';
 
 const predicates = ["not", "or", "exists"];
 const predicateRegExp = new RegExp("^(" + predicates.join("|") + ") *\\((.*)\\)$", "m");
@@ -284,7 +284,7 @@ function rule(orig: string, context: IContext) {
 			const rule = { name: name[1].replace(/^["']|["']$/g, ""), options: {}, constraints: null, action: null } as IRuleContext;
 			const body = utils.getTokensBetween(src, "{", "}", true).join("");
 			src = src.replace(body, "");
-			parser(body.replace(/^\{\s*|\}\s*$/g, ""), ruleTokens, rule);
+			parse(body.replace(/^\{\s*|\}\s*$/g, ""), ruleTokens, rule);
 			context.rules.push(rule);
 			return src;
 		} else {

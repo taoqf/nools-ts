@@ -1,4 +1,4 @@
-import {ICondition} from '../interfaces';
+import {ICondition} from '../../interfaces';
 
 const _parseConstraint = require('./constraint/parser');
 
