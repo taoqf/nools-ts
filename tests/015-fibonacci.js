@@ -14,13 +14,13 @@ rule Recurse {
 }
 
 rule Bootstrap {
-when {
-	f : Fibonacci f.value == -1 && (f.sequence == 1 || f.sequence == 2);
-}
-then{
-	f.value = 1;
-	modify(f);
-}
+	when {
+		f : Fibonacci f.value == -1 && (f.sequence == 1 || f.sequence == 2);
+	}
+	then{
+		f.value = 1;
+		modify(f);
+	}
 }
 
 rule Calculate {

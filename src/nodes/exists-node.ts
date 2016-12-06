@@ -1,171 +1,241 @@
-import NotNode from './not-node';
-import LinkedList from '../linked-list';
 import Context from '../context';
-import {ITuple} from './misc/tuple-entry';
+import { ITuple } from './misc/tuple-entry';
+import LinkedList, { ILinkNode } from '../linked-list';
+import { removeFromLeftMemory, assert, modify, retract, __addToLeftMemory, removeFromRightMemory, __addToRightMemory } from './beta-node';
+import { INotNode, _create_not_node, removeFromLeftBlockedMemory, __cloneContext, addToLeftBlockedMemory } from './not-node';
 
-export default class ExistsNode extends NotNode {
+export interface IExistsNode extends INotNode {
+}
 
-	nodeType = "ExistsNode";
+export function create(): IExistsNode {
+	return _create_not_node('exists');
+}
 
-	blockedContext(leftContext: Context, rightContext: Context) {
-		leftContext.blocker = rightContext;
-		this.removeFromLeftMemory(leftContext);
-		this.addToLeftBlockedMemory(rightContext.blocking.push(leftContext));
-		this.propagateAssert(this.__cloneContext(leftContext));
-	}
+function blockedContext(node: IExistsNode, leftContext: Context, rightContext: Context) {
+	leftContext.blocker = rightContext;
+	removeFromLeftMemory(node, leftContext);
+	addToLeftBlockedMemory(node, rightContext.blocking.push(leftContext));
+	assert(node, __cloneContext(node, leftContext));
+}
 
-	notBlockedContext(leftContext: Context, propagate: boolean) {
-		this.__addToLeftMemory(leftContext);
-		propagate && this.propagateRetract(this.__cloneContext(leftContext));
-	}
+function notBlockedContext(node: IExistsNode, leftContext: Context, propagate: boolean) {
+	__addToLeftMemory(node, leftContext);
+	propagate && retract(node, __cloneContext(node, leftContext));
+}
 
-	propagateFromLeft(leftContext: Context) {
-		this.notBlockedContext(leftContext, false);
-	}
+function propagateFromLeft(node: IExistsNode, leftContext: Context) {
+	notBlockedContext(node, leftContext, false);
+}
 
+function blockFromAssertLeft(node: IExistsNode, leftContext: Context, rightContext: Context) {
+	blockedContext(node, leftContext, rightContext);
+}
 
-	retractLeft(context: Context) {
-		if (!this.removeFromLeftMemory(context)) {
-			const ctx = this.removeFromLeftBlockedMemory(context);
-			if (ctx) {
-				this.propagateRetract(this.__cloneContext(ctx.data));
-			} else {
-				throw new Error();
-			}
-		}
-	}
-
-	modifyLeft(context: Context) {
-		const thisConstraint = this.constraint;
-		const rightTuples = this.rightTuples;
-		let isBlocked = false;
-		const tuple = this.removeFromLeftMemory(context);
-		let leftContext: Context;
-		if (!tuple) {
-			//blocked before
-			const tuple = this.removeFromLeftBlockedMemory(context);
-			isBlocked = true;
-			leftContext = tuple && tuple.data;
+export function assert_left(node: IExistsNode, context: Context) {
+	const values = node.rightTuples.getRightMemory(context);
+	const thisConstraint = node.constraint;
+	if (context && values.every((value) => {
+		const rc = value.data;
+		if (thisConstraint.isMatch(context, rc)) {
+			blockFromAssertLeft(node, context, rc);
+			return false;
 		} else {
-			leftContext = tuple.data;
+			return true;
 		}
-		if (leftContext) {
-			let blocker: ITuple;
-			if (leftContext && leftContext.blocker) {
-				//we were blocked before so only check nodes previous to our blocker
-				blocker = this.rightMemory[leftContext.blocker.hashCode];
+	})) {
+		propagateFromLeft(node, context);
+	}
+}
+
+function blockFromAssertRight(node: IExistsNode, leftContext: Context, rightContext: Context) {
+	blockedContext(node, leftContext, rightContext);
+}
+
+export function assert_right(node: IExistsNode, context: Context) {
+	__addToRightMemory(node, context);
+	context.blocking = new LinkedList<Context>();
+	const fl = node.leftTuples.getLeftMemory(context).slice();	// todo: why do we need call slice?
+	const thisConstraint = node.constraint;
+	fl.forEach((l) => {
+		const leftContext = l.data;
+		if (thisConstraint.isMatch(leftContext, context)) {
+			blockFromAssertRight(node, leftContext, context);
+		}
+	});
+}
+
+export function modify_left(node: IExistsNode, context: Context) {
+	const thisConstraint = node.constraint;
+	const rightTuples = node.rightTuples;
+	let isBlocked = false;
+	const tuple = removeFromLeftMemory(node, context);
+	let leftContext: Context;
+	if (!tuple) {
+		//blocked before
+		const tuple = removeFromLeftBlockedMemory(node, context);
+		isBlocked = true;
+		leftContext = tuple && tuple.data;
+	} else {
+		leftContext = tuple.data;
+	}
+	if (leftContext) {
+		let blocker: ITuple;
+		if (leftContext && leftContext.blocker) {
+			//we were blocked before so only check nodes previous to our blocker
+			blocker = node.rightMemory[leftContext.blocker.hashCode];
+		}
+		// let node: ITuple;
+		if (blocker) {
+			const rc = blocker.data;
+			if (thisConstraint.isMatch(context, rc)) {
+				//propogate as a modify or assert
+				!isBlocked ? assert(node, __cloneContext(node, leftContext)) : modify(node, __cloneContext(node, leftContext));
+				context.blocker = rc;
+				addToLeftBlockedMemory(node, rc.blocking.push(context));
+				context = null;
 			}
-			// let node: ITuple;
-			if (blocker) {
-				const rc = blocker.data;
+			// if (context) {
+			// 	node = { next: blocker.next } as ITuple;
+			// }
+			// } else {
+			// 	node = { next: rightTuples.head } as ITuple;
+		}
+		if (context && rightTuples.length) {
+			let tuple = { next: rightTuples.head } as ITuple;
+			//we were propagated before
+			while ((tuple = tuple.next)) {
+				const rc = tuple.data;
 				if (thisConstraint.isMatch(context, rc)) {
-					//propogate as a modify or assert
-					!isBlocked ? this.propagateAssert(this.__cloneContext(leftContext)) : this.propagateModify(this.__cloneContext(leftContext));
+					//we cant be proagated so retract previous
+
+					//we were asserted before so retract
+					!isBlocked ? assert(node, __cloneContext(node, leftContext)) : modify(node, __cloneContext(node, leftContext));
+
+					addToLeftBlockedMemory(node, rc.blocking.push(context));
 					context.blocker = rc;
-					this.addToLeftBlockedMemory(rc.blocking.push(context));
 					context = null;
-				}
-				// if (context) {
-				// 	node = { next: blocker.next } as ITuple;
-				// }
-				// } else {
-				// 	node = { next: rightTuples.head } as ITuple;
-			}
-			if (context && rightTuples.length) {
-				let node = { next: rightTuples.head } as ITuple;
-				//we were propagated before
-				while ((node = node.next)) {
-					const rc = node.data;
-					if (thisConstraint.isMatch(context, rc)) {
-						//we cant be proagated so retract previous
-
-						//we were asserted before so retract
-						!isBlocked ? this.propagateAssert(this.__cloneContext(leftContext)) : this.propagateModify(this.__cloneContext(leftContext));
-
-						this.addToLeftBlockedMemory(rc.blocking.push(context));
-						context.blocker = rc;
-						context = null;
-						break;
-					}
+					break;
 				}
 			}
-			if (context) {
-				//we can still be propogated
-				this.__addToLeftMemory(context);
-				if (isBlocked) {
-					//we were blocked so retract
-					this.propagateRetract(this.__cloneContext(context));
-				}
-
-			}
-		} else {
-			throw new Error();
 		}
-	}
+		if (context) {
+			//we can still be propogated
+			__addToLeftMemory(node, context);
+			if (isBlocked) {
+				//we were blocked so retract
+				retract(node, __cloneContext(node, context));
+			}
 
-	modifyRight(context: Context) {
-		const tuple = this.removeFromRightMemory(context);
-		if (tuple) {
-			const rightContext = tuple.data;
-			const thisConstraint = this.constraint;
-			const leftTuples = this.leftTuples;
-			const leftTuplesLength = leftTuples.length;
-			const blocking = rightContext.blocking;
-			// const leftContext;
-			// const node;
-			this.__addToRightMemory(context);
-			context.blocking = new LinkedList<Context>();
-			if (leftTuplesLength || blocking.length) {
-				if (blocking.length) {
-					// const rc;
-					//check old blocked contexts
-					//check if the same contexts blocked before are still blocked
-					let blockingNode = { next: blocking.head } as ITuple;
-					while ((blockingNode = blockingNode.next)) {
-						let leftContext = blockingNode.data;
+		}
+	} else {
+		throw new Error();
+	}
+}
+
+export function modify_right(node: IExistsNode, context: Context) {
+	const tuple = removeFromRightMemory(node, context);
+	if (tuple) {
+		const rightContext = tuple.data;
+		const thisConstraint = node.constraint;
+		const leftTuples = node.leftTuples;
+		const leftTuplesLength = leftTuples.length;
+		const blocking = rightContext.blocking;
+		// const leftContext;
+		// const node;
+		__addToRightMemory(node, context);
+		context.blocking = new LinkedList<Context>();
+		if (leftTuplesLength || blocking.length) {
+			if (blocking.length) {
+				// const rc;
+				//check old blocked contexts
+				//check if the same contexts blocked before are still blocked
+				let blockingNode = { next: blocking.head } as ITuple;
+				while ((blockingNode = blockingNode.next)) {
+					let leftContext = blockingNode.data;
+					leftContext.blocker = null;
+					if (thisConstraint.isMatch(leftContext, context)) {
+						leftContext.blocker = context;
+						addToLeftBlockedMemory(node, context.blocking.push(leftContext));
+						assert(node, __cloneContext(node, leftContext));
+						leftContext = null;
+					} else {
+						//we arent blocked anymore
 						leftContext.blocker = null;
-						if (thisConstraint.isMatch(leftContext, context)) {
-							leftContext.blocker = context;
-							this.addToLeftBlockedMemory(context.blocking.push(leftContext));
-							this.propagateAssert(this.__cloneContext(leftContext));
-							leftContext = null;
-						} else {
-							//we arent blocked anymore
-							leftContext.blocker = null;
-							let node = tuple;
-							while ((node = node.next)) {
-								const rc = node.data;
-								if (thisConstraint.isMatch(leftContext, rc)) {
-									leftContext.blocker = rc;
-									this.addToLeftBlockedMemory(rc.blocking.push(leftContext));
-									this.propagateAssert(this.__cloneContext(leftContext));
-									leftContext = null;
-									break;
-								}
-							}
-							if (leftContext) {
-								this.__addToLeftMemory(leftContext);
+						let tpl = tuple;
+						while ((tpl = tpl.next)) {
+							const rc = tpl.data;
+							if (thisConstraint.isMatch(leftContext, rc)) {
+								leftContext.blocker = rc;
+								addToLeftBlockedMemory(node, rc.blocking.push(leftContext));
+								assert(node, __cloneContext(node, leftContext));
+								leftContext = null;
+								break;
 							}
 						}
-					}
-				}
-
-				if (leftTuplesLength) {
-					//check currently left tuples in memory
-					let node = { next: leftTuples.head } as ITuple;
-					while ((node = node.next)) {
-						const leftContext = node.data;
-						if (thisConstraint.isMatch(leftContext, context)) {
-							this.propagateAssert(this.__cloneContext(leftContext));
-							this.removeFromLeftMemory(leftContext);
-							this.addToLeftBlockedMemory(context.blocking.push(leftContext));
-							leftContext.blocker = context;
+						if (leftContext) {
+							__addToLeftMemory(node, leftContext);
 						}
 					}
 				}
 			}
+
+			if (leftTuplesLength) {
+				//check currently left tuples in memory
+				let tuple = { next: leftTuples.head } as ITuple;
+				while ((tuple = tuple.next)) {
+					const leftContext = tuple.data;
+					if (thisConstraint.isMatch(leftContext, context)) {
+						assert(node, __cloneContext(node, leftContext));
+						removeFromLeftMemory(node, leftContext);
+						addToLeftBlockedMemory(node, context.blocking.push(leftContext));
+						leftContext.blocker = context;
+					}
+				}
+			}
+		}
+	} else {
+		throw new Error();
+	}
+}
+
+export function retract_left(node: IExistsNode, context: Context) {
+	if (!removeFromLeftMemory(node, context)) {
+		const ctx = removeFromLeftBlockedMemory(node, context);
+		if (ctx) {
+			retract(node, __cloneContext(node, ctx.data));
 		} else {
 			throw new Error();
 		}
 	}
+}
+
+export function retract_right(node: IExistsNode, context: Context) {
+	const ctx = removeFromRightMemory(node, context),
+		rightContext = ctx.data,
+		blocking = rightContext.blocking;
+	if (blocking.length) {
+		//if we are blocking left contexts
+		// const leftContext,
+		const thisConstraint = node.constraint;
+		let blockingNode = { next: blocking.head } as ILinkNode<Context>;
+		//  rc;
+		while ((blockingNode = blockingNode.next)) {
+			const leftContext = blockingNode.data;
+			removeFromLeftBlockedMemory(node, leftContext);
+			const rm = node.rightTuples.getRightMemory(leftContext);
+			if (leftContext && rm.every((m) => {
+				const rc = m.data;
+				if (thisConstraint.isMatch(leftContext, rc)) {
+					blockedContext(node, leftContext, rc);
+					return false;
+				} else {
+					return true;
+				}
+			})) {
+				notBlockedContext(node, leftContext, true);
+			}
+		}
+		blocking.clear();
+	}
+
 }

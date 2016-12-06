@@ -4,7 +4,7 @@ import isFunction from 'lodash-ts/isFunction';
 import { IInsert } from './interfaces';
 import Flow from './flow';
 import AVLTree from './leafy/avl-tree';
-import TerminalNode from './nodes/terminal-node';
+import { ITerminalNode } from './nodes/terminal-node';
 import Context from './context';
 
 interface IFactHash {
@@ -93,7 +93,7 @@ export default class AgendaTree extends EventEmitter {
 		return this.agendaGroups.get(this.getFocused());
 	}
 
-	register(node: TerminalNode) {
+	register(node: ITerminalNode) {
 		const agendaGroup = node.rule.agendaGroup;
 		this.rules[node.name] = { tree: new AVLTree(this.comparator), factTable: fh_create() };
 		if (agendaGroup) {
@@ -154,12 +154,12 @@ export default class AgendaTree extends EventEmitter {
 		return root.data;
 	}
 
-	modify(node: TerminalNode, context: IInsert) {
+	modify(node: ITerminalNode, context: IInsert) {
 		this.retract(node, context);
 		this.insert(node, context);
 	}
 
-	retract(node: TerminalNode, retract: Context | IInsert) {
+	retract(node: ITerminalNode, retract: Context | IInsert) {
 		const rule = this.rules[node.name];
 		retract.rule = node;
 		const activation = fh_remove(rule.factTable, retract);
@@ -169,7 +169,7 @@ export default class AgendaTree extends EventEmitter {
 		}
 	}
 
-	insert(node: TerminalNode, insert: IInsert) {
+	insert(node: ITerminalNode, insert: IInsert) {
 		const rule = this.rules[node.name], nodeRule = node.rule, agendaGroup = nodeRule.agendaGroup;
 		rule.tree.insert(insert);
 		this.getAgendaGroup(agendaGroup).insert(insert);

@@ -1,20 +1,19 @@
-import Node from './node';
+import mixin from 'lodash-ts/mixin';
+import { INode, alphaNodeType, create_node } from './node';
 import { IConstraint } from '../constraint';
 
-export default class AlphaNode extends Node {
-	protected constraint: IConstraint;
-	protected constraintAssert: (it: any, fh?: any) => boolean;
-	constructor(constraint: IConstraint) {
-		super();
-		this.constraint = constraint;
-		this.constraintAssert = constraint.assert;
-	}
+export interface IAlphaNode extends INode {
+	constraint: IConstraint;
+	constraintAssert(it: any, fh?: any): boolean;	// todo: need to be removed.
+	equal(constraint: IAlphaNode): boolean;
+}
 
-	toString() {
-		return "AlphaNode " + this.__id;
-	}
-
-	equal(constraint: AlphaNode) {
-		return this.constraint.equal(constraint.constraint);
-	}
+export function create(type: alphaNodeType, constraint: IConstraint): IAlphaNode {
+	return mixin(create_node(type), {
+		constraint: constraint,
+		constraintAssert: constraint.assert,
+		equal(other: IAlphaNode) {
+			return constraint.equal(other.constraint);
+		}
+	});
 }

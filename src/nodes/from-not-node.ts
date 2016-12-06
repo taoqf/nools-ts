@@ -1,162 +1,166 @@
-import JoinNode from './join-node';
-import { IFromPattern } from '../pattern';
-import Context from '../context';
-import WorkingMemory from '../working-memory';
-import Fact from '../facts/fact';
-import { IConstraint, is_instance_of_equality, is_instance_of_reference_constraint, is_instance_of_hash } from '../constraint';
 import isArray from 'lodash-ts/isArray';
+import mixin from 'lodash-ts/mixin';
+import WorkingMemory from '../working-memory';
+import { IConstraint, is_instance_of_hash, is_instance_of_equality, is_instance_of_reference_constraint } from '../constraint';
+import Fact from '../facts/fact';
+import Context from '../context';
+import { IFromPattern } from '../pattern';
+import { joinNodeType } from './node';
+import { __addToLeftMemory, assert, modify, retract, removeFromLeftMemory } from './beta-node';
+import { IJoinNode, _create_join_node } from './join-node';
 
-export default class FromNotNode extends JoinNode {
-	nodeType = "FromNotNode";
-	workingMemory: WorkingMemory;
+export interface IFromNotNode extends IJoinNode {
 	pattern: IFromPattern;
-	fromMemory = {} as { [id: number]: { [hashCode: string]: Context }; };
-	protected __variables: any[];
-	type: (it: any) => boolean;
-	from: (fact: any, fh?: any) => any;
 	alias: string;
-	protected __equalityConstraints: { (factHanle1: Map<string, Fact>, factHandle2?: Map<string, Fact>): boolean; }[] = [];
+	type_assert: (type: any) => boolean;
+	from_assert: (fact: any, fh?: any) => any;
 	constraints: IConstraint[];
+	fromMemory: { [id: number]: { [hashCode: string]: Context }; };
+	__equalityConstraints: { (factHanle1: Map<string, Fact>, factHandle2?: Map<string, Fact>): boolean; }[];
+	__variables: any[];
+	workingMemory: WorkingMemory;
+}
 
-	constructor(pattern: IFromPattern, workingMemory: WorkingMemory) {
-		super();
-		this.workingMemory = workingMemory;
-		this.pattern = pattern;
-		this.type = pattern.constraints[0].assert;
-		this.alias = pattern.alias;
-		this.from = pattern.from.assert;
-		this.fromMemory = {};
-		const eqConstraints = this.__equalityConstraints;
-		let vars: any[] = [];
-		this.constraints = this.pattern.constraints.slice(1);
-		this.constraints.forEach((c) => {
-			if (is_instance_of_equality(c) || is_instance_of_reference_constraint(c)) {
-				eqConstraints.push(c.assert);
-			} else if (is_instance_of_hash(c)) {
-				debugger;
-				vars = vars.concat(c.constraint);
+export function _create_from_not_node(type: joinNodeType, pattern: IFromPattern, wm: WorkingMemory): IFromNotNode {
+	const type_constraint = pattern.constraints[0];
+	const from = pattern.from;
+	const constraints = pattern.constraints.slice(1);
+	let vars: any[] = [];
+	const eqConstraints: { (factHanle1: Map<string, Fact>, factHandle2: Map<string, Fact>): boolean; }[] = [];
+	constraints.forEach((c) => {
+		if (is_instance_of_equality(c) || is_instance_of_reference_constraint(c)) {
+			eqConstraints.push(c.assert);
+		} else if (is_instance_of_hash(c)) {
+			debugger;
+			vars = vars.concat(c.constraint);
+		}
+	});
+	return mixin(_create_join_node(type), {
+		pattern: pattern,
+		alias: pattern.alias,
+		constraints: constraints,
+		__equalityConstraints: eqConstraints,
+		__variables: vars,
+		fromMemory: {},
+		workingMemory: wm,
+		type_assert(type: any) {
+			return type_constraint.assert(type);
+		},
+		from_assert(fact: any, fh?: any) {
+			return from.assert(fact, fh);
+		}
+	});
+}
+
+export function create(pattern: IFromPattern, wm: WorkingMemory): IFromNotNode {
+	return _create_from_not_node('from-not', pattern, wm);
+}
+
+function __isMatch(node: IFromNotNode, oc: Context, o: any, add: boolean) {
+	let ret = false;
+	if (node.type_assert(o)) {
+		const createdFact = node.workingMemory.getFactHandle(o);
+		const context = new Context(createdFact, null)
+			.mergeMatch(oc.match)
+			.set(node.alias, o);
+		if (add) {
+			let fm = node.fromMemory[createdFact.id];
+			if (!fm) {
+				fm = node.fromMemory[createdFact.id] = {};
+			}
+			fm[oc.hashCode] = oc;
+		}
+		const fh = context.factHash;
+		ret = node.__equalityConstraints.every((eqConstraint) => {
+			return eqConstraint(fh, fh);
+		});
+	}
+	return ret;
+}
+
+export function __findMatches(node: IFromNotNode, context: Context) {
+	const fh = context.factHash, o = node.from_assert(fh), isMatch = false;
+	if (isArray(o)) {
+		(o as any[]).some((o) => {
+			if (__isMatch(node, context, o, true)) {
+				context.blocked = true;
+				return true;
+			} else {
+				return false;
 			}
 		});
-		this.__variables = vars;
-
+		assert(node, context.clone());
+	} else if (o !== undefined && !(context.blocked = __isMatch(node, context, o, true))) {
+		assert(node, context.clone());
 	}
+	return isMatch;
+}
 
-	retractLeft(context: Context) {
-		const tuple = this.removeFromLeftMemory(context);
-		if (tuple) {
-			const ctx = tuple.data;
-			if (!ctx.blocked) {
-				this.propagateRetract(ctx.clone());
-			}
-		}
-	}
+export function assert_left(node: IFromNotNode, context: Context) {
+	__addToLeftMemory(node, context);
+	__findMatches(node, context);
+}
 
-	protected __modify(context: Context, leftContext: Context) {
-		const leftContextBlocked = leftContext.blocked;
-		const fh = context.factHash, o = this.from(fh);
-		if (isArray(o)) {
-			(o as any[]).some((o) => {
-				if (this.__isMatch(context, o, true)) {
-					context.blocked = true;
-					return true;
-				} else {
-					return false;
-				}
-			});
-		} else if (o !== undefined) {
-			context.blocked = this.__isMatch(context, o, true);
-		}
-		const newContextBlocked = context.blocked;
-		if (!newContextBlocked) {
-			if (leftContextBlocked) {
-				this.propagateAssert(context.clone());
+function __modify(node: IFromNotNode, context: Context, leftContext: Context) {
+	const leftContextBlocked = leftContext.blocked;
+	const fh = context.factHash, o = node.from_assert(fh);
+	if (isArray(o)) {
+		(o as any[]).some((o) => {
+			if (__isMatch(node, context, o, true)) {
+				context.blocked = true;
+				return true;
 			} else {
-				this.propagateModify(context.clone());
+				return false;
 			}
-		} else if (!leftContextBlocked) {
-			this.propagateRetract(leftContext.clone());
-		}
-
+		});
+	} else if (o !== undefined) {
+		context.blocked = __isMatch(node, context, o, true);
 	}
-
-	modifyLeft(context: Context) {
-		const ctx = this.removeFromLeftMemory(context);
-		if (ctx) {
-			this.__addToLeftMemory(context);
-			this.__modify(context, ctx.data);
+	const newContextBlocked = context.blocked;
+	if (!newContextBlocked) {
+		if (leftContextBlocked) {
+			assert(node, context.clone());
 		} else {
-			throw new Error();
+			modify(node, context.clone());
 		}
-		const fm = this.fromMemory[context.fact.id];
-		this.fromMemory[context.fact.id] = {};
-		if (fm) {
-			for (const i in fm) {
-				// update any contexts associated with this fact
-				if (i !== context.hashCode) {
-					const lc = fm[i];
-					const ctx = this.removeFromLeftMemory(lc);
-					if (ctx) {
-						const lc_cp = lc.clone();
-						lc_cp.blocked = false;
-						this.__addToLeftMemory(lc_cp);
-						this.__modify(lc_cp, ctx.data);
-					}
+	} else if (!leftContextBlocked) {
+		retract(node, leftContext.clone());
+	}
+}
+
+export function modify_left(node: IFromNotNode, context: Context) {
+	const ctx = removeFromLeftMemory(node, context);
+	if (ctx) {
+		__addToLeftMemory(node, context);
+		__modify(node, context, ctx.data);
+	} else {
+		throw new Error();
+	}
+	const fm = node.fromMemory[context.fact.id];
+	node.fromMemory[context.fact.id] = {};
+	if (fm) {
+		for (const i in fm) {
+			// update any contexts associated with this fact
+			if (i !== context.hashCode) {
+				const lc = fm[i];
+				const ctx = removeFromLeftMemory(node, lc);
+				if (ctx) {
+					const lc_cp = lc.clone();
+					lc_cp.blocked = false;
+					__addToLeftMemory(node, lc_cp);
+					__modify(node, lc_cp, ctx.data);
 				}
 			}
 		}
 	}
+}
 
-	protected __findMatches(context: Context) {
-		const fh = context.factHash, o = this.from(fh), isMatch = false;
-		if (isArray(o)) {
-			(o as any[]).some((o) => {
-				if (this.__isMatch(context, o, true)) {
-					context.blocked = true;
-					return true;
-				} else {
-					return false;
-				}
-			});
-			this.propagateAssert(context.clone());
-		} else if (o !== undefined && !(context.blocked = this.__isMatch(context, o, true))) {
-			this.propagateAssert(context.clone());
+export function retract_left(node: IFromNotNode, context: Context) {
+	const tuple = removeFromLeftMemory(node, context);
+	if (tuple) {
+		const ctx = tuple.data;
+		if (!ctx.blocked) {
+			retract(node, ctx.clone());
 		}
-		return isMatch;
 	}
-
-	protected __isMatch(oc: Context, o: any, add: boolean) {
-		let ret = false;
-		if (this.type(o)) {
-			const createdFact = this.workingMemory.getFactHandle(o);
-			const context = new Context(createdFact, null)
-				.mergeMatch(oc.match)
-				.set(this.alias, o);
-			if (add) {
-				let fm = this.fromMemory[createdFact.id];
-				if (!fm) {
-					fm = this.fromMemory[createdFact.id] = {};
-				}
-				fm[oc.hashCode] = oc;
-			}
-			const fh = context.factHash;
-			ret = this.__equalityConstraints.every((eqConstraint) => {
-				return eqConstraint(fh, fh);
-			});
-		}
-		return ret;
-	}
-
-	assertLeft(context: Context) {
-		this.__addToLeftMemory(context);
-		this.__findMatches(context);
-	}
-
-	assertRight() {
-		throw new Error("Shouldnt have gotten here");
-	}
-
-	retractRight() {
-		throw new Error("Shouldnt have gotten here");
-	}
-
 }

@@ -1,17 +1,9 @@
-import Node from './node';
-import Memory from './misc/memory';
-import { IReferenceConstraint, is_instance_of_reference_eq_constraint } from '../constraint';
+import mixin from 'lodash-ts/mixin';
 import Context, { Match } from '../context';
-
-const DEFUALT_CONSTRAINT = {
-	assert(it: any, fh?: any) {
-		return true;
-	},
-
-	equal() {
-		return false;
-	}
-};
+import { IReferenceConstraint, is_instance_of_reference_eq_constraint } from '../constraint';
+import { IJoinReferenceNode } from './join-reference-node';;
+import { INode, create_node } from './node';
+import Memory from './misc/memory';
 
 const inversions: { [op: string]: string } = {
 	"gt": "lte",
@@ -29,69 +21,94 @@ function normalizeIndexConstraint(index: string, indexes: string[], op: string) 
 	return op;
 }
 
-export default class JoinReferenceNode extends Node {
-	constraint = DEFUALT_CONSTRAINT as any as IReferenceConstraint;
-	constraintAssert = DEFUALT_CONSTRAINT.assert;
-	// rightIndexes = [];
-	// leftIndexes = [];
-	constraintLength = 0;
-	isDefault = true;
-	leftMemory: Memory;
-	rightMemory: Memory;
-	constructor(leftMemory: Memory, rightMemory: Memory) {
-		super();
-		this.leftMemory = leftMemory;
-		this.rightMemory = rightMemory;
-	}
-
-	addConstraint(constraint: IReferenceConstraint) {
-		if (is_instance_of_reference_eq_constraint(constraint)) {
-			const identifiers = constraint.getIndexableProperties();
-			const alias = constraint.alias;
-			if (identifiers.length === 2 && alias) {
-				let leftIndex: string;
-				let rightIndex: string;
-				let i = -1;
-				const indexes: string[] = [];
-				while (++i < 2) {
-					const index = identifiers[i];
-					if (index.match(new RegExp("^" + alias + "(\\.?)")) === null) {
-						indexes.push(index);
-						leftIndex = index;
-					} else {
-						indexes.push(index);
-						rightIndex = index;
-					}
-				}
-				if (leftIndex && rightIndex) {
-					const leftOp = normalizeIndexConstraint(leftIndex, indexes, constraint.op),
-						rightOp = normalizeIndexConstraint(rightIndex, indexes, constraint.op);
-					this.rightMemory.addIndex(rightIndex, leftIndex, rightOp);
-					this.leftMemory.addIndex(leftIndex, rightIndex, leftOp);
+export function addConstraint(node: IJoinReferenceNode, constraint: IReferenceConstraint) {
+	if (is_instance_of_reference_eq_constraint(constraint)) {
+		const identifiers = constraint.getIndexableProperties();
+		const alias = constraint.alias;
+		if (identifiers.length === 2 && alias) {
+			let leftIndex: string;
+			let rightIndex: string;
+			let i = -1;
+			const indexes: string[] = [];
+			while (++i < 2) {
+				const index = identifiers[i];
+				if (index.match(new RegExp("^" + alias + "(\\.?)")) === null) {
+					indexes.push(index);
+					leftIndex = index;
+				} else {
+					indexes.push(index);
+					rightIndex = index;
 				}
 			}
+			if (leftIndex && rightIndex) {
+				const leftOp = normalizeIndexConstraint(leftIndex, indexes, constraint.op),
+					rightOp = normalizeIndexConstraint(rightIndex, indexes, constraint.op);
+				node.rightMemory.addIndex(rightIndex, leftIndex, rightOp);
+				node.leftMemory.addIndex(leftIndex, rightIndex, leftOp);
+			}
 		}
-		if (this.isDefault) {
-			this.constraint = constraint;
-			this.isDefault = false;
-		} else {
-			this.constraint = this.constraint.merge(constraint);
-		}
-		this.constraintAssert = this.constraint.assert;
 	}
-
-	equal(node: JoinReferenceNode) {
-		return this.constraint.equal(node.constraint);
+	if (node.isDefault) {
+		node.constraint = constraint;
+		node.isDefault = false;
+	} else {
+		node.constraint = constraint = node.constraint.merge(constraint);
 	}
+	const constraintAssert = constraint.assert;
 
-	isMatch(lc: Context, rc: Context) {
-		return this.constraintAssert(lc.factHash, rc.factHash);
-	}
-
-	match(lc: Context, rc: Context) {
-		if (this.constraintAssert(lc.factHash, rc.factHash)) {
+	node.equal = (node: IJoinReferenceNode) => {
+		return constraint.equal(node.constraint);
+	};
+	node.isMatch = (lc: Context, rc: Context) => {
+		return constraintAssert(lc.factHash, rc.factHash);
+	};
+	node.match = (lc: Context, rc: Context) => {
+		if (constraintAssert(lc.factHash, rc.factHash)) {
 			return lc.match.merge(rc.match);
 		}
 		return { isMatch: false } as any as Match;
+	};
+}
+
+const DEFUALT_CONSTRAINT = {
+	assert(it: any, fh?: any) {
+		return true;
+	},
+
+	equal() {
+		return false;
 	}
+} as any as IReferenceConstraint;
+
+export interface IJoinReferenceNode extends INode {
+	constraint: IReferenceConstraint;
+	isDefault: boolean;
+	leftMemory: Memory;
+	rightMemory: Memory;
+	equal(node: IJoinReferenceNode): boolean;
+	isMatch(lc: Context, rc: Context): boolean;
+	match(lc: Context, rc: Context): Match;
+}
+
+export function create_join_reference_node(leftMemory: Memory, rightMemory: Memory): IJoinReferenceNode {
+	const constraint = DEFUALT_CONSTRAINT;
+	const constraintAssert = DEFUALT_CONSTRAINT.assert;
+	return mixin(create_node('join-reference'), {
+		constraint: constraint,
+		isDefault: true,
+		leftMemory: leftMemory,
+		rightMemory: rightMemory,
+		equal(node: IJoinReferenceNode) {
+			return constraint.equal(node.constraint);
+		},
+		isMatch(lc: Context, rc: Context) {
+			return constraintAssert(lc.factHash, rc.factHash);
+		},
+		match(lc: Context, rc: Context) {
+			if (constraintAssert(lc.factHash, rc.factHash)) {
+				return lc.match.merge(rc.match);
+			}
+			return { isMatch: false } as any as Match;
+		}
+	});
 }

@@ -2,7 +2,7 @@ import { IInsert } from './interfaces';
 import WorkingMemory from './working-memory';
 import AgendaTree from './agenda';
 import EventEmitter from './EventEmitter';
-import { IRootNode, create_root_node, dispose, assertFact, retractFact, modifyFact, print, assertRule, containsRule } from './nodes/root-node';
+import { IRootNode, create_root_node, dispose, assertFact, retractFact, modifyFact, assertRule, containsRule } from './nodes/root-node';
 import { IRule } from './rule';
 import ExecutionStrategy from './execution-strategy';
 
@@ -77,10 +77,6 @@ export default class Flow extends EventEmitter {
 		modifyFact(this.rootNode, this.workingMemory.modifyFact(fact));
 		this.emit("modify", fact);
 		return fact;
-	}
-
-	print() {
-		print(this.rootNode);
 	}
 
 	containsRule(name: string) {

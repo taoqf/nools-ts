@@ -1,262 +1,247 @@
-import Node from './node';
+import mixin from 'lodash-ts/mixin';
+import Context from '../context';
+import { INode, betaNodeType, create_node, base_assert, base_modify, base_retract, propagate_dispose } from './node';
+import { ITuple } from './misc/tuple-entry';
 import LeftMemory from './misc/left-memory';
 import RightMemory from './misc/right-memory';
-import Context from '../context';
-import Fact from '../facts/fact';
-import {ITuple} from './misc/tuple-entry';
 
-export default class BetaNode extends Node {
+export interface IBetaNode extends INode {
+	leftMemory: { [hasCode: string]: ITuple };
+	rightMemory: { [hasCode: string]: ITuple };
+	leftTuples: LeftMemory;
+	rightTuples: RightMemory;
+}
 
-	nodeType = "BetaNode";
+export function _create_beta_node(type: betaNodeType): IBetaNode {
+	return mixin(create_node(type), {
+		leftMemory: {},
+		rightMemory: {},
+		leftTuples: new LeftMemory(),
+		rightTuples: new RightMemory()
+	});
+}
 
-	leftMemory: { [hasCode: string]: ITuple } = {};
-	rightMemory: { [hasCode: string]: ITuple } = {};
-	leftTuples = new LeftMemory();
-	rightTuples = new RightMemory();
+export function create(): IBetaNode {
+	return _create_beta_node('beta');
+}
 
-	// __propagate(method, context: Context) {
-	// 	const entrySet = this.__entrySet, i = entrySet.length, entry, outNode;
-	// 	while (--i > -1) {
-	// 		entry = entrySet[i];
-	// 		outNode = entry.key;
-	// 		outNode[method](context);
-	// 	}
-	// }
+export function dispose(node: IBetaNode, context?: Context) {
+	node.leftMemory = {};
+	node.rightMemory = {};
+	node.leftTuples.clear();
+	node.rightTuples.clear();
+}
 
-	propagateAssert(context: Context) {
-		for (const [outNode, paths] of this.nodes.entries()) {
-			outNode.assert(context);
+// export function dispose_left(node: IBetaNode, context: Context) {
+// 	node.leftMemory = {};
+// 	node.leftTuples.clear();
+// 	propagate_dispose(node, context);
+// }
+
+// export function dispose_right(node: IBetaNode, context: Context) {
+// 	node.rightMemory = {};
+// 	node.rightTuples.clear();
+// 	propagate_dispose(node, context);
+// }
+
+export function assert(node: IBetaNode, context: Context) {
+	for (const [outNode, paths] of node.nodes.entries()) {
+		base_assert(outNode, context);
+	}
+}
+
+export function modify(node: IBetaNode, context: Context) {
+	for (const [outNode, paths] of node.nodes.entries()) {
+		base_modify(outNode, context);
+	}
+}
+
+export function retract(node: IBetaNode, context: Context) {
+	for (const [outNode, paths] of node.nodes.entries()) {
+		base_retract(outNode, context);
+	}
+}
+
+export function __addToLeftMemory(node: IBetaNode, context: Context) {
+	const hashCode = context.hashCode, lm = node.leftMemory;
+	if (hashCode in lm) {
+		return false;
+	}
+	lm[hashCode] = node.leftTuples.push(context);
+	context.rightMatches = {};
+	return true;
+}
+
+export function __addToMemoryMatches(node: IBetaNode, rightContext: Context, leftContext: Context, createdContext: Context) {
+	const rightFactId = rightContext.hashCode,
+		rm = node.rightMemory[rightFactId],
+		leftFactId = leftContext.hashCode;
+	if (rm) {
+		const data = rm.data;
+		if (leftFactId in data.leftMatches) {
+			throw new Error("Duplicate left fact entry");
 		}
+		data.leftMatches[leftFactId] = createdContext;
 	}
-
-	propagateRetract(context: Context) {
-		for (const [outNode, paths] of this.nodes.entries()) {
-			outNode.retract(context);
+	const lm = node.leftMemory[leftFactId];
+	if (lm) {
+		const data = lm.data;
+		if (rightFactId in data.rightMatches) {
+			throw new Error("Duplicate right fact entry");
 		}
+		data.rightMatches[rightFactId] = createdContext;
 	}
-	propagateModify(context: Context) {
-		for (const [outNode, paths] of this.nodes.entries()) {
-			outNode.modify(context);
-		}
-	}
+	return createdContext;
+}
 
-	dispose() {
-		this.leftMemory = {};
-		this.rightMemory = {};
-		this.leftTuples.clear();
-		this.rightTuples.clear();
-	}
+export function propagateFromLeft(node: IBetaNode, context: Context, rc: Context) {
+	assert(node, __addToMemoryMatches(node, rc, context, context.clone(null, null, context.match.merge(rc.match))));
+}
 
-	disposeLeft(fact: Fact) {
-		this.leftMemory = {};
-		this.leftTuples.clear();
-		this.propagateDispose(fact);
-	}
+export function assert_left(node: IBetaNode, context: Context) {
+	__addToLeftMemory(node, context);
+	const rm = node.rightTuples.getRightMemory(context);
+	rm.forEach((m) => {
+		propagateFromLeft(node, context, m.data);
+	});
+}
 
-	disposeRight(fact: Fact) {
-		this.rightMemory = {};
-		this.rightTuples.clear();
-		this.propagateDispose(fact);
+export function __addToRightMemory(node: IBetaNode, context: Context) {
+	const hashCode = context.hashCode, rm = node.rightMemory;
+	if (hashCode in rm) {
+		return false;
 	}
+	rm[hashCode] = node.rightTuples.push(context);
+	context.leftMatches = {};
+	return true;
+}
 
-	hashCode() {
-		return this.nodeType + " " + this.__id;
-	}
+function propagateFromRight(node: IBetaNode, context: Context, lc: Context) {
+	assert(node, __addToMemoryMatches(node, context, lc, lc.clone(null, null, lc.match.merge(context.match))));
+}
 
-	toString() {
-		return this.nodeType + " " + this.__id;
-	}
+export function assert_right(node: IBetaNode, context: Context) {
+	__addToRightMemory(node, context);
+	const lm = node.leftTuples.getLeftMemory(context);
+	lm.forEach((m) => {
+		propagateFromRight(node, context, m.data);
+	});
+}
 
-	retractLeft(context: Context) {
-		context = this.removeFromLeftMemory(context).data;
-		const rightMatches = context.rightMatches;
-		const hashCodes = Object.keys(rightMatches);
-		hashCodes.forEach((hashCode) => {
-			this.propagateRetract(rightMatches[hashCode].clone());
+export function removeFromLeftMemory(node: IBetaNode, context: Context) {
+	const hashCode = context.hashCode;
+	const tuple = node.leftMemory[hashCode] || null;
+	if (tuple) {
+		const rightMemory = node.rightMemory;
+		const rightMatches = tuple.data.rightMatches;
+		node.leftTuples.remove(tuple);
+		const hashCodes = Object.keys(rightMatches)
+		hashCodes.forEach((hc) => {
+			delete rightMemory[hc].data.leftMatches[hashCode];
 		});
+		delete node.leftMemory[hashCode];
 	}
+	return tuple;
+}
 
-	retractRight(context: Context) {
-		context = this.removeFromRightMemory(context).data;
-		const leftMatches = context.leftMatches;
-		const hashCodes = Object.keys(leftMatches);
-		hashCodes.forEach((hashCode) => {
-			this.propagateRetract(leftMatches[hashCode].clone());
-		});
+export function propagateRetractModifyFromLeft(node: IBetaNode, context: Context) {
+	const rightMatches = context.rightMatches;
+	const hashCodes = Object.keys(rightMatches);
+	hashCodes.forEach((hc) => {
+		retract(node, rightMatches[hc].clone());
+	});
+}
+
+function propagateAssertModifyFromLeft(node: IBetaNode, context: Context, rightMatches: {
+	[id: string]: Context;
+}, rm: Context) {
+	const factId = rm.hashCode;
+	if (factId in rightMatches) {
+		modify(node, __addToMemoryMatches(node, rm, context, context.clone(null, null, context.match.merge(rm.match))));
+	} else {
+		propagateFromLeft(node, context, rm);
 	}
+}
 
-	assertLeft(context: Context) {
-		this.__addToLeftMemory(context);
-		const rm = this.rightTuples.getRightMemory(context);
+export function modify_left(node: IBetaNode, context: Context) {
+	const previousContext = removeFromLeftMemory(node, context).data;
+	__addToLeftMemory(node, context);
+	const rm = node.rightTuples.getRightMemory(context);
+	if (!rm.length) {
+		propagateRetractModifyFromLeft(node, previousContext);
+	} else {
+		const rightMatches = previousContext.rightMatches;
 		rm.forEach((m) => {
-			this.propagateFromLeft(context, m.data);
+			propagateAssertModifyFromLeft(node, context, rightMatches, m.data);
 		});
 	}
+}
 
-	assertRight(context: Context) {
-		this.__addToRightMemory(context);
-		const lm = this.leftTuples.getLeftMemory(context);
-		lm.forEach((m) => {
-			this.propagateFromRight(context, m.data);
-		});
-	}
-
-	modifyLeft(context: Context) {
-		const previousContext = this.removeFromLeftMemory(context).data;
-		this.__addToLeftMemory(context);
-		const rm = this.rightTuples.getRightMemory(context);
-		if (!rm.length) {
-			this.propagateRetractModifyFromLeft(previousContext);
-		} else {
-			const rightMatches = previousContext.rightMatches;
-			rm.forEach((m) => {
-				this.propagateAssertModifyFromLeft(context, rightMatches, m.data);
-			});
-		}
-	}
-
-	modifyRight(context: Context) {
-		const previousContext = this.removeFromRightMemory(context).data;
-		this.__addToRightMemory(context);
-		const lm = this.leftTuples.getLeftMemory(context);
-		if (!lm.length) {
-			this.propagateRetractModifyFromRight(previousContext);
-		} else {
-			const leftMatches = previousContext.leftMatches;
-			lm.forEach((m) => {
-				this.propagateAssertModifyFromRight(context, leftMatches, m.data);
-			});
-		}
-	}
-
-	propagateFromLeft(context: Context, rc: Context) {
-		this.propagateAssert(this.__addToMemoryMatches(rc, context, context.clone(null, null, context.match.merge(rc.match))));
-	}
-
-	propagateFromRight(context: Context, lc: Context) {
-		this.propagateAssert(this.__addToMemoryMatches(context, lc, lc.clone(null, null, lc.match.merge(context.match))));
-	}
-
-	propagateRetractModifyFromLeft(context: Context) {
-		const rightMatches = context.rightMatches;
-		const hashCodes = Object.keys(rightMatches);
-		hashCodes.forEach((hc) => {
-			this.propagateRetract(rightMatches[hc].clone());
-		});
-	}
-
-	propagateRetractModifyFromRight(context: Context) {
-		const leftMatches = context.leftMatches;
+export function removeFromRightMemory(node: IBetaNode, context: Context) {
+	const hashCode = context.hashCode;
+	const tuple = node.rightMemory[hashCode] || null;
+	const tuples = node.rightTuples;
+	if (tuple) {
+		const leftMemory = node.leftMemory;
+		const ret = tuple.data;
+		const leftMatches = ret.leftMatches;
+		tuples.remove(tuple);
 		const hashCodes = Object.keys(leftMatches);
 		hashCodes.forEach((hc) => {
-			this.propagateRetract(leftMatches[hc].clone());
+			delete leftMemory[hc].data.rightMatches[hashCode];
+		});
+		delete node.rightMemory[hashCode];
+	}
+	return tuple;
+}
+
+export function propagateRetractModifyFromRight(node: IBetaNode, context: Context) {
+	const leftMatches = context.leftMatches;
+	const hashCodes = Object.keys(leftMatches);
+	hashCodes.forEach((hc) => {
+		retract(node, leftMatches[hc].clone());
+	});
+}
+
+function propagateAssertModifyFromRight(node: IBetaNode, context: Context, leftMatches: {
+	[id: string]: Context;
+}, lm: Context) {
+	const factId = lm.hashCode;
+	if (factId in leftMatches) {
+		modify(node, __addToMemoryMatches(node, context, lm, context.clone(null, null, lm.match.merge(context.match))));
+	} else {
+		propagateFromRight(node, context, lm);
+	}
+}
+
+export function modify_right(node: IBetaNode, context: Context) {
+	const previousContext = removeFromRightMemory(node, context).data;
+	__addToRightMemory(node, context);
+	const lm = node.leftTuples.getLeftMemory(context);
+	if (!lm.length) {
+		propagateRetractModifyFromRight(node, previousContext);
+	} else {
+		const leftMatches = previousContext.leftMatches;
+		lm.forEach((m) => {
+			propagateAssertModifyFromRight(node, context, leftMatches, m.data);
 		});
 	}
+}
 
-	propagateAssertModifyFromLeft(context: Context, rightMatches: {
-		[id: string]: Context;
-	}, rm: Context) {
-		const factId = rm.hashCode;
-		if (factId in rightMatches) {
-			this.propagateModify(this.__addToMemoryMatches(rm, context, context.clone(null, null, context.match.merge(rm.match))));
-		} else {
-			this.propagateFromLeft(context, rm);
-		}
-	}
+export function retract_left(node: IBetaNode, context: Context) {
+	context = removeFromLeftMemory(node, context).data;
+	const rightMatches = context.rightMatches;
+	const hashCodes = Object.keys(rightMatches);
+	hashCodes.forEach((hashCode) => {
+		retract(node, rightMatches[hashCode].clone());
+	});
+}
 
-	propagateAssertModifyFromRight(context: Context, leftMatches: {
-		[id: string]: Context;
-	}, lm: Context) {
-		const factId = lm.hashCode;
-		if (factId in leftMatches) {
-			this.propagateModify(this.__addToMemoryMatches(context, lm, context.clone(null, null, lm.match.merge(context.match))));
-		} else {
-			this.propagateFromRight(context, lm);
-		}
-	}
-
-	removeFromRightMemory(context: Context) {
-		const hashCode = context.hashCode;
-		const tuple = this.rightMemory[hashCode] || null;
-		const tuples = this.rightTuples;
-		if (tuple) {
-			const leftMemory = this.leftMemory;
-			const ret = tuple.data;
-			const leftMatches = ret.leftMatches;
-			tuples.remove(tuple);
-			const hashCodes = Object.keys(leftMatches);
-			hashCodes.forEach((hc) => {
-				delete leftMemory[hc].data.rightMatches[hashCode];
-			});
-			delete this.rightMemory[hashCode];
-		}
-		return tuple;
-	}
-
-	removeFromLeftMemory(context: Context) {
-		const hashCode = context.hashCode;
-		const tuple = this.leftMemory[hashCode] || null;
-		if (tuple) {
-			const rightMemory = this.rightMemory;
-			const rightMatches = tuple.data.rightMatches;
-			this.leftTuples.remove(tuple);
-			const hashCodes = Object.keys(rightMatches)
-			hashCodes.forEach((hc) => {
-				delete rightMemory[hc].data.leftMatches[hashCode];
-			});
-			delete this.leftMemory[hashCode];
-		}
-		return tuple;
-	}
-
-	// getRightMemoryMatches(context: Context) {
-	// 	const lm = this.leftMemory[context.hashCode], ret = {};
-	// 	if (lm) {
-	// 		return lm.rightMatches;
-	// 	}
-	// 	return ret;
-	// }
-
-	__addToMemoryMatches(rightContext: Context, leftContext: Context, createdContext: Context) {
-		const rightFactId = rightContext.hashCode,
-			rm = this.rightMemory[rightFactId],
-			leftFactId = leftContext.hashCode;
-		if (rm) {
-			const data = rm.data;
-			if (leftFactId in data.leftMatches) {
-				throw new Error("Duplicate left fact entry");
-			}
-			data.leftMatches[leftFactId] = createdContext;
-		}
-		const lm = this.leftMemory[leftFactId];
-		if (lm) {
-			const data = lm.data;
-			if (rightFactId in data.rightMatches) {
-				throw new Error("Duplicate right fact entry");
-			}
-			data.rightMatches[rightFactId] = createdContext;
-		}
-		return createdContext;
-	}
-
-	__addToRightMemory(context: Context) {
-		const hashCode = context.hashCode, rm = this.rightMemory;
-		if (hashCode in rm) {
-			return false;
-		}
-		rm[hashCode] = this.rightTuples.push(context);
-		context.leftMatches = {};
-		return true;
-	}
-
-
-	__addToLeftMemory(context: Context) {
-		const hashCode = context.hashCode, lm = this.leftMemory;
-		if (hashCode in lm) {
-			return false;
-		}
-		lm[hashCode] = this.leftTuples.push(context);
-		context.rightMatches = {};
-		return true;
-	}
+export function retract_right(node: IBetaNode, context: Context) {
+	context = removeFromRightMemory(node, context).data;
+	const leftMatches = context.leftMatches;
+	const hashCodes = Object.keys(leftMatches);
+	hashCodes.forEach((hashCode) => {
+		retract(node, leftMatches[hashCode].clone());
+	});
 }

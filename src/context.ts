@@ -1,7 +1,7 @@
 import isBoolean from 'lodash-ts/isBoolean';
 import Fact from './facts/fact';
 import LinkedList from './linked-list';
-import TerminalNode from './nodes/terminal-node';
+import { ITerminalNode } from './nodes/terminal-node';
 import { IPattern } from './pattern';
 
 function createContextHash(paths: IPattern[], hashCode: string) {
@@ -73,7 +73,7 @@ export default class Context {
 	blocking: LinkedList<Context>;
 	fromMatches: { [id: number]: Context } = {};
 	blocked = false;
-	rule: TerminalNode;
+	rule: ITerminalNode;
 
 	constructor(fact: Fact, paths?: IPattern[], mr?: Match) {
 		this.fact = fact;

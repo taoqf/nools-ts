@@ -1,71 +1,51 @@
-import Node from './node';
-import { IBucket } from '../interfaces';
+import mixin from 'lodash-ts/mixin';
+import { INode, create_node } from './node';
 import { IRule } from '../rule';
+import { IBucket } from './root-node';
 import AgendaTree from '../agenda';
 import Context from '../context';
 
-export default class TerminalNode extends Node {
-	public rule: IRule;
-	protected index: number;
-	public name: string;
-	protected agenda: AgendaTree;
-	protected bucket: IBucket;
-	constructor(bucket: IBucket, index: number, rule: IRule, agenda: AgendaTree) {
-		super();
-		this.rule = rule;
-		this.index = index;
-		this.name = this.rule.name;
-		this.agenda = agenda;
-		this.bucket = bucket;
-		agenda.register(this);
-	}
+export interface ITerminalNode extends INode {
+	index: number;
+	rule: IRule;
+	name: string;
+	bucket: IBucket;
+	agenda: AgendaTree;
+}
 
-	__assertModify(context: Context) {
-		const match = context.match;
-		if (match.isMatch) {
-			const rule = this.rule, bucket = this.bucket;
-			this.agenda.insert(this, {
-				rule: rule,
-				hashCode: context.hashCode,
-				index: this.index,
-				name: rule.name,
-				recency: bucket.recency++,
-				match: match,
-				counter: bucket.counter
-			});
-		}
-	}
+export function create(name: string, rule: IRule, index: number, bucket: IBucket, agenda: AgendaTree): ITerminalNode {
+	const node = mixin(create_node('terminal'), {
+		index: index,
+		rule: rule,
+		name: name,
+		bucket: bucket,
+		agenda: agenda
+	});
+	agenda.register(node);
+	return node;
+}
 
-	assert(context: Context) {
-		this.__assertModify(context);
+export function assert(node: ITerminalNode, context: Context) {
+	const match = context.match;
+	if (match.isMatch) {
+		const rule = node.rule, bucket = node.bucket;
+		node.agenda.insert(node, {
+			rule: rule,
+			hashCode: context.hashCode,
+			index: node.index,
+			name: rule.name,
+			recency: bucket.recency++,
+			match: match,
+			counter: bucket.counter
+		});
 	}
+}
 
-	modify(context: Context) {
-		this.agenda.retract(this, context);
-		this.__assertModify(context);
-	}
+export function modify(node: ITerminalNode, context: Context) {
+	node.agenda.retract(node, context);
+	assert(node, context);
+}
 
-	retract(context: Context) {
-		this.agenda.retract(this, context);
-	}
-
-	retractRight(context: Context) {
-		this.agenda.retract(this, context);
-	}
-
-	retractLeft(context: Context) {
-		this.agenda.retract(this, context);
-	}
-
-	assertLeft(context: Context) {
-		this.__assertModify(context);
-	}
-
-	assertRight(context: Context) {
-		this.__assertModify(context);
-	}
-
-	toString() {
-		return "TerminalNode " + this.rule.name;
-	}
+export function retract(node: ITerminalNode, context: Context) {
+	node.agenda.retract(node, context);
 }

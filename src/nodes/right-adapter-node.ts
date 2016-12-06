@@ -1,33 +1,73 @@
-import AdapterNode from './adapter-node';
+import intersection from 'lodash-ts/intersection';
 import Context from '../context';
+import { IAdapterNode } from './adapter-node';
+import { base_assert_right, base_modify_right, base_retract_right } from './node';
 
-export default class RightAdapterNode extends AdapterNode {
-
-	propagateAssert(context: Context) {
-		this.propagateAssertRight(context);
+function __propagatePathsAssertRight(node: IAdapterNode, context: Context) {
+	for (const [outNode, paths] of node.nodes.entries()) {
+		const continuingPaths = intersection(paths, context.paths);
+		if (continuingPaths.length) {
+			base_assert_right(outNode, context.clone(null, continuingPaths, null));
+		}
 	}
+}
 
-	propagateRetract(context: Context) {
-		this.propagateRetractRight(context);
+function __propagateNoPathsAssertRight(node: IAdapterNode, context: Context) {
+	for (const [outNode, paths] of node.nodes.entries()) {
+		base_assert_right(outNode, context);
 	}
+}
 
-	// propagateResolve(context: Context) {
-	// 	this.propagate("retractResolve", context);
-	// }
-
-	propagateModify(context: Context) {
-		this.propagateModifyRight(context);
+export function assert(node: IAdapterNode, context: Context) {
+	if (context.paths) {
+		__propagatePathsAssertRight(node, context);
+	} else {
+		__propagateNoPathsAssertRight(node, context);
 	}
+}
 
-	// retractResolve(match: Context) {
-	// 	this.propagate("retractResolve", match);
-	// }
-
-	dispose(context: Context) {
-		this.propagateDispose(context);
+function __propagatePathsModifyRight(node: IAdapterNode, context: Context) {
+	for (const [outNode, paths] of node.nodes.entries()) {
+		const continuingPaths = intersection(paths, context.paths);
+		if (continuingPaths.length) {
+			base_modify_right(outNode, context.clone(null, continuingPaths, null));
+		}
 	}
+}
 
-	toString() {
-		return "RightAdapterNode " + this.__id;
+function __propagateNoPathsModifyRight(node: IAdapterNode, context: Context) {
+	for (const [outNode, paths] of node.nodes.entries()) {
+		base_modify_right(outNode, context);
+	}
+}
+export function modify(node: IAdapterNode, context: Context) {
+	if (context.paths) {
+		__propagatePathsModifyRight(node, context);
+	} else {
+		__propagateNoPathsModifyRight(node, context);
+	}
+}
+
+
+function __propagatePathsRetractRight(node: IAdapterNode, context: Context) {
+	for (const [outNode, paths] of node.nodes.entries()) {
+		const continuingPaths = intersection(paths, context.paths);
+		if (continuingPaths.length) {
+			base_retract_right(outNode, context.clone(null, continuingPaths, null));
+		}
+	}
+}
+
+function __propagateNoPathsRetractRight(node: IAdapterNode, context: Context) {
+	for (const [outNode, paths] of node.nodes.entries()) {
+		base_retract_right(outNode, context);
+	}
+}
+
+export function retract(node: IAdapterNode, context: Context) {
+	if (context.paths) {
+		__propagatePathsRetractRight(node, context);
+	} else {
+		__propagateNoPathsRetractRight(node, context);
 	}
 }

@@ -1,44 +1,43 @@
-import AlphaNode from './alpha-node';
+import mixin from 'lodash-ts/mixin';
 import Context from '../context';
-import { IHashConstraint } from '../constraint';
+import { IAlphaNode, create as create_alpha } from './alpha-node';
+import { propagate_assert, propagate_modify, propagate_retract } from './node';
+import { IConstraint } from '../constraint';
 
-export default class PropertyNode extends AlphaNode {
-	protected alias: string;
-	protected constiables: any;
-	constructor(constraint: IHashConstraint) {
-		super(constraint);
-		this.constiables = constraint.constraint;
-		this.alias = constraint.alias;
+export interface IPropertyNode extends IAlphaNode {
+	alias: string;
+	constiables: any;
+}
+
+export function create(constraint: IConstraint): IPropertyNode {
+	return mixin(create_alpha('property', constraint), {
+		alias: constraint.alias,
+		constiables: constraint.constraint
+	})
+}
+
+export function assert(node: IPropertyNode, context: Context) {
+	const c = new Context(context.fact, context.paths);
+	const constiables = node.constiables, o = context.fact.object;
+	c.set(node.alias, o);
+	for (const key in constiables) {
+		const val = constiables[key];
+		c.set(val, o[key]);
 	}
+	propagate_assert(node, c);
+}
 
-	assert(context: Context) {
-		const c = new Context(context.fact, context.paths);
-		const constiables = this.constiables, o = context.fact.object;
-		c.set(this.alias, o);
-		for (const key in constiables) {
-			const val = constiables[key];
-			c.set(val, o[key]);
-		}
-		this.propagateAssert(c);
+export function modify(node: IPropertyNode, context: Context) {
+	const c = new Context(context.fact, context.paths);
+	const constiables = node.constiables, o = context.fact.object;
+	c.set(node.alias, o);
+	for (const key in constiables) {
+		const val = constiables[key];
+		c.set(val, o[key]);
 	}
+	propagate_modify(node, c);
+}
 
-	retract(context: Context) {
-		this.propagateRetract(new Context(context.fact, context.paths));
-	}
-
-	modify(context: Context) {
-		const c = new Context(context.fact, context.paths);
-		const constiables = this.constiables, o = context.fact.object;
-		c.set(this.alias, o);
-		for (const key in constiables) {
-			const val = constiables[key];
-			c.set(val, o[key]);
-		}
-		this.propagateModify(c);
-	}
-
-
-	toString() {
-		return "PropertyNode" + this.__id;
-	}
+export function retract(node: IPropertyNode, context: Context) {
+	propagate_retract(node, new Context(context.fact, context.paths));
 }

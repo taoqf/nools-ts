@@ -1,31 +1,31 @@
-import AlphaNode from './alpha-node';
-import { IObjectPattern } from '../pattern';
+import mixin from 'lodash-ts/mixin';
 import Context from '../context';
+import { propagate_assert, propagate_modify, propagate_retract } from './node';
+import { IAlphaNode, create as create_alpha } from './alpha-node';
+import { IObjectPattern } from '../pattern';
 
-export default class AliasNode extends AlphaNode {
-	protected alias: string;
-	constructor(constraint: IObjectPattern) {
-		super(constraint as any);
-		this.alias = constraint.alias;
-	}
+export interface IAliasNode extends IAlphaNode {
+	alias: string;
+}
 
-	toString() {
-		return "AliasNode" + this.__id;
-	}
+export function create(pattern: IObjectPattern): IAliasNode {
+	const alias = pattern.alias;
+	return mixin(create_alpha('alias', pattern as any), {
+		alias: alias,
+		equal(other: IAliasNode) {
+			return other.type == 'alias' && alias === other.alias;
+		}
+	});
+}
 
-	assert(context: Context) {
-		return this.propagateAssert(context.set(this.alias, context.fact.object));
-	}
+export function assert(node: IAliasNode, context: Context) {
+	return propagate_assert(node, context.set(node.alias, context.fact.object));
+}
 
-	modify(context: Context) {
-		return this.propagateModify(context.set(this.alias, context.fact.object));
-	}
+export function modify(node: IAliasNode, context: Context) {
+	return propagate_modify(node, context.set(node.alias, context.fact.object));
+}
 
-	retract(context: Context) {
-		return this.propagateRetract(context.set(this.alias, context.fact.object));
-	}
-
-	equal(other: AliasNode) {
-		return other instanceof AliasNode && this.alias === other.alias;
-	}
+export function retract(node: IAliasNode, context: Context) {
+	return propagate_retract(node, context.set(node.alias, context.fact.object));
 }
