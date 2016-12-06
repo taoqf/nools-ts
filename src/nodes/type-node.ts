@@ -28,8 +28,10 @@ export function modify(node: ITypeNode, fact: Fact) {
 }
 
 export function retract(node: ITypeNode, fact: Fact) {
-	for (const [outNode, paths] of node.nodes.entries()) {
-		base_retract(outNode, new Context(fact, paths));
+	if (node.constraintAssert(fact.object)) {
+		for (const [outNode, paths] of node.nodes.entries()) {
+			base_retract(outNode, new Context(fact, paths));
+		}
 	}
 }
 
