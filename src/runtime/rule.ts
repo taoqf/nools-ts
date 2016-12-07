@@ -1,13 +1,9 @@
 import keys from 'lodash-ts/keys';
 
-import { IRule as IBaseRule } from '../compile/rule';
+import { IRule } from '../interfaces';
 import Flow from '../flow';
 import { Match } from '../context';
 import { IPattern } from '../pattern';
-
-export interface IRule extends IBaseRule {
-	fire(flow: Flow, match: Match): Promise<{}>;
-}
 
 function parseAction(action: string, defined: Map<string, any>, scope: Map<string, any>) {
 	const params = ["facts", 'flow'];
@@ -21,16 +17,20 @@ function parseAction(action: string, defined: Map<string, any>, scope: Map<strin
 	}
 }
 
-export default function (rules: IBaseRule[], defined: Map<string, any>, scope: Map<string, any>): IRule[] {
+export default function (rules: IRule[], defined: Map<string, any>, scope: Map<string, any>): IRule[] {
 	return rules.map((rule) => {
-		const cb = parseAction(rule.action, defined, scope);
-		delete rule.action;
-		const nrule = rule as IRule;
-		nrule.fire = (flow: Flow, match: Match) => {
-			return new Promise((resolve) => {
-				resolve(cb.call(flow, match.factHash, flow));
-			});
+		if(rule.action){
+			const cb = parseAction(rule.action, defined, scope);
+			delete rule.action;
+			const nrule = rule as IRule;
+			nrule.fire = (flow: Flow, match: Match) => {
+				return new Promise((resolve) => {
+					resolve(cb.call(flow, match.factHash, flow));
+				});
+			}
+			return nrule;
+		} else {
+			return rule;
 		}
-		return nrule;
 	});
 }

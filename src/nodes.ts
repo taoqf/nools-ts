@@ -1,7 +1,7 @@
 import { IConstraint } from './constraint';
 import Context, { Match } from './context';
 import { IObjectPattern, IFromPattern } from './pattern';
-import { IRule } from './runtime/rule';
+import { IRule } from './interfaces';
 import LeftMemory from './nodes/misc/left-memory';
 import RightMemory from './nodes/misc/right-memory';
 import { ITuple } from './nodes/misc/tuple-entry';
@@ -100,7 +100,7 @@ export interface ITerminalNode extends INode {
 	rule: IRule;
 	name: string;
 	bucket: IBucket;
-	agenda: AgendaTree;
+	agenda?: AgendaTree;
 }
 export interface IBucket {
 	counter: number;

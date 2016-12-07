@@ -3,7 +3,7 @@ import { INode } from '../nodes';
 import Context, { Match } from '../context';
 import { IReferenceConstraint, is_instance_of_reference_eq_constraint } from '../constraint';
 import { IJoinReferenceNode } from './join-reference-node';;
-import { create_node } from './node';
+import { create_node } from '../compile/nodes';
 import Memory from './misc/memory';
 
 const inversions: { [op: string]: string } = {

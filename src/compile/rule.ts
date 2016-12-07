@@ -1,19 +1,10 @@
 import isBoolean from 'lodash-ts/isBoolean';
 import isArray from 'lodash-ts/isArray';
 
-import { IRuleContextOptions, ICondition } from '../interfaces';
+import { IRuleContextOptions, ICondition, IRule } from '../interfaces';
 import pattern, { IPattern, composite_pattern } from '../pattern';
 
-export interface IRule {
-	name: string;
-	agendaGroup: string;
-	priority: number;
-	autoFocus: boolean;
-	action: string;
-	pattern: IPattern;
-}
-
-function _create_rule(name: string, options: IRuleContextOptions, pattern: IPattern, action: string):IRule {
+function _create_rule(name: string, options: IRuleContextOptions, pattern: IPattern, action: string): IRule {
 	let agendaGroup: string = null;
 	let autoFocus = false;
 	if (options.agendaGroup) {

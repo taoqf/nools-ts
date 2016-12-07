@@ -1,24 +1,7 @@
-import mixin from 'lodash-ts/mixin';
 import Context from '../context';
-import { INode, IBetaNode, betaNodeType } from '../nodes';
-import { create_node, base_assert, base_modify, base_retract, propagate_dispose } from './node';
-import { ITuple } from './misc/tuple-entry';
-import LeftMemory from './misc/left-memory';
-import RightMemory from './misc/right-memory';
+import { INode, IBetaNode } from '../nodes';
+import { base_assert, base_modify, base_retract, propagate_dispose } from './node';
 import WorkingMemory from '../working-memory';
-
-export function _create_beta_node(type: betaNodeType): IBetaNode {
-	return mixin(create_node(type), {
-		leftMemory: {},
-		rightMemory: {},
-		leftTuples: new LeftMemory(),
-		rightTuples: new RightMemory()
-	});
-}
-
-export function create(): IBetaNode {
-	return _create_beta_node('beta');
-}
 
 export function dispose(nodes: INode[], n: number, context?: Context) {
 	const node = nodes[n] as IBetaNode;

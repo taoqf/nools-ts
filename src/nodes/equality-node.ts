@@ -1,16 +1,7 @@
-import mixin from 'lodash-ts/mixin';
-import { IConstraint } from '../constraint';
 import Context from '../context';
 import { INode, IEqualityNode } from '../nodes';
-import { create as create_alpha } from './alpha-node';
 import { propagate_assert, propagate_modify, propagate_retract } from './node';
 import WorkingMemory from '../working-memory';
-
-export function create(constraint: IConstraint): IEqualityNode {
-	return mixin(create_alpha('equality', constraint), {
-		memory: new Map<string, boolean>()
-	});
-}
 
 export function assert(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n] as IEqualityNode;

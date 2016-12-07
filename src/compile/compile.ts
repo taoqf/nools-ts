@@ -4,12 +4,12 @@ import isObject from 'lodash-ts/isObject';
 import isMap from 'lodash-ts/isMap';
 import keys from 'lodash-ts/keys';
 
-import { IContext, IRuleContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ICompileOptions, ICondition } from '../interfaces';
+import { IContext, IRuleContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ICompileOptions, ICondition, IRule } from '../interfaces';
 import { removeDups, to_map } from '../lang';
 import { get_defines, createDefined, createFunction } from '../compile';
 import { getIdentifiers } from '../constraint-matcher';
 import parseConstraint from './parser/constraint';
-import { IRule, createRule } from './rule';
+import { createRule } from './rule';
 
 const __resolveRule = function (rule: INomalConstraint | IFromstraint, defined: Map<string, any>, name: string) {
 	const condition = [] as any[], alias = rule[1];

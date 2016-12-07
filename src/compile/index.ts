@@ -5,6 +5,7 @@ import compile from './compile';
 import FlowContainer from '../flow-container';
 import tokens from './parser/tokens';
 import parse from './parser/parse';
+import create_root_node, { assertRule} from './nodes';
 
 export default function parse_rules(src: string, options: ICompileOptions): IFlow {
 	if (!isString(src)) {
@@ -12,8 +13,13 @@ export default function parse_rules(src: string, options: ICompileOptions): IFlo
 	}
 	const context = { define: [], rules: [], scope: [] } as IContext;
 	parse(src, tokens, context);
+	const root = create_root_node();
+	const rules = compile(context, options);
+	rules.forEach((rule)=>{
+		assertRule(root, rule);
+	});
 	return {
-		rules: compile(context, options),
-		name: uuid()
+		name: uuid(),
+		root: root
 	};
 }

@@ -11,7 +11,7 @@ export function compile(src: string, options: ICompileOptions) {
 	// console.log('----------------------------------');
 	// console.info(JSON.stringify(flow));
 	// console.log('++++++++++++++++++++++++++++++++++');
-	return runtime_compile(flow.rules, options);
+	return runtime_compile(flow, options);
 }
 
 export default compile;

@@ -79,7 +79,6 @@ export interface IPatternOptions {
 	alias?: string;
 }
 
-import { IRule } from './runtime/rule';
 import { Match } from './context';
 
 export interface IInsert {
@@ -97,9 +96,22 @@ export interface IBucket {
 	recency: number;
 }
 
-import { IRule as IParsedRule } from './compile/rule';
+import { IRootNode } from './nodes';
 
 export interface IFlow {
 	name: string;
-	rules: IParsedRule[];
+	root: IRootNode;
+}
+
+import { IPattern } from './pattern';
+import Flow from './flow';
+
+export interface IRule {
+	name: string;
+	agendaGroup: string;
+	priority: number;
+	autoFocus: boolean;
+	action: string;
+	pattern: IPattern;
+	fire?(flow: Flow, match: Match): Promise<{}>;
 }

@@ -2,75 +2,9 @@ import intersection from 'lodash-ts/intersection';
 import { INode, nodeType } from '../nodes';
 import { IObjectPattern } from '../pattern';
 import Context from '../context';
-import { IRule } from '../runtime/rule';
+import { IRule } from '../interfaces';
 import Fact from '../facts/fact';
 import WorkingMemory from '../working-memory';
-
-export function addRule(node: number, rule: IRule, nodes: INode[]) {
-	const n = nodes[node];
-	if (n.rules.indexOf(rule) === -1) {
-		n.rules.push(rule);
-	}
-	return node;
-}
-
-export function merge(node1: number, node2: number, nodes: INode[]) {
-	const n1 = nodes[node1];
-	const n2 = nodes[node2];
-	for (const [node, patterns] of n2.nodes.entries()) {
-		patterns.forEach((pattern) => {
-			addOutNode(n1, node, pattern);
-		});
-		n2.nodes.delete(node);
-	}
-	n2.parentNodes.forEach((parentNode) => {
-		addParentNode(n1, parentNode);
-		nodes[parentNode].nodes.delete(node2);
-	});
-	return n1;
-}
-
-export function addOutNode(node: INode, outNode: number, pattern: IObjectPattern) {
-	const nodes = node.nodes;
-	if (!nodes.has(outNode)) {
-		nodes.set(outNode, []);
-	}
-	nodes.get(outNode).push(pattern);
-}
-
-export function addParentNode(node: INode, n: number) {
-	const parentNodes = node.parentNodes;
-	if (parentNodes.indexOf(n) === -1) {
-		parentNodes.push(n);
-	}
-}
-
-let id = 0;
-
-export function create_node(type: nodeType): INode {
-	return {
-		type: type,
-		nodes: new Map<number, IObjectPattern[]>(),
-		__id: id++,
-		rules: [],
-		parentNodes: []
-	};
-}
-
-export function is_instance_of_beta_node(node: INode) {
-	switch (node.type) {
-		case 'not':
-		case 'exists':
-		case 'join':
-		case 'from':
-		case 'from-not':
-		case 'exists-from':
-		case 'beta':
-			return true;
-		default:
-			return false;
-	}
-}
 
 const assert_funcs = new Map<nodeType, typeof base_assert>();
 const assert_left_funcs = new Map<nodeType, typeof base_assert_left>();

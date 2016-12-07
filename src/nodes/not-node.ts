@@ -1,23 +1,9 @@
-import mixin from 'lodash-ts/mixin';
-import InitialFact from '../facts/initial';
 import { ITuple } from './misc/tuple-entry';
 import LinkedList, { ILinkNode } from '../linked-list';
-import { INode, INotNode, notNodeType } from '../nodes';
+import { INode, INotNode } from '../nodes';
 import { removeFromRightMemory, removeFromLeftMemory, retract, __addToRightMemory, __addToLeftMemory, assert, modify } from './beta-node';
-import { _create_join_node } from './join-node';
 import Context, { Match } from '../context';
 import WorkingMemory from '../working-memory';
-
-export function _create_not_node(type: notNodeType): INotNode {
-	return mixin(_create_join_node(type), {
-		leftTupleMemory: {},
-		notMatch: new Context(new InitialFact()).match
-	});
-}
-
-export function create(): INotNode {
-	return _create_not_node('not');
-}
 
 export function addToLeftBlockedMemory(nodes: INode[], n: number, context: ILinkNode<Context>) {
 	const node = nodes[n] as INotNode;

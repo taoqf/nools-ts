@@ -4,11 +4,6 @@ import WorkingMemory from '../working-memory';
 import Context from '../context';
 import { INode, IExistsFromNode } from '../nodes';
 import { __addToLeftMemory, assert, removeFromLeftMemory, modify, retract } from './beta-node';
-import { _create_from_not_node } from './from-not-node';
-
-export function create(pattern: IFromPattern): IExistsFromNode {
-	return _create_from_not_node('exists-from', pattern);
-}
 
 function __isMatch(node: IExistsFromNode, oc: Context, o: any, add: boolean, wm: WorkingMemory) {
 	let ret = false;

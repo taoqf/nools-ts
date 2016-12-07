@@ -1,20 +1,7 @@
-import mixin from 'lodash-ts/mixin';
 import { INode, ITerminalNode, IBucket } from '../nodes';
-import { create_node } from './node';
-import { IRule } from '../runtime/rule';
+import { IRule } from '../interfaces';
 import AgendaTree from '../agenda';
 import Context from '../context';
-
-export function create(name: string, rule: IRule, index: number, bucket: IBucket, agenda: AgendaTree): ITerminalNode {
-	const node = mixin(create_node('terminal'), {
-		index: index,
-		rule: rule,
-		name: name,
-		bucket: bucket,
-		agenda: agenda
-	});
-	return node;
-}
 
 export function assert(nodes: INode[], n: number, context: Context) {
 	const node = nodes[n] as ITerminalNode;

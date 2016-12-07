@@ -1,11 +1,12 @@
-import { IInsert } from './interfaces';
+import { IInsert, IRule } from './interfaces';
 import WorkingMemory from './working-memory';
 import AgendaTree from './agenda';
 import EventEmitter from './EventEmitter';
 import { IRootNode } from './nodes';
-import { create_root_node, dispose, assertFact, retractFact, modifyFact, assertRule, containsRule } from './nodes/root-node';
-import { IRule } from './runtime/rule';
+
+import { dispose, assertFact, retractFact, modifyFact, containsRule } from './nodes/root-node';
 import ExecutionStrategy from './execution-strategy';
+import build_nodes from './runtime/nodes';
 
 export default class Flow extends EventEmitter {
 	private name: string;
@@ -14,7 +15,7 @@ export default class Flow extends EventEmitter {
 	public agenda: AgendaTree;
 	public rootNode: IRootNode;
 	private executionStrategy: ExecutionStrategy;
-	constructor(name: string, conflictResolutionStrategy: (a: IInsert, b: IInsert) => number) {
+	constructor(root_node: IRootNode, name: string, conflictResolutionStrategy: (a: IInsert, b: IInsert) => number) {
 		super();
 		this.name = name;
 		this.agenda = new AgendaTree(this, conflictResolutionStrategy);
@@ -24,7 +25,9 @@ export default class Flow extends EventEmitter {
 		this.agenda.on("focused", (...args: any[]) => {
 			this.emit('focused', ...args);
 		});
-		this.rootNode = create_root_node();
+		this.rootNode = root_node;
+		build_nodes(this.rootNode, this.agenda);
+		// todo: regist all the terminal nodes
 	}
 
 	getFacts(Type: any) {
@@ -77,10 +80,6 @@ export default class Flow extends EventEmitter {
 
 	containsRule(name: string) {
 		return containsRule(this.rootNode, name);
-	}
-
-	rule(rule: IRule) {
-		assertRule(this.rootNode, rule, this.agenda);
 	}
 
 	matchUntilHalt() {

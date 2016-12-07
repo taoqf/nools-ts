@@ -3,12 +3,8 @@ import { ITuple } from './misc/tuple-entry';
 import LinkedList, { ILinkNode } from '../linked-list';
 import { INode, IExistsNode } from '../nodes';
 import { removeFromLeftMemory, assert, modify, retract, __addToLeftMemory, removeFromRightMemory, __addToRightMemory } from './beta-node';
-import { _create_not_node, removeFromLeftBlockedMemory, __cloneContext, addToLeftBlockedMemory } from './not-node';
+import { removeFromLeftBlockedMemory, __cloneContext, addToLeftBlockedMemory } from './not-node';
 import WorkingMemory from '../working-memory';
-
-export function create(): IExistsNode {
-	return _create_not_node('exists');
-}
 
 function blockedContext(nodes: INode[], n: number, leftContext: Context, rightContext: Context, wm: WorkingMemory) {
 	const node = nodes[n] as IExistsNode;

@@ -1,8 +1,8 @@
 import instanceOf from 'lodash-ts/isinstanceof';
 import conflictResolution from './conflict';
 import Flow from './flow';
-import { IInsert, IRuleContextOptions, ICondition } from './interfaces';
-import { IRule } from './runtime/rule';
+import { IInsert, IRuleContextOptions, ICondition, IRule } from './interfaces';
+import { IRootNode } from './nodes';
 import InitialFact from './facts/initial';
 
 const flows = new Map<string, FlowContainer>();
@@ -11,9 +11,11 @@ export default class FlowContainer {
 	private name: string;
 	private __rules: IRule[] = [];
 	private __defined = new Map<string, any>();
+	private root_nodes: IRootNode;
 	private conflictResolutionStrategy: (a: IInsert, b: IInsert) => number;
-	constructor(name: string) {
+	constructor(root_node: IRootNode, name: string) {
 		this.name = name;
+		this.root_nodes = root_node;
 		// this.cb = cb;
 		this.conflictResolutionStrategy = conflictResolution;
 		// if (cb) {
@@ -24,10 +26,6 @@ export default class FlowContainer {
 		} else {
 			throw new Error("Flow with " + name + " already defined");
 		}
-	}
-
-	addRules(rules: IRule[]) {
-		this.__rules = this.__rules.concat(rules);
 	}
 
 	getDefined(name: string) {
@@ -45,10 +43,7 @@ export default class FlowContainer {
 	}
 
 	getSession(...facts: any[]) {
-		const flow = new Flow(this.name, this.conflictResolutionStrategy);
-		this.__rules.forEach((rule) => {
-			flow.rule(rule);
-		});
+		const flow = new Flow(this.root_nodes, this.name, this.conflictResolutionStrategy);
 		flow.assert(new InitialFact());
 		facts.forEach((fact) => {
 			flow.assert(fact);
@@ -85,9 +80,5 @@ export default class FlowContainer {
 			}
 		}
 		return FlowContainer;
-	}
-
-	static create(name: string) {
-		return new FlowContainer(name);
 	}
 }
