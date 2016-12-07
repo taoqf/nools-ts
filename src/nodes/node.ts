@@ -15,18 +15,21 @@ export interface INode {
 	type: nodeType;
 	nodes: Map<INode, IObjectPattern[]>;	// todo: Map<number, IObjectPattern[]>
 	rules: IRule[];
-	parentNodes: INode[];
+	parentNodes: number[];
 	__id: number;
 }
 
-export function addRule(node: INode, rule: IRule) {
-	if (node.rules.indexOf(rule) === -1) {
-		node.rules.push(rule);
+export function addRule(node: number, rule: IRule, nodes: INode[]) {
+	const n = nodes[node];
+	if (n.rules.indexOf(rule) === -1) {
+		n.rules.push(rule);
 	}
 	return node;
 }
 
-export function merge(n1: INode, n2: INode) {
+export function merge(node1: number, node2: number, nodes: INode[]) {
+	const n1 = nodes[node1];
+	const n2 = nodes[node2];
 	for (const [node, patterns] of n2.nodes.entries()) {
 		patterns.forEach((pattern) => {
 			addOutNode(n1, node, pattern);
@@ -35,7 +38,7 @@ export function merge(n1: INode, n2: INode) {
 	}
 	n2.parentNodes.forEach((parentNode) => {
 		addParentNode(n1, parentNode);
-		parentNode.nodes.delete(n2);
+		nodes[parentNode].nodes.delete(n2);
 	});
 	return n1;
 }
@@ -48,7 +51,7 @@ export function addOutNode(node: INode, outNode: INode, pattern: IObjectPattern)
 	nodes.get(outNode).push(pattern);
 }
 
-export function addParentNode(node: INode, n: INode) {
+export function addParentNode(node: INode, n: number) {
 	const parentNodes = node.parentNodes;
 	if (parentNodes.indexOf(n) === -1) {
 		parentNodes.push(n);
