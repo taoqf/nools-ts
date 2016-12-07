@@ -25,7 +25,8 @@ export function create(name: string, rule: IRule, index: number, bucket: IBucket
 	return node;
 }
 
-export function assert(node: ITerminalNode, context: Context) {
+export function assert(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as ITerminalNode;
 	const match = context.match;
 	if (match.isMatch) {
 		const rule = node.rule, bucket = node.bucket;
@@ -41,11 +42,13 @@ export function assert(node: ITerminalNode, context: Context) {
 	}
 }
 
-export function modify(node: ITerminalNode, context: Context) {
+export function modify(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as ITerminalNode;
 	node.agenda.retract(node, context);
-	assert(node, context);
+	assert(nodes, n, context);
 }
 
-export function retract(node: ITerminalNode, context: Context) {
+export function retract(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as ITerminalNode;
 	node.agenda.retract(node, context);
 }

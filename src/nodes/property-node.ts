@@ -1,7 +1,7 @@
 import mixin from 'lodash-ts/mixin';
 import Context from '../context';
 import { IAlphaNode, create as create_alpha } from './alpha-node';
-import { propagate_assert, propagate_modify, propagate_retract } from './node';
+import { INode, propagate_assert, propagate_modify, propagate_retract } from './node';
 import { IConstraint } from '../constraint';
 
 export interface IPropertyNode extends IAlphaNode {
@@ -16,7 +16,8 @@ export function create(constraint: IConstraint): IPropertyNode {
 	})
 }
 
-export function assert(node: IPropertyNode, context: Context) {
+export function assert(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as IPropertyNode;
 	const c = new Context(context.fact, context.paths);
 	const constiables = node.constiables, o = context.fact.object;
 	c.set(node.alias, o);
@@ -24,10 +25,11 @@ export function assert(node: IPropertyNode, context: Context) {
 		const val = constiables[key];
 		c.set(val, o[key]);
 	}
-	propagate_assert(node, c);
+	propagate_assert(nodes, n, c);
 }
 
-export function modify(node: IPropertyNode, context: Context) {
+export function modify(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as IPropertyNode;
 	const c = new Context(context.fact, context.paths);
 	const constiables = node.constiables, o = context.fact.object;
 	c.set(node.alias, o);
@@ -35,9 +37,9 @@ export function modify(node: IPropertyNode, context: Context) {
 		const val = constiables[key];
 		c.set(val, o[key]);
 	}
-	propagate_modify(node, c);
+	propagate_modify(nodes, n, c);
 }
 
-export function retract(node: IPropertyNode, context: Context) {
-	propagate_retract(node, new Context(context.fact, context.paths));
+export function retract(nodes: INode[], n: number, context: Context) {
+	propagate_retract(nodes, n, new Context(context.fact, context.paths));
 }

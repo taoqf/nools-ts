@@ -2,6 +2,7 @@ import isArray from 'lodash-ts/isArray';
 import { IFromPattern } from '../pattern';
 import WorkingMemory from '../working-memory';
 import Context from '../context';
+import { INode } from './node';
 import { __addToLeftMemory, assert, removeFromLeftMemory, modify, retract } from './beta-node';
 import { IFromNotNode, _create_from_not_node } from './from-not-node';
 
@@ -36,28 +37,30 @@ function __isMatch(node: IExistsFromNode, oc: Context, o: any, add: boolean) {
 	return ret;
 }
 
-function __findMatches(node: IExistsFromNode, context: Context) {
+function __findMatches(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as IExistsFromNode;
 	const fh = context.factHash, o = node.from_assert(fh), isMatch = false;
 	if (isArray(o)) {
 		context.blocked = (o as any[]).some((o) => {
 			return __isMatch(node, context, o, true);
 		});
 		if (context.blocked) {
-			assert(node, context.clone());
+			assert(nodes, n, context.clone());
 		}
 	} else if (o !== undefined && (__isMatch(node, context, o, true))) {
 		context.blocked = true;
-		assert(node, context.clone());
+		assert(nodes, n, context.clone());
 	}
 	return isMatch;
 }
 
-export function assert_left(node: IExistsFromNode, context: Context) {
-	__addToLeftMemory(node, context);
-	__findMatches(node, context);
+export function assert_left(nodes: INode[], n: number, context: Context) {
+	__addToLeftMemory(nodes, n, context);
+	__findMatches(nodes, n, context);
 }
 
-function __modify(node: IExistsFromNode, context: Context, leftContext: Context) {
+function __modify(nodes: INode[], n: number, context: Context, leftContext: Context) {
+	const node = nodes[n] as IExistsFromNode;
 	const leftContextBlocked = leftContext.blocked;
 	const fh = context.factHash, o = node.from_assert(fh);
 	if (isArray(o)) {
@@ -70,24 +73,25 @@ function __modify(node: IExistsFromNode, context: Context, leftContext: Context)
 	const newContextBlocked = context.blocked;
 	if (newContextBlocked) {
 		if (leftContextBlocked) {
-			modify(node, context.clone());
+			modify(nodes, n, context.clone());
 		} else {
-			assert(node, context.clone());
+			assert(nodes, n, context.clone());
 		}
 	} else if (leftContextBlocked) {
-		retract(node, context.clone());
+		retract(nodes, n, context.clone());
 	}
 
 }
 
-export function modify_left(node: IFromNotNode, context: Context) {
-	const ctx = removeFromLeftMemory(node, context);
+export function modify_left(nodes: INode[], n: number, context: Context) {
+	const ctx = removeFromLeftMemory(nodes, n, context);
 	if (ctx) {
-		__addToLeftMemory(node, context);
-		__modify(node, context, ctx.data);
+		__addToLeftMemory(nodes, n, context);
+		__modify(nodes, n, context, ctx.data);
 	} else {
 		throw new Error();
 	}
+	const node = nodes[n] as IExistsFromNode;
 	const fm = node.fromMemory[context.fact.id];
 	node.fromMemory[context.fact.id] = {};
 	if (fm) {
@@ -95,24 +99,24 @@ export function modify_left(node: IFromNotNode, context: Context) {
 			// update any contexts associated with this fact
 			if (i !== context.hashCode) {
 				const lc = fm[i];
-				const ctx = removeFromLeftMemory(node, lc);
+				const ctx = removeFromLeftMemory(nodes, n, lc);
 				if (ctx) {
 					const lc_cp = lc.clone();
 					lc_cp.blocked = false;
-					__addToLeftMemory(node, lc_cp);
-					__modify(node, lc_cp, ctx.data);
+					__addToLeftMemory(nodes, n, lc_cp);
+					__modify(nodes, n, lc_cp, ctx.data);
 				}
 			}
 		}
 	}
 }
 
-export function retract_left(node: IExistsFromNode, context: Context) {
-	const tuple = removeFromLeftMemory(node, context);
+export function retract_left(nodes: INode[], n: number, context: Context) {
+	const tuple = removeFromLeftMemory(nodes, n, context);
 	if (tuple) {
 		const ctx = tuple.data;
 		if (ctx.blocked) {
-			retract(node, ctx.clone());
+			retract(nodes, n, ctx.clone());
 		}
 	}
 }

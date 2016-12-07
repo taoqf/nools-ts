@@ -1,73 +1,80 @@
 import intersection from 'lodash-ts/intersection';
 import Context from '../context';
 import { IAdapterNode } from './adapter-node';
-import { base_assert_right, base_modify_right, base_retract_right } from './node';
+import { INode, base_assert_right, base_modify_right, base_retract_right } from './node';
 
-function __propagatePathsAssertRight(node: IAdapterNode, context: Context) {
+function __propagatePathsAssertRight(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as IAdapterNode;
 	for (const [outNode, paths] of node.nodes.entries()) {
 		const continuingPaths = intersection(paths, context.paths);
 		if (continuingPaths.length) {
-			base_assert_right(outNode, context.clone(null, continuingPaths, null));
+			base_assert_right(nodes, outNode, context.clone(null, continuingPaths, null));
 		}
 	}
 }
 
-function __propagateNoPathsAssertRight(node: IAdapterNode, context: Context) {
+function __propagateNoPathsAssertRight(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as IAdapterNode;
 	for (const [outNode, paths] of node.nodes.entries()) {
-		base_assert_right(outNode, context);
+		base_assert_right(nodes, outNode, context);
 	}
 }
 
-export function assert(node: IAdapterNode, context: Context) {
+export function assert(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as IAdapterNode;
 	if (context.paths) {
-		__propagatePathsAssertRight(node, context);
+		__propagatePathsAssertRight(nodes, n, context);
 	} else {
-		__propagateNoPathsAssertRight(node, context);
+		__propagateNoPathsAssertRight(nodes, n, context);
 	}
 }
 
-function __propagatePathsModifyRight(node: IAdapterNode, context: Context) {
+function __propagatePathsModifyRight(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as IAdapterNode;
 	for (const [outNode, paths] of node.nodes.entries()) {
 		const continuingPaths = intersection(paths, context.paths);
 		if (continuingPaths.length) {
-			base_modify_right(outNode, context.clone(null, continuingPaths, null));
+			base_modify_right(nodes, outNode, context.clone(null, continuingPaths, null));
 		}
 	}
 }
 
-function __propagateNoPathsModifyRight(node: IAdapterNode, context: Context) {
+function __propagateNoPathsModifyRight(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as IAdapterNode;
 	for (const [outNode, paths] of node.nodes.entries()) {
-		base_modify_right(outNode, context);
+		base_modify_right(nodes, outNode, context);
 	}
 }
-export function modify(node: IAdapterNode, context: Context) {
+export function modify(nodes: INode[], n: number, context: Context) {
 	if (context.paths) {
-		__propagatePathsModifyRight(node, context);
+		__propagatePathsModifyRight(nodes, n, context);
 	} else {
-		__propagateNoPathsModifyRight(node, context);
+		__propagateNoPathsModifyRight(nodes, n, context);
 	}
 }
 
 
-function __propagatePathsRetractRight(node: IAdapterNode, context: Context) {
+function __propagatePathsRetractRight(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as IAdapterNode;
 	for (const [outNode, paths] of node.nodes.entries()) {
 		const continuingPaths = intersection(paths, context.paths);
 		if (continuingPaths.length) {
-			base_retract_right(outNode, context.clone(null, continuingPaths, null));
+			base_retract_right(nodes, outNode, context.clone(null, continuingPaths, null));
 		}
 	}
 }
 
-function __propagateNoPathsRetractRight(node: IAdapterNode, context: Context) {
+function __propagateNoPathsRetractRight(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as IAdapterNode;
 	for (const [outNode, paths] of node.nodes.entries()) {
-		base_retract_right(outNode, context);
+		base_retract_right(nodes, outNode, context);
 	}
 }
 
-export function retract(node: IAdapterNode, context: Context) {
+export function retract(nodes: INode[], n: number, context: Context) {
 	if (context.paths) {
-		__propagatePathsRetractRight(node, context);
+		__propagatePathsRetractRight(nodes, n, context);
 	} else {
-		__propagateNoPathsRetractRight(node, context);
+		__propagateNoPathsRetractRight(nodes, n, context);
 	}
 }

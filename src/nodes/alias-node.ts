@@ -1,6 +1,6 @@
 import mixin from 'lodash-ts/mixin';
 import Context from '../context';
-import { propagate_assert, propagate_modify, propagate_retract } from './node';
+import { INode, propagate_assert, propagate_modify, propagate_retract } from './node';
 import { IAlphaNode, create as create_alpha } from './alpha-node';
 import { IObjectPattern } from '../pattern';
 
@@ -18,14 +18,17 @@ export function create(pattern: IObjectPattern): IAliasNode {
 	});
 }
 
-export function assert(node: IAliasNode, context: Context) {
-	return propagate_assert(node, context.set(node.alias, context.fact.object));
+export function assert(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as IAliasNode;
+	return propagate_assert(nodes, n, context.set(node.alias, context.fact.object));
 }
 
-export function modify(node: IAliasNode, context: Context) {
-	return propagate_modify(node, context.set(node.alias, context.fact.object));
+export function modify(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as IAliasNode;
+	return propagate_modify(nodes, n, context.set(node.alias, context.fact.object));
 }
 
-export function retract(node: IAliasNode, context: Context) {
-	return propagate_retract(node, context.set(node.alias, context.fact.object));
+export function retract(nodes: INode[], n: number, context: Context) {
+	const node = nodes[n] as IAliasNode;
+	return propagate_retract(nodes, n, context.set(node.alias, context.fact.object));
 }
