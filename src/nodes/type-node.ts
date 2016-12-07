@@ -3,6 +3,7 @@ import { IConstraint } from '../constraint';
 import { IAlphaNode, create as alpha_create } from './alpha-node';
 import Context from '../context';
 import Fact from '../facts/fact';
+import WorkingMemory from '../working-memory';
 
 export interface ITypeNode extends IAlphaNode {
 }
@@ -11,29 +12,29 @@ export function create(constraint: IConstraint): ITypeNode {
 	return alpha_create('type', constraint);
 }
 
-export function assert(nodes: INode[], n: number, fact: Fact) {
+export function assert(nodes: INode[], n: number, fact: Fact, wm: WorkingMemory) {
 	const node = nodes[n] as ITypeNode;
 	if (node.constraintAssert(fact.object)) {
 		for (const [outNode, paths] of node.nodes.entries()) {
-			base_assert(nodes, outNode, new Context(fact, paths));
+			base_assert(nodes, outNode, new Context(fact, paths), wm);
 		}
 	}
 }
 
-export function modify(nodes: INode[], n: number, fact: Fact) {
+export function modify(nodes: INode[], n: number, fact: Fact, wm: WorkingMemory) {
 	const node = nodes[n] as ITypeNode;
 	if (node.constraintAssert(fact.object)) {
 		for (const [outNode, paths] of node.nodes.entries()) {
-			base_modify(nodes, outNode, new Context(fact, paths));
+			base_modify(nodes, outNode, new Context(fact, paths), wm);
 		}
 	}
 }
 
-export function retract(nodes: INode[], n: number, fact: Fact) {
+export function retract(nodes: INode[], n: number, fact: Fact, wm: WorkingMemory) {
 	const node = nodes[n] as ITypeNode;
 	if (node.constraintAssert(fact.object)) {
 		for (const [outNode, paths] of node.nodes.entries()) {
-			base_retract(nodes, outNode, new Context(fact, paths));
+			base_retract(nodes, outNode, new Context(fact, paths), wm);
 		}
 	}
 }

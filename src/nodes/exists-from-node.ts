@@ -10,14 +10,14 @@ export interface IExistsFromNode extends IFromNotNode {
 
 }
 
-export function create(pattern: IFromPattern, wm: WorkingMemory): IExistsFromNode {
-	return _create_from_not_node('exists-from', pattern, wm);
+export function create(pattern: IFromPattern): IExistsFromNode {
+	return _create_from_not_node('exists-from', pattern);
 }
 
-function __isMatch(node: IExistsFromNode, oc: Context, o: any, add: boolean) {
+function __isMatch(node: IExistsFromNode, oc: Context, o: any, add: boolean, wm: WorkingMemory) {
 	let ret = false;
 	if (node.type_assert(o)) {
-		const createdFact = node.workingMemory.getFactHandle(o);
+		const createdFact = wm.getFactHandle(o);
 		const context = new Context(createdFact, null, null)
 			.mergeMatch(oc.match)
 			.set(node.alias, o);
@@ -37,57 +37,57 @@ function __isMatch(node: IExistsFromNode, oc: Context, o: any, add: boolean) {
 	return ret;
 }
 
-function __findMatches(nodes: INode[], n: number, context: Context) {
+function __findMatches(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n] as IExistsFromNode;
 	const fh = context.factHash, o = node.from_assert(fh), isMatch = false;
 	if (isArray(o)) {
 		context.blocked = (o as any[]).some((o) => {
-			return __isMatch(node, context, o, true);
+			return __isMatch(node, context, o, true, wm);
 		});
 		if (context.blocked) {
-			assert(nodes, n, context.clone());
+			assert(nodes, n, context.clone(), wm);
 		}
-	} else if (o !== undefined && (__isMatch(node, context, o, true))) {
+	} else if (o !== undefined && (__isMatch(node, context, o, true, wm))) {
 		context.blocked = true;
-		assert(nodes, n, context.clone());
+		assert(nodes, n, context.clone(), wm);
 	}
 	return isMatch;
 }
 
-export function assert_left(nodes: INode[], n: number, context: Context) {
+export function assert_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	__addToLeftMemory(nodes, n, context);
-	__findMatches(nodes, n, context);
+	__findMatches(nodes, n, context, wm);
 }
 
-function __modify(nodes: INode[], n: number, context: Context, leftContext: Context) {
+function __modify(nodes: INode[], n: number, context: Context, leftContext: Context, wm: WorkingMemory) {
 	const node = nodes[n] as IExistsFromNode;
 	const leftContextBlocked = leftContext.blocked;
 	const fh = context.factHash, o = node.from_assert(fh);
 	if (isArray(o)) {
 		context.blocked = (o as any[]).some((o) => {
-			return __isMatch(node, context, o, true);
+			return __isMatch(node, context, o, true, wm);
 		});
 	} else if (o !== undefined) {
-		context.blocked = __isMatch(node, context, o, true);
+		context.blocked = __isMatch(node, context, o, true, wm);
 	}
 	const newContextBlocked = context.blocked;
 	if (newContextBlocked) {
 		if (leftContextBlocked) {
-			modify(nodes, n, context.clone());
+			modify(nodes, n, context.clone(), wm);
 		} else {
-			assert(nodes, n, context.clone());
+			assert(nodes, n, context.clone(), wm);
 		}
 	} else if (leftContextBlocked) {
-		retract(nodes, n, context.clone());
+		retract(nodes, n, context.clone(), wm);
 	}
 
 }
 
-export function modify_left(nodes: INode[], n: number, context: Context) {
+export function modify_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const ctx = removeFromLeftMemory(nodes, n, context);
 	if (ctx) {
 		__addToLeftMemory(nodes, n, context);
-		__modify(nodes, n, context, ctx.data);
+		__modify(nodes, n, context, ctx.data, wm);
 	} else {
 		throw new Error();
 	}
@@ -104,19 +104,19 @@ export function modify_left(nodes: INode[], n: number, context: Context) {
 					const lc_cp = lc.clone();
 					lc_cp.blocked = false;
 					__addToLeftMemory(nodes, n, lc_cp);
-					__modify(nodes, n, lc_cp, ctx.data);
+					__modify(nodes, n, lc_cp, ctx.data, wm);
 				}
 			}
 		}
 	}
 }
 
-export function retract_left(nodes: INode[], n: number, context: Context) {
+export function retract_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const tuple = removeFromLeftMemory(nodes, n, context);
 	if (tuple) {
 		const ctx = tuple.data;
 		if (ctx.blocked) {
-			retract(nodes, n, ctx.clone());
+			retract(nodes, n, ctx.clone(), wm);
 		}
 	}
 }

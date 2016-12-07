@@ -52,7 +52,7 @@ export default class Flow extends EventEmitter {
 	}
 
 	assert(fact: any) {
-		assertFact(this.rootNode, this.workingMemory.assertFact(fact));
+		assertFact(this.rootNode, this.workingMemory.assertFact(fact), this.workingMemory);
 		this.emit("assert", fact);
 		return fact;
 	}
@@ -60,7 +60,7 @@ export default class Flow extends EventEmitter {
 	// This method is called to remove an existing fact from working memory
 	retract(fact: any) {
 		//fact = this.workingMemory.getFact(fact);
-		retractFact(this.rootNode, this.workingMemory.retractFact(fact));
+		retractFact(this.rootNode, this.workingMemory.retractFact(fact), this.workingMemory);
 		this.emit("retract", fact);
 		return fact;
 	}
@@ -69,7 +69,7 @@ export default class Flow extends EventEmitter {
 	// retract followed by an assert.
 	modify(fact: any) {
 		//fact = this.workingMemory.getFact(fact);
-		modifyFact(this.rootNode, this.workingMemory.modifyFact(fact));
+		modifyFact(this.rootNode, this.workingMemory.modifyFact(fact), this.workingMemory);
 		this.emit("modify", fact);
 		return fact;
 	}
@@ -79,7 +79,7 @@ export default class Flow extends EventEmitter {
 	}
 
 	rule(rule: IRule) {
-		assertRule(this.rootNode, rule, this.workingMemory, this.agenda);
+		assertRule(this.rootNode, rule, this.agenda);
 	}
 
 	matchUntilHalt() {

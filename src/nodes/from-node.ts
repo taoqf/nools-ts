@@ -19,10 +19,9 @@ export interface IFromNode extends IJoinNode {
 	fromMemory: { [id: number]: { [hashCode: string]: [Context, Context] }; };
 	__equalityConstraints: { (factHanle1: Map<string, Fact>, factHandle2: Map<string, Fact>): boolean; }[];
 	__variables: any[];
-	workingMemory: WorkingMemory;
 }
 
-export function _create_from_node(type: joinNodeType, pattern: IFromPattern, wm: WorkingMemory): IFromNode {
+export function _create_from_node(type: joinNodeType, pattern: IFromPattern): IFromNode {
 	const type_constraint = pattern.constraints[0];
 	const from = pattern.from;
 	const constraints = pattern.constraints.slice(1);
@@ -46,7 +45,6 @@ export function _create_from_node(type: joinNodeType, pattern: IFromPattern, wm:
 		__equalityConstraints: eqConstraints,
 		__variables: vars,
 		fromMemory: {},
-		workingMemory: wm,
 		type_assert(type: any) {
 			return type_constraint.assert(type);
 		},
@@ -56,8 +54,8 @@ export function _create_from_node(type: joinNodeType, pattern: IFromPattern, wm:
 	});
 }
 
-export function create(pattern: IFromPattern, wm: WorkingMemory): IFromNode {
-	return _create_from_node('from', pattern, wm);
+export function create(pattern: IFromPattern): IFromNode {
+	return _create_from_node('from', pattern);
 }
 
 const DEFAULT_MATCH = {
@@ -66,9 +64,9 @@ const DEFAULT_MATCH = {
 	}
 } as Context;
 
-function __createMatch(node: IFromNode, lc: Context, o: any) {
+function __createMatch(node: IFromNode, lc: Context, o: any, wm: WorkingMemory) {
 	if (node.type_assert(o)) {
-		const createdFact = node.workingMemory.getFactHandle(o);
+		const createdFact = wm.getFactHandle(o);
 		const rc = new Context(createdFact, null, null)
 			.set(node.alias, o);
 		const createdFactId = createdFact.id;
@@ -104,31 +102,31 @@ function __createMatch(node: IFromNode, lc: Context, o: any) {
 	return DEFAULT_MATCH;
 }
 
-function __checkMatch(nodes: INode[], n: number, context: Context, o: any, propogate = false) {
+function __checkMatch(nodes: INode[], n: number, context: Context, o: any, propogate = false, wm: WorkingMemory) {
 	const node = nodes[n] as IFromNode;
-	const newContext = __createMatch(node, context, o);
+	const newContext = __createMatch(node, context, o, wm);
 	if (newContext.isMatch() && propogate) {
-		assert(nodes, n, newContext.clone());
+		assert(nodes, n, newContext.clone(), wm);
 	}
 	return newContext;
 }
 
-function __createMatches(nodes: INode[], n: number, context: Context) {
+function __createMatches(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n] as IFromNode;
 	const fh = context.factHash, o = node.from_assert(fh);
 	if (isArray(o)) {
 		(o as any[]).forEach((o) => {
-			__checkMatch(nodes, n, context, o, true);
+			__checkMatch(nodes, n, context, o, true, wm);
 		});
 	} else if (o !== undefined) {
-		__checkMatch(nodes, n, context, o, true);
+		__checkMatch(nodes, n, context, o, true, wm);
 	}
 }
 
-export function assert_left(nodes: INode[], n: number, context: Context) {
+export function assert_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	__addToLeftMemory(nodes, n, context);
 	context.fromMatches = {};
-	__createMatches(nodes, n, context);
+	__createMatches(nodes, n, context, wm);
 }
 
 // export function assert_right(node: IFromNode, context: Context) {
@@ -153,7 +151,7 @@ function removeFromFromMemory(node: IFromNode, context: Context) {
 
 }
 
-export function modify_left(nodes: INode[], n: number, context: Context) {
+export function modify_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const ctx = removeFromLeftMemory(nodes, n, context);
 	// newContext, i, l, factId, fact;
 	const node = nodes[n] as IFromNode;
@@ -167,35 +165,35 @@ export function modify_left(nodes: INode[], n: number, context: Context) {
 
 		if (isArray(o)) {
 			(o as any[]).forEach((o) => {
-				const newContext = __checkMatch(nodes, n, context, o, false);
+				const newContext = __checkMatch(nodes, n, context, o, false, wm);
 				if (newContext.isMatch()) {
 					const factId = newContext.fact.id;
 					if (factId in rightMatches) {
-						modify(nodes, n, newContext.clone());
+						modify(nodes, n, newContext.clone(), wm);
 					} else {
-						assert(nodes, n, newContext.clone());
+						assert(nodes, n, newContext.clone(), wm);
 					}
 				}
 			});
 		} else if (o !== undefined) {
-			const newContext = __checkMatch(nodes, n, context, o, false);
+			const newContext = __checkMatch(nodes, n, context, o, false, wm);
 			if (newContext.isMatch()) {
 				const factId = newContext.fact.id;
 				if (factId in rightMatches) {
-					modify(nodes, n, newContext.clone());
+					modify(nodes, n, newContext.clone(), wm);
 				} else {
-					assert(nodes, n, newContext.clone());
+					assert(nodes, n, newContext.clone(), wm);
 				}
 			}
 		}
 		for (const i in rightMatches) {
 			if (!(i in fromMatches)) {
 				removeFromFromMemory(node, rightMatches[i]);
-				retract(nodes, n, rightMatches[i].clone());
+				retract(nodes, n, rightMatches[i].clone(), wm);
 			}
 		}
 	} else {
-		base_assert_left(nodes, n, context);
+		base_assert_left(nodes, n, context, wm);
 	}
 	const fact = context.fact;
 	const factId = fact.id;
@@ -210,26 +208,26 @@ export function modify_left(nodes: INode[], n: number, context: Context) {
 			const cc = entry[1];
 			const createdIsMatch = cc.isMatch();
 			if (lc.hashCode !== context.hashCode) {
-				const newContext = __createMatch(node, lc, factObject);
+				const newContext = __createMatch(node, lc, factObject, wm);
 				if (createdIsMatch) {
-					retract(nodes, n, cc.clone());
+					retract(nodes, n, cc.clone(), wm);
 				}
 				if (newContext.isMatch()) {
-					createdIsMatch ? modify(nodes, n, newContext.clone()) : assert(nodes, n, newContext.clone());
+					createdIsMatch ? modify(nodes, n, newContext.clone(), wm) : assert(nodes, n, newContext.clone(), wm);
 				}
 			}
 		}
 	}
 }
 
-export function retract_left(nodes: INode[], n: number, context: Context) {
+export function retract_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const tuple = removeFromLeftMemory(nodes, n, context);
 	if (tuple) {
 		const ctx = tuple.data;
 		const fromMatches = ctx.fromMatches;
 		for (const i in fromMatches) {
 			removeFromFromMemory(nodes[n] as IFromNode, fromMatches[i]);
-			retract(nodes, n, fromMatches[i].clone());
+			retract(nodes, n, fromMatches[i].clone(), wm);
 		}
 	}
 }

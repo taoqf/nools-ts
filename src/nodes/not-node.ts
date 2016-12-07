@@ -6,6 +6,7 @@ import { INode, notNodeType } from './node';
 import { removeFromRightMemory, removeFromLeftMemory, retract, __addToRightMemory, __addToLeftMemory, assert, modify } from './beta-node';
 import { IJoinNode, _create_join_node } from './join-node';
 import Context, { Match } from '../context';
+import WorkingMemory from '../working-memory';
 
 export interface INotNode extends IJoinNode {
 	leftTupleMemory: { [hashCode: string]: ILinkNode<Context> };
@@ -39,35 +40,35 @@ export function __cloneContext(nodes: INode[], n: number, context: Context) {
 	return context.clone(null, null, context.match.merge(node.notMatch));
 }
 
-function blockedContext(nodes: INode[], n: number, leftContext: Context, rightContext: Context, propagate = false) {
+function blockedContext(nodes: INode[], n: number, leftContext: Context, rightContext: Context, propagate = false, wm: WorkingMemory) {
 	leftContext.blocker = rightContext;
 	removeFromLeftMemory(nodes, n, leftContext);
 	addToLeftBlockedMemory(nodes, n, rightContext.blocking.push(leftContext));
-	propagate && retract(nodes, n, __cloneContext(nodes, n, leftContext));
+	propagate && retract(nodes, n, __cloneContext(nodes, n, leftContext), wm);
 }
 
-export function blockFromAssertLeft(nodes: INode[], n: number, leftContext: Context, rightContext: Context) {
-	blockedContext(nodes, n, leftContext, rightContext, false);
+export function blockFromAssertLeft(nodes: INode[], n: number, leftContext: Context, rightContext: Context, wm: WorkingMemory) {
+	blockedContext(nodes, n, leftContext, rightContext, false, wm);
 }
 
-export function assert_left(nodes: INode[], n: number, context: Context) {
+export function assert_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n] as INotNode;
 	const values = node.rightTuples.getRightMemory(context);
 	const thisConstraint = node.constraint;
 	if (context && values.every((value) => {
 		const rc = value.data;
 		if (thisConstraint.isMatch(context, rc)) {
-			blockFromAssertLeft(nodes, n, context, rc);
+			blockFromAssertLeft(nodes, n, context, rc, wm);
 			return false;
 		} else {
 			return true;
 		}
 	})) {
-		propagateFromLeft(nodes, n, context);
+		propagateFromLeft(nodes, n, context, wm);
 	}
 }
 
-export function assert_right(nodes: INode[], n: number, context: Context) {
+export function assert_right(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	__addToRightMemory(nodes, n, context);
 	context.blocking = new LinkedList<Context>();
 	const node = nodes[n] as INotNode;
@@ -76,12 +77,12 @@ export function assert_right(nodes: INode[], n: number, context: Context) {
 	fl.forEach((l) => {
 		const leftContext = l.data;
 		if (thisConstraint.isMatch(leftContext, context)) {
-			blockFromAssertRight(nodes, n, leftContext, context);
+			blockFromAssertRight(nodes, n, leftContext, context, wm);
 		}
 	});
 }
 
-export function retract_right(nodes: INode[], n: number, context: Context) {
+export function retract_right(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const ctx = removeFromRightMemory(nodes, n, context),
 		rightContext = ctx.data,
 		blocking = rightContext.blocking;
@@ -99,41 +100,41 @@ export function retract_right(nodes: INode[], n: number, context: Context) {
 			if (leftContext && rm.every((m) => {
 				const rc = m.data;
 				if (thisConstraint.isMatch(leftContext, rc)) {
-					blockedContext(nodes, n, leftContext, rc);
+					blockedContext(nodes, n, leftContext, rc, false, wm);
 					return false;
 				} else {
 					return true;
 				}
 			})) {
-				notBlockedContext(nodes, n, leftContext, true);
+				notBlockedContext(nodes, n, leftContext, true, wm);
 			}
 		}
 		blocking.clear();
 	}
 }
 
-function notBlockedContext(nodes: INode[], n: number, leftContext: Context, propagate: boolean) {
+function notBlockedContext(nodes: INode[], n: number, leftContext: Context, propagate: boolean, wm: WorkingMemory) {
 	__addToLeftMemory(nodes, n, leftContext);
-	propagate && assert(nodes, n, __cloneContext(nodes, n, leftContext));
+	propagate && assert(nodes, n, __cloneContext(nodes, n, leftContext), wm);
 }
 
-function propagateFromLeft(nodes: INode[], n: number, leftContext: Context) {
-	notBlockedContext(nodes, n, leftContext, true);
+function propagateFromLeft(nodes: INode[], n: number, leftContext: Context, wm: WorkingMemory) {
+	notBlockedContext(nodes, n, leftContext, true, wm);
 }
 
-function propagateFromRight(nodes: INode[], n: number, leftContext: Context) {
-	notBlockedContext(nodes, n, leftContext, true);
+function propagateFromRight(nodes: INode[], n: number, leftContext: Context, wm: WorkingMemory) {
+	notBlockedContext(nodes, n, leftContext, true, wm);
 }
 
-function blockFromAssertRight(nodes: INode[], n: number, leftContext: Context, rightContext: Context) {
-	blockedContext(nodes, n, leftContext, rightContext, true);
+function blockFromAssertRight(nodes: INode[], n: number, leftContext: Context, rightContext: Context, wm: WorkingMemory) {
+	blockedContext(nodes, n, leftContext, rightContext, true, wm);
 }
 
-export function retract_left(nodes: INode[], n: number, context: Context) {
+export function retract_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const tuple = removeFromLeftMemory(nodes, n, context);
 	if (tuple) {
 		const ctx = tuple.data;
-		retract(nodes, n, __cloneContext(nodes, n, ctx));
+		retract(nodes, n, __cloneContext(nodes, n, ctx), wm);
 	} else {
 		if (!removeFromLeftBlockedMemory(nodes, n, context)) {
 			throw new Error();
@@ -151,7 +152,7 @@ export function removeFromLeftBlockedMemory(nodes: INode[], n: number, context: 
 	return ret;
 }
 
-export function modify_left(nodes: INode[], n: number, context: Context) {
+export function modify_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const ctx = removeFromLeftMemory(nodes, n, context);
 	const node = nodes[n] as INotNode;
 	const thisConstraint = node.constraint;
@@ -178,7 +179,7 @@ export function modify_left(nodes: INode[], n: number, context: Context) {
 				//we cant be proagated so retract previous
 				if (!isBlocked) {
 					//we were asserted before so retract
-					retract(nodes, n, __cloneContext(nodes, n, leftContext));
+					retract(nodes, n, __cloneContext(nodes, n, leftContext), wm);
 				}
 				context.blocker = rc;
 				addToLeftBlockedMemory(nodes, n, rc.blocking.push(context));
@@ -191,7 +192,7 @@ export function modify_left(nodes: INode[], n: number, context: Context) {
 				//we cant be proagated so retract previous
 				if (!isBlocked) {
 					//we were asserted before so retract
-					retract(nodes, n, __cloneContext(nodes, n, leftContext));
+					retract(nodes, n, __cloneContext(nodes, n, leftContext), wm);
 				}
 				addToLeftBlockedMemory(nodes, n, rc.blocking.push(context));
 				context.blocker = rc;
@@ -205,10 +206,10 @@ export function modify_left(nodes: INode[], n: number, context: Context) {
 			__addToLeftMemory(nodes, n, context);
 			if (!isBlocked) {
 				//we weren't blocked before so modify
-				modify(nodes, n, __cloneContext(nodes, n, context));
+				modify(nodes, n, __cloneContext(nodes, n, context), wm);
 			} else {
 				//we were blocked before but aren't now
-				assert(nodes, n, __cloneContext(nodes, n, context));
+				assert(nodes, n, __cloneContext(nodes, n, context), wm);
 			}
 		}
 	} else {
@@ -217,7 +218,7 @@ export function modify_left(nodes: INode[], n: number, context: Context) {
 
 }
 
-export function modify_right(nodes: INode[], n: number, context: Context) {
+export function modify_right(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const ctx = removeFromRightMemory(nodes, n, context);
 	if (ctx) {
 		const rightContext = ctx.data;
@@ -251,7 +252,7 @@ export function modify_right(nodes: INode[], n: number, context: Context) {
 				}
 				if (leftContext) {
 					__addToLeftMemory(nodes, n, leftContext);
-					assert(nodes, n, __cloneContext(nodes, n, leftContext));
+					assert(nodes, n, __cloneContext(nodes, n, leftContext), wm);
 				}
 			}
 		}
@@ -260,7 +261,7 @@ export function modify_right(nodes: INode[], n: number, context: Context) {
 			leftTuples.forEach((leftTuple) => {
 				const leftContext = leftTuple.data;
 				if (thisConstraint.isMatch(leftContext, context)) {
-					retract(nodes, n, __cloneContext(nodes, n, leftContext));
+					retract(nodes, n, __cloneContext(nodes, n, leftContext), wm);
 					removeFromLeftMemory(nodes, n, leftContext);
 					addToLeftBlockedMemory(nodes, n, context.blocking.push(leftContext));
 					leftContext.blocker = context;

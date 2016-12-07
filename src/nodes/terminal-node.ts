@@ -21,7 +21,6 @@ export function create(name: string, rule: IRule, index: number, bucket: IBucket
 		bucket: bucket,
 		agenda: agenda
 	});
-	agenda.register(node);
 	return node;
 }
 

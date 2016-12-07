@@ -3,6 +3,7 @@ import Context from '../context';
 import { IRule } from '../runtime/rule';
 import { IObjectPattern } from '../pattern';
 import Fact from '../facts/fact';
+import WorkingMemory from '../working-memory';
 
 export type notNodeType = 'not' | 'exists';
 export type joinNodeType = 'join' | 'from' | 'from-not' | 'exists-from' | notNodeType;
@@ -215,112 +216,112 @@ retract_left_funcs.set('exists-from', exists_from.retract_left);
 // retract_right_funcs.set('exists-from', exists_from.retract_right);
 dispose_funcs.set('exists-from', beta.dispose);
 
-export function base_assert_left(nodes: INode[], n: number, context: Context) {
+export function base_assert_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
 	const fun = assert_left_funcs.get(node.type);
 	if (!fun) {
 		console.error(node, context);
 		throw 'cannot find method assert_left';
 	} else {
-		fun(nodes, n, context);
+		fun(nodes, n, context, wm);
 	}
 }
 
-export function base_assert_right(nodes: INode[], n: number, context: Context) {
+export function base_assert_right(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
 	const fun = assert_right_funcs.get(node.type);
 	if (!fun) {
 		console.error(node, context);
 		throw 'cannot find method assert_right';
 	} else {
-		fun(nodes, n, context);
+		fun(nodes, n, context, wm);
 	}
 }
 
-export function base_assert(nodes: INode[], n: number, fact: Fact | Context) {
+export function base_assert(nodes: INode[], n: number, fact: Fact | Context, wm: WorkingMemory) {
 	const node = nodes[n];
 	const fun = assert_funcs.get(node.type);
 	if (!fun) {
 		console.error(node, fact);
 		for (const [outNode, paths] of node.nodes.entries()) {
-			base_assert(nodes, outNode, fact);
+			base_assert(nodes, outNode, fact, wm);
 		}
 	} else {
-		fun(nodes, n, fact);
+		fun(nodes, n, fact, wm);
 	}
 }
 
-export function base_retract_left(nodes: INode[], n: number, context: Context) {
+export function base_retract_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
 	const fun = retract_left_funcs.get(node.type);
 	if (!fun) {
 		console.error(node, context);
 		throw 'cannot find method retract_left';
 	} else {
-		fun(nodes, n, context);
+		fun(nodes, n, context, wm);
 	}
 }
 
-export function base_retract_right(nodes: INode[], n: number, context: Context) {
+export function base_retract_right(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
 	const fun = retract_right_funcs.get(node.type);
 	if (!fun) {
 		console.error(node, context);
 		throw 'cannot find method retract_right';
 	} else {
-		fun(nodes, n, context);
+		fun(nodes, n, context, wm);
 	}
 }
 
-export function base_retract(nodes: INode[], n: number, fact: Fact | Context) {
+export function base_retract(nodes: INode[], n: number, fact: Fact | Context, wm: WorkingMemory) {
 	const node = nodes[n];
 	const fun = retract_funcs.get(node.type);
 	if (!fun) {
 		console.error(node, fact);
 		for (const [outNode, paths] of node.nodes.entries()) {
-			base_retract(nodes, outNode, fact);
+			base_retract(nodes, outNode, fact, wm);
 		}
 	} else {
-		fun(nodes, n, fact);
+		fun(nodes, n, fact, wm);
 	}
 }
 
-export function base_modify_left(nodes: INode[], n: number, context: Context) {
+export function base_modify_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
 	const fun = modify_left_funcs.get(node.type);
 	if (!fun) {
 		console.error(node, context);
 		throw 'cannot find method modify_left';
 	} else {
-		fun(nodes, n, context);
+		fun(nodes, n, context, wm);
 	}
 }
 
-export function base_modify_right(nodes: INode[], n: number, context: Context) {
+export function base_modify_right(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
 	const fun = modify_right_funcs.get(node.type);
 	if (!fun) {
 		console.error(node, context);
 		throw 'cannot find method modify_right';
 	} else {
-		fun(nodes, n, context);
+		fun(nodes, n, context, wm);
 	}
 }
 
-export function base_modify(nodes: INode[], n: number, fact: Fact | Context) {
+export function base_modify(nodes: INode[], n: number, fact: Fact | Context, wm: WorkingMemory) {
 	const node = nodes[n];
 	const fun = modify_funcs.get(node.type);
 	if (!fun) {
 		console.error(node, fact);
 		for (const [outNode, paths] of node.nodes.entries()) {
-			base_modify(nodes, outNode, fact);
+			base_modify(nodes, outNode, fact, wm);
 		}
 	} else {
-		fun(nodes, n, fact);
+		fun(nodes, n, fact, wm);
 	}
 }
 
-export function base_dispose(nodes: INode[], n: number, context?: Context) {
+export function base_dispose(nodes: INode[], n: number, context: Context) {
 	const node = nodes[n];
 	const fun = dispose_funcs.get(node.type);
 	if (!fun) {
@@ -332,32 +333,32 @@ export function base_dispose(nodes: INode[], n: number, context?: Context) {
 	}
 }
 
-export function propagate_modify(nodes: INode[], n: number, context: Context) {
+export function propagate_modify(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
 	for (const [outNode, paths] of node.nodes.entries()) {
 		const continuingPaths = intersection(paths, context.paths);
 		if (continuingPaths.length) {
-			base_modify(nodes, outNode, new Context(context.fact, continuingPaths, context.match));
+			base_modify(nodes, outNode, new Context(context.fact, continuingPaths, context.match), wm);
 		}
 	}
 }
 
-export function propagate_retract(nodes: INode[], n: number, context: Context) {
+export function propagate_retract(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
 	for (const [outNode, paths] of node.nodes.entries()) {
 		const continuingPaths = intersection(paths, context.paths);
 		if (continuingPaths.length) {
-			base_retract(nodes, outNode, new Context(context.fact, continuingPaths, context.match));
+			base_retract(nodes, outNode, new Context(context.fact, continuingPaths, context.match), wm);
 		}
 	}
 }
 
-export function propagate_assert(nodes: INode[], n: number, context: Context) {
+export function propagate_assert(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
 	for (const [outNode, paths] of node.nodes.entries()) {
 		const continuingPaths = intersection(paths, context.paths);
 		if (continuingPaths.length) {
-			base_assert(nodes, outNode, new Context(context.fact, continuingPaths, context.match));
+			base_assert(nodes, outNode, new Context(context.fact, continuingPaths, context.match), wm);
 		}
 	}
 }
