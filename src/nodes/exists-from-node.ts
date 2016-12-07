@@ -2,13 +2,9 @@ import isArray from 'lodash-ts/isArray';
 import { IFromPattern } from '../pattern';
 import WorkingMemory from '../working-memory';
 import Context from '../context';
-import { INode } from './node';
+import { INode, IExistsFromNode } from '../nodes';
 import { __addToLeftMemory, assert, removeFromLeftMemory, modify, retract } from './beta-node';
-import { IFromNotNode, _create_from_not_node } from './from-not-node';
-
-export interface IExistsFromNode extends IFromNotNode {
-
-}
+import { _create_from_not_node } from './from-not-node';
 
 export function create(pattern: IFromPattern): IExistsFromNode {
 	return _create_from_not_node('exists-from', pattern);

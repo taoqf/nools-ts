@@ -1,7 +1,7 @@
 import isBoolean from 'lodash-ts/isBoolean';
 import Fact from './facts/fact';
 import LinkedList from './linked-list';
-import { ITerminalNode } from './nodes/terminal-node';
+import { ITerminalNode } from './nodes';
 import { IPattern } from './pattern';
 
 function createContextHash(paths: IPattern[], hashCode: string) {

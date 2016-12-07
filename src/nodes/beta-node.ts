@@ -1,17 +1,11 @@
 import mixin from 'lodash-ts/mixin';
 import Context from '../context';
-import { INode, betaNodeType, create_node, base_assert, base_modify, base_retract, propagate_dispose } from './node';
+import { INode, IBetaNode, betaNodeType } from '../nodes';
+import { create_node, base_assert, base_modify, base_retract, propagate_dispose } from './node';
 import { ITuple } from './misc/tuple-entry';
 import LeftMemory from './misc/left-memory';
 import RightMemory from './misc/right-memory';
 import WorkingMemory from '../working-memory';
-
-export interface IBetaNode extends INode {
-	leftMemory: { [hasCode: string]: ITuple };
-	rightMemory: { [hasCode: string]: ITuple };
-	leftTuples: LeftMemory;
-	rightTuples: RightMemory;
-}
 
 export function _create_beta_node(type: betaNodeType): IBetaNode {
 	return mixin(create_node(type), {

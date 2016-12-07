@@ -1,13 +1,10 @@
 import mixin from 'lodash-ts/mixin';
 import Context from '../context';
-import { INode, propagate_assert, propagate_modify, propagate_retract } from './node';
-import { IAlphaNode, create as create_alpha } from './alpha-node';
+import { INode, IAliasNode } from '../nodes';
+import { propagate_assert, propagate_modify, propagate_retract } from './node';
+import { create as create_alpha } from './alpha-node';
 import { IObjectPattern } from '../pattern';
 import WorkingMemory from '../working-memory';
-
-export interface IAliasNode extends IAlphaNode {
-	alias: string;
-}
 
 export function create(pattern: IObjectPattern): IAliasNode {
 	const alias = pattern.alias;

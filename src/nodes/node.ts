@@ -1,24 +1,10 @@
 import intersection from 'lodash-ts/intersection';
+import { INode, nodeType } from '../nodes';
+import { IObjectPattern } from '../pattern';
 import Context from '../context';
 import { IRule } from '../runtime/rule';
-import { IObjectPattern } from '../pattern';
 import Fact from '../facts/fact';
 import WorkingMemory from '../working-memory';
-
-export type notNodeType = 'not' | 'exists';
-export type joinNodeType = 'join' | 'from' | 'from-not' | 'exists-from' | notNodeType;
-export type betaNodeType = 'beta' | joinNodeType;
-export type adapterNodeType = 'leftadapter' | 'rightadapter';
-export type alphaNodeType = 'type' | 'alias' | 'equality' | 'property';
-export type nodeType = 'terminal' | 'join-reference' | alphaNodeType | adapterNodeType | betaNodeType;
-
-export interface INode {
-	type: nodeType;
-	nodes: Map<number, IObjectPattern[]>;
-	rules: IRule[];
-	parentNodes: number[];
-	__id: number;
-}
 
 export function addRule(node: number, rule: IRule, nodes: INode[]) {
 	const n = nodes[node];

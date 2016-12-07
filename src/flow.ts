@@ -2,7 +2,8 @@ import { IInsert } from './interfaces';
 import WorkingMemory from './working-memory';
 import AgendaTree from './agenda';
 import EventEmitter from './EventEmitter';
-import { IRootNode, create_root_node, dispose, assertFact, retractFact, modifyFact, assertRule, containsRule } from './nodes/root-node';
+import { IRootNode } from './nodes';
+import { create_root_node, dispose, assertFact, retractFact, modifyFact, assertRule, containsRule } from './nodes/root-node';
 import { IRule } from './runtime/rule';
 import ExecutionStrategy from './execution-strategy';
 

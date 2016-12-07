@@ -4,7 +4,7 @@ import isFunction from 'lodash-ts/isFunction';
 import { IInsert } from './interfaces';
 import Flow from './flow';
 import AVLTree from './leafy/avl-tree';
-import { ITerminalNode } from './nodes/terminal-node';
+import { ITerminalNode } from './nodes';
 import Context from './context';
 
 interface IFactHash {

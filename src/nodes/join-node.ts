@@ -1,13 +1,9 @@
 import mixin from 'lodash-ts/mixin';
 import Context from '../context';
-import { INode, joinNodeType } from './node';
-import { IBetaNode, _create_beta_node, __addToLeftMemory, assert, __addToMemoryMatches, modify, retract, __addToRightMemory, removeFromLeftMemory, propagateRetractModifyFromLeft, removeFromRightMemory, propagateRetractModifyFromRight } from './beta-node';
-import { IJoinReferenceNode, create_join_reference_node } from './join-reference-node';
+import { INode, IJoinNode, joinNodeType } from '../nodes';
+import { _create_beta_node, __addToLeftMemory, assert, __addToMemoryMatches, modify, retract, __addToRightMemory, removeFromLeftMemory, propagateRetractModifyFromLeft, removeFromRightMemory, propagateRetractModifyFromRight } from './beta-node';
+import { create_join_reference_node } from './join-reference-node';
 import WorkingMemory from '../working-memory';
-
-export interface IJoinNode extends IBetaNode {
-	constraint: IJoinReferenceNode;
-}
 
 export function _create_join_node(type: joinNodeType): IJoinNode {
 	const node = _create_beta_node(type);

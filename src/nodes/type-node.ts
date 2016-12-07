@@ -1,12 +1,10 @@
-import { INode,  base_assert, base_retract, base_modify, base_dispose } from './node';
+import { INode, ITypeNode } from '../nodes';
+import { base_assert, base_retract, base_modify, base_dispose } from './node';
 import { IConstraint } from '../constraint';
-import { IAlphaNode, create as alpha_create } from './alpha-node';
+import { create as alpha_create } from './alpha-node';
 import Context from '../context';
 import Fact from '../facts/fact';
 import WorkingMemory from '../working-memory';
-
-export interface ITypeNode extends IAlphaNode {
-}
 
 export function create(constraint: IConstraint): ITypeNode {
 	return alpha_create('type', constraint);

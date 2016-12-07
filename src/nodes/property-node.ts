@@ -1,14 +1,10 @@
 import mixin from 'lodash-ts/mixin';
 import Context from '../context';
-import { IAlphaNode, create as create_alpha } from './alpha-node';
-import { INode, propagate_assert, propagate_modify, propagate_retract } from './node';
+import { INode, IPropertyNode } from '../nodes';
+import { create as create_alpha } from './alpha-node';
+import { propagate_assert, propagate_modify, propagate_retract } from './node';
 import { IConstraint } from '../constraint';
 import WorkingMemory from '../working-memory';
-
-export interface IPropertyNode extends IAlphaNode {
-	alias: string;
-	constiables: any;
-}
 
 export function create(constraint: IConstraint): IPropertyNode {
 	return mixin(create_alpha('property', constraint), {

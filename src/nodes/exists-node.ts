@@ -1,13 +1,10 @@
 import Context from '../context';
 import { ITuple } from './misc/tuple-entry';
 import LinkedList, { ILinkNode } from '../linked-list';
-import { INode } from './node';
+import { INode, IExistsNode } from '../nodes';
 import { removeFromLeftMemory, assert, modify, retract, __addToLeftMemory, removeFromRightMemory, __addToRightMemory } from './beta-node';
-import { INotNode, _create_not_node, removeFromLeftBlockedMemory, __cloneContext, addToLeftBlockedMemory } from './not-node';
+import { _create_not_node, removeFromLeftBlockedMemory, __cloneContext, addToLeftBlockedMemory } from './not-node';
 import WorkingMemory from '../working-memory';
-
-export interface IExistsNode extends INotNode {
-}
 
 export function create(): IExistsNode {
 	return _create_not_node('exists');

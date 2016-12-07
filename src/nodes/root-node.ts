@@ -6,11 +6,11 @@ import { IRule } from '../runtime/rule';
 
 import { IConstraint, IObjectConstraint, IHashConstraint, IReferenceConstraint, is_instance_of_reference_constraint, is_instance_of_hash } from '../constraint';
 
-import { INode, addRule, addOutNode, addParentNode, is_instance_of_beta_node, merge, base_assert, base_modify, base_dispose as node_dispose, base_retract } from './node';
-import { IAlphaNode } from './alpha-node';
-import { ITypeNode, create as create_type_node } from './type-node';
-import { ITerminalNode, create as create_terminal_node } from './terminal-node';
-import { IJoinNode, create as create_join_node } from './join-node';
+import { INode, IAlphaNode, ITypeNode, ITerminalNode, IJoinNode, IRootNode} from '../nodes';
+import { addRule, addOutNode, addParentNode, is_instance_of_beta_node, merge, base_assert, base_modify, base_dispose as node_dispose, base_retract } from './node';
+import { create as create_type_node } from './type-node';
+import { create as create_terminal_node } from './terminal-node';
+import { create as create_join_node } from './join-node';
 import { create as create_alias_node } from './alias-node';
 import { create as create_adapter_node } from './adapter-node';
 import { create as create_not_node } from './not-node';
@@ -30,21 +30,6 @@ function hasRefernceConstraints(pattern: IObjectPattern) {
 }
 
 export type Side = 'left' | 'right';
-
-export interface IBucket {
-	counter: number;
-	recency: number;
-}
-
-export interface IRootNode {
-	nodes: INode[];
-	terminalNodes: number[];
-	joinNodes: number[];
-	constraints: number[];
-	typeNodes: number[];
-	__ruleCount: number;
-	bucket: IBucket;
-}
 
 export function create_root_node(): IRootNode {
 	return {

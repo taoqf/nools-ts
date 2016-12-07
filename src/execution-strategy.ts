@@ -1,5 +1,5 @@
 import Flow from './flow';
-import { IRootNode } from './nodes/root-node';
+import { IRootNode } from './nodes';
 import AgendaTree from './agenda';
 import nextTick from './next-tick';
 

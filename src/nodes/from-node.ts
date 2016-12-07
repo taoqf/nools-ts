@@ -6,20 +6,9 @@ import { IFromPattern } from '../pattern';
 import WorkingMemory from '../working-memory';
 import { IConstraint, is_instance_of_hash, is_instance_of_equality, is_instance_of_reference_constraint } from '../constraint';
 import Fact from '../facts/fact';
-import { INode, joinNodeType } from './node';
+import { INode, IFromNode, joinNodeType } from '../nodes';
 import { __addToLeftMemory, assert, removeFromLeftMemory, modify, retract } from './beta-node';
-import { IJoinNode, _create_join_node, assert_left as base_assert_left } from './join-node';
-
-export interface IFromNode extends IJoinNode {
-	pattern: IFromPattern;
-	alias: string;
-	type_assert: (type: any) => boolean;
-	from_assert: (fact: any, fh?: any) => any;
-	constraints: IConstraint[];
-	fromMemory: { [id: number]: { [hashCode: string]: [Context, Context] }; };
-	__equalityConstraints: { (factHanle1: Map<string, Fact>, factHandle2: Map<string, Fact>): boolean; }[];
-	__variables: any[];
-}
+import { _create_join_node, assert_left as base_assert_left } from './join-node';
 
 export function _create_from_node(type: joinNodeType, pattern: IFromPattern): IFromNode {
 	const type_constraint = pattern.constraints[0];
