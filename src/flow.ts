@@ -15,7 +15,7 @@ export default class Flow extends EventEmitter {
 	public agenda: AgendaTree;
 	public rootNode: IRootNode;
 	private executionStrategy: ExecutionStrategy;
-	constructor(root_node: IRootNode, name: string, conflictResolutionStrategy: (a: IInsert, b: IInsert) => number) {
+	constructor(root_node: IRootNode, name: string, conflictResolutionStrategy: (a: IInsert, b: IInsert) => number, defined: Map<string, any>, scope: Map<string, any>) {
 		super();
 		this.name = name;
 		this.agenda = new AgendaTree(this, conflictResolutionStrategy);
@@ -26,7 +26,7 @@ export default class Flow extends EventEmitter {
 			this.emit('focused', ...args);
 		});
 		this.rootNode = root_node;
-		build_nodes(this.rootNode, this.agenda);
+		build_nodes(this.rootNode, this.agenda, defined, scope);
 		// todo: regist all the terminal nodes
 	}
 

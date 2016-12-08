@@ -13,8 +13,12 @@ export default class FlowContainer {
 	private __defined = new Map<string, any>();
 	private root_nodes: IRootNode;
 	private conflictResolutionStrategy: (a: IInsert, b: IInsert) => number;
-	constructor(root_node: IRootNode, name: string) {
+	private defined: Map<string, any>;
+	private scope: Map<string, any>;
+	constructor(root_node: IRootNode, name: string, defined: Map<string, any>, scope: Map<string, any>) {
 		this.name = name;
+		this.defined = defined;
+		this.scope = scope;
 		this.root_nodes = root_node;
 		// this.cb = cb;
 		this.conflictResolutionStrategy = conflictResolution;
@@ -43,7 +47,7 @@ export default class FlowContainer {
 	}
 
 	getSession(...facts: any[]) {
-		const flow = new Flow(this.root_nodes, this.name, this.conflictResolutionStrategy);
+		const flow = new Flow(this.root_nodes, this.name, this.conflictResolutionStrategy, this.defined, this.scope);
 		flow.assert(new InitialFact());
 		facts.forEach((fact) => {
 			flow.assert(fact);

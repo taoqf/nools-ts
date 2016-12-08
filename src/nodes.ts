@@ -19,10 +19,10 @@ export type nodeType = 'terminal' | 'join-reference' | alphaNodeType | adapterNo
 
 export interface INode {
 	type: nodeType;
-	nodes: Map<number, IObjectPattern[]>;
-	rules: IRule[];
 	parentNodes: number[];
 	__id: number;
+	out_nodes?: [number, IObjectPattern][];
+	nodes?: Map<number, IObjectPattern[]>;
 }
 
 export interface IAdapterNode extends INode {
@@ -58,7 +58,7 @@ export interface IBetaNode extends INode {
 }
 
 export interface IJoinNode extends IBetaNode {
-	constraint: IJoinReferenceNode;
+	constraint?: IJoinReferenceNode;
 }
 
 export interface IFromNode extends IJoinNode {
@@ -97,9 +97,9 @@ export interface IExistsNode extends INotNode {
 
 export interface ITerminalNode extends INode {
 	index: number;
-	rule: IRule;
 	name: string;
 	bucket: IBucket;
+	rule: IRule;
 	agenda?: AgendaTree;
 }
 export interface IBucket {
@@ -113,6 +113,5 @@ export interface IRootNode {
 	joinNodes: number[];
 	constraints: number[];
 	typeNodes: number[];
-	__ruleCount: number;
-	bucket: IBucket;
+	bucket?: IBucket;
 }

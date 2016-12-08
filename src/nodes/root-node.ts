@@ -24,7 +24,7 @@ export function modifyFact(root: IRootNode, fact: Fact, wm: WorkingMemory) {
 export function dispose(root: IRootNode) {
 	root.typeNodes.forEach((typeNode) => {
 		base_dispose(root.nodes, typeNode, undefined);
-	})
+	});
 }
 
 export function containsRule(root: IRootNode, name: string) {

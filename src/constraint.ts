@@ -24,8 +24,8 @@ export type ConstraintType =
 export interface IConstraint {
 	type: ConstraintType;
 	alias: string;
-	assert(fact: any, fh?: any): any;
-	equal(constraint: IConstraint): boolean;
+	assert?(fact: any, fh?: any): any;
+	equal?(constraint: IConstraint): boolean;
 	constraint: any;
 	// options: IPatternOptions;
 	// vars: any;

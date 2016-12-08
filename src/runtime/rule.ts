@@ -17,20 +17,25 @@ function parseAction(action: string, defined: Map<string, any>, scope: Map<strin
 	}
 }
 
-export default function (rules: IRule[], defined: Map<string, any>, scope: Map<string, any>): IRule[] {
-	return rules.map((rule) => {
-		if(rule.action){
-			const cb = parseAction(rule.action, defined, scope);
-			delete rule.action;
-			const nrule = rule as IRule;
-			nrule.fire = (flow: Flow, match: Match) => {
-				return new Promise((resolve) => {
-					resolve(cb.call(flow, match.factHash, flow));
-				});
-			}
-			return nrule;
-		} else {
-			return rule;
+export default function (rule: IRule, defined: Map<string, any>, scope: Map<string, any>): IRule {
+	const cb = parseAction(rule.action, defined, scope);
+	delete rule.action;
+	const nrule = rule as IRule;
+	nrule.fire = (flow: Flow, match: Match) => {
+		return new Promise((resolve) => {
+			resolve(cb.call(flow, match.factHash, flow));
+		});
+	}
+	return {
+		name: rule.name,
+		agendaGroup: rule.agendaGroup,
+		priority: rule.priority,
+		autoFocus: rule.autoFocus,
+		pattern: rule.pattern,
+		fire(flow: Flow, match: Match) {
+			return new Promise((resolve) => {
+				resolve(cb.call(flow, match.factHash, flow));
+			})
 		}
-	});
+	};
 }

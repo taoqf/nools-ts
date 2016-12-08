@@ -2,16 +2,12 @@ import { IFlow, ICompileOptions, IContext } from '../interfaces';
 import { to_map } from '../lang';
 import { get_defines, createFunction } from '../compile';
 import FlowContainer from '../flow-container';
-import compile_rules from './rule';
 
 export default function (data: IFlow, options: ICompileOptions) {
 	const context = { define: [], rules: [], scope: [] } as IContext;
 	const defines = get_defines(options.define);
 	const scope = to_map(options.scope);
-	data.root.nodes.forEach((node)=>{
-		node.rules = compile_rules(node.rules, defines, scope);
-	});
-	const flow = new FlowContainer(data.root, options.name || data.name);
+	const flow = new FlowContainer(data.root, options.name || data.name, defines, scope);
 	//expose any defined classes to the flow.
 	for (const [name, cls] of defines) {
 		flow.addDefined(name, cls);

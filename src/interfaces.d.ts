@@ -101,6 +101,7 @@ import { IRootNode } from './nodes';
 export interface IFlow {
 	name: string;
 	root: IRootNode;
+	rules: IRule[];
 }
 
 import { IPattern } from './pattern';
@@ -111,7 +112,7 @@ export interface IRule {
 	agendaGroup: string;
 	priority: number;
 	autoFocus: boolean;
-	action: string;
 	pattern: IPattern;
+	action?: string;
 	fire?(flow: Flow, match: Match): Promise<{}>;
 }
