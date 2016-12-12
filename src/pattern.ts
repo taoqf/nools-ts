@@ -8,7 +8,7 @@ import flattenDeep from 'lodash-ts/flattenDeep';
 // import isBoolean from 'lodash-ts/isBoolean';
 // import isArray from 'lodash-ts/isArray';
 import mixin from 'lodash-ts/mixin';
-import { IContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ICondition, IPatternOptions } from './interfaces';
+import { Hash, IContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ICondition, IPatternOptions } from './interfaces';
 import { getIdentifiers } from './constraint-matcher';
 import InitialFact from './facts/initial';
 import baseParseConstraint from './compile/parser/constraint';
@@ -31,6 +31,7 @@ export interface IPattern {
 
 export interface IObjectPattern extends IPattern {
 	id: number;
+	cls: string;
 	class_type: any;
 	alias: string;
 	pattern: string;
@@ -187,9 +188,9 @@ function toConstraints(constraint: ICondition, options: {
 }
 
 let id = 0;
-function _object_pattern(type: PatternType, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions): IObjectPattern {
+function _object_pattern(type: PatternType, cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, options: IPatternOptions): IObjectPattern {
 	// this.conditions = conditions;
-	let constraints: IConstraint[] = [create_object_constraint(alias, class_type)];
+	let constraints: IConstraint[] = [create_object_constraint(alias, cls, class_type)];
 	const constrnts = toConstraints(conditions, mixin({ alias: alias }, options));
 	if (constrnts.length) {
 		constraints = constraints.concat(constrnts);
@@ -205,6 +206,7 @@ function _object_pattern(type: PatternType, class_type: any, alias: string, cond
 	return {
 		type: type,
 		id: ++id,
+		cls: cls,
 		class_type: class_type,
 		alias: alias,
 		pattern: options.pattern,
@@ -213,15 +215,15 @@ function _object_pattern(type: PatternType, class_type: any, alias: string, cond
 }
 
 export function initial_fact_pattern() {
-	return _object_pattern('initial_fact', InitialFact, "__i__", [] as any, {});
+	return _object_pattern('initial_fact', 'InitialFact', InitialFact, "__i__", [] as any, {}, {} as IPatternOptions);
 }
 
-function object_pattern(class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
-	return _object_pattern('object', class_type, alias, conditions, store, options);
+function object_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
+	return _object_pattern('object', cls, class_type, alias, conditions, store, options);
 }
 
-function _from_pattern(type: PatternType, class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions): IFromPattern {
-	return mixin(_object_pattern(type, class_type, alias, conditions, store, options), {
+function _from_pattern(type: PatternType, cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, from: ICondition, options?: IPatternOptions): IFromPattern {
+	return mixin(_object_pattern(type, cls, class_type, alias, conditions, store, options), {
 		from: create_from_constraint(alias, from, options)
 	});
 }
@@ -340,12 +342,12 @@ function parseConstraint(constraint: string) {
 	return baseParseConstraint(constraint);
 }
 
-function from_not_pattern(class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions) {
-	return _from_pattern('from_not', class_type, alias, conditions, store, from, options) as IFromNotPattern;
+function from_not_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, from: ICondition, options?: IPatternOptions) {
+	return _from_pattern('from_not', cls, class_type, alias, conditions, store, from, options) as IFromNotPattern;
 }
 
-function not_pattern(class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
-	return _object_pattern('not', class_type, alias, conditions, store, options) as INotPattern;
+function not_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
+	return _object_pattern('not', cls, class_type, alias, conditions, store, options) as INotPattern;
 }
 
 function parsePattern_not(condition: ICondition): [IPattern] {
@@ -354,7 +356,8 @@ function parsePattern_not(condition: ICondition): [IPattern] {
 	if (condition[4] && condition[4].from) {
 		return [
 			from_not_pattern(
-				getParamType(condition[0], condition.scope),
+				condition[0][0],
+				getParamType(condition[0][1], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
 				condition[3] || {},
@@ -365,7 +368,8 @@ function parsePattern_not(condition: ICondition): [IPattern] {
 	} else {
 		return [
 			not_pattern(
-				getParamType(condition[0], condition.scope),
+				condition[0][0],
+				getParamType(condition[0][1], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
 				condition[3] || {},
@@ -375,12 +379,12 @@ function parsePattern_not(condition: ICondition): [IPattern] {
 	}
 }
 
-function from_exists_pattern(class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions) {
-	return _from_pattern('from_exists', class_type, alias, conditions, store, from, options) as IFromExistsPattern;
+function from_exists_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, from: ICondition, options?: IPatternOptions) {
+	return _from_pattern('from_exists', cls, class_type, alias, conditions, store, from, options) as IFromExistsPattern;
 }
 
-function exists_pattern(class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
-	return _object_pattern('exists', class_type, alias, conditions, store, options) as IExistsPattern;
+function exists_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
+	return _object_pattern('exists', cls, class_type, alias, conditions, store, options) as IExistsPattern;
 }
 
 function parsePattern_exists(condition: ICondition): [IPattern] {
@@ -389,7 +393,8 @@ function parsePattern_exists(condition: ICondition): [IPattern] {
 	if (condition[4] && condition[4].from) {
 		return [
 			from_exists_pattern(
-				getParamType(condition[0], condition.scope),
+				condition[0][0],
+				getParamType(condition[0][1], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
 				condition[3] || {},
@@ -400,7 +405,8 @@ function parsePattern_exists(condition: ICondition): [IPattern] {
 	} else {
 		return [
 			exists_pattern(
-				getParamType(condition[0], condition.scope),
+				condition[0][0],
+				getParamType(condition[0][1], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
 				condition[3] || {},
@@ -410,8 +416,8 @@ function parsePattern_exists(condition: ICondition): [IPattern] {
 	}
 }
 
-function from_pattern(class_type: any, alias: string, conditions: ICondition, store: any, from: ICondition, options?: IPatternOptions) {
-	return _from_pattern('from', class_type, alias, conditions, store, from, options);
+function from_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, from: ICondition, options?: IPatternOptions) {
+	return _from_pattern('from', cls, class_type, alias, conditions, store, from, options);
 }
 
 function parsePattern_def(condition: ICondition): [IFromPattern | IObjectPattern] {
@@ -422,7 +428,8 @@ function parsePattern_def(condition: ICondition): [IFromPattern | IObjectPattern
 	if (condition[4] && condition[4].from) {
 		return [
 			from_pattern(
-				getParamType(condition[0], condition.scope),
+				condition[0][0],
+				getParamType(condition[0][1], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
 				condition[3] || {},
@@ -433,7 +440,8 @@ function parsePattern_def(condition: ICondition): [IFromPattern | IObjectPattern
 	} else {
 		return [
 			object_pattern(
-				getParamType(condition[0], condition.scope),
+				condition[0][0],
+				getParamType(condition[0][1], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
 				condition[3] || {},

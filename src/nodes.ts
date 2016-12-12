@@ -111,7 +111,7 @@ export interface IRootNode {
 	nodes: INode[];
 	terminalNodes: number[];
 	joinNodes: number[];
-	constraints: number[];
+	alphaNodes: number[];
 	typeNodes: number[];
 	bucket?: IBucket;
 }

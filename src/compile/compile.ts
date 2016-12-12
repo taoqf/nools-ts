@@ -21,7 +21,7 @@ const __resolveRule = function (rule: INomalConstraint | IFromstraint, defined: 
 	}
 	let definedClass = rule[0];
 	if (definedClass && !!(definedClass = defined.get(definedClass))) {
-		condition.push(definedClass);
+		condition.push([rule[0], definedClass]);
 	} else {
 		throw new Error("Invalid class " + rule[0] + " for rule " + name);
 	}

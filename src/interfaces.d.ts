@@ -1,3 +1,7 @@
+export interface Hash {
+	[name: string]: number | string | boolean | Hash | Hash[];
+}
+
 export interface ICompileOptions {
 	name?: string;
 	define?: Map<string, any>;
@@ -6,8 +10,7 @@ export interface ICompileOptions {
 
 export interface ICondition extends Array<any> {
 	scope?: Map<string, any>;
-	from?: any;
-	[0]: string | ICondition;
+	[0]: string | ICondition;	// [class_name, class]
 	[1]: string | ICondition;	// always be null ???
 	[2]: string;
 	[3]?: any;
@@ -101,7 +104,6 @@ import { IRootNode } from './nodes';
 export interface IFlow {
 	name: string;
 	root: IRootNode;
-	rules: IRule[];
 }
 
 import { IPattern } from './pattern';

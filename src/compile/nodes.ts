@@ -16,7 +16,7 @@ export default function create_root_node(): IRootNode {
 		nodes: [],
 		terminalNodes: [],
 		joinNodes: [],
-		constraints: [],
+		alphaNodes: [],
 		typeNodes: [],
 		bucket: {
 			counter: 0,
@@ -68,8 +68,7 @@ function hasRefernceConstraints(pattern: IObjectPattern) {
 }
 
 function addOutNode(node: INode, outNode: number, pattern: IObjectPattern) {
-	const nodes = node.out_nodes;
-	nodes.push([outNode, pattern]);
+	node.out_nodes.push([outNode, pattern]);
 }
 
 function addParentNode(node: INode, n: number) {
@@ -126,7 +125,7 @@ function __mergeJoinNodes(root: IRootNode) {
 }
 
 function __checkEqual<T extends IAlphaNode>(root: IRootNode, node: T) {
-	const constraints = root.constraints;
+	const constraints = root.alphaNodes;
 	let index = -1;
 
 	if (constraints.some((id) => {
@@ -181,7 +180,7 @@ function __createEqualityNode(root: IRootNode, rule: number, constraint: IObject
 	return __checkEqual(root, create_equality_node(constraint));
 }
 
-function create_property_node(constraint: IConstraint): IPropertyNode {
+function create_property_node(constraint: IHashConstraint): IPropertyNode {
 	return mixin(create_alpha('property', constraint), {
 		alias: constraint.alias,
 		constiables: constraint.constraint
@@ -270,7 +269,7 @@ function _create_from_node(type: joinNodeType, pattern: IFromPattern): IFromNode
 		} else if (is_instance_of_hash(c)) {
 			// todo: need debug
 			debugger;
-			vars = vars.concat(c.constraint);
+			vars = vars.concat((c as IHashConstraint).constraint);
 		}
 	});
 	return mixin(_create_join_node(type), {
@@ -304,7 +303,7 @@ function _create_from_not_node(type: joinNodeType, pattern: IFromPattern): IFrom
 			eqConstraints.push(c.assert);
 		} else if (is_instance_of_hash(c)) {
 			debugger;
-			vars = vars.concat(c.constraint);
+			vars = vars.concat((c as IHashConstraint).constraint);
 		}
 	});
 	return mixin(_create_join_node(type), {
@@ -409,7 +408,7 @@ function __createAlphaNode(root: IRootNode, rule: number, pattern: IObjectPatter
 		}).forEach((constraint) => {
 			let n = -1;
 			if (is_instance_of_hash(constraint)) {
-				n = __createPropertyNode(root, rule, constraint);
+				n = __createPropertyNode(root, rule, (constraint as IHashConstraint));
 			} else if (is_instance_of_reference_constraint(constraint)) {
 				addConstraint((outNode as IJoinNode).constraint, constraint as IReferenceConstraint);
 				return;
