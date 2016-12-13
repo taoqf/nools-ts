@@ -2,13 +2,14 @@ import Context from '../context';
 import { INode, IBetaNode } from '../nodes';
 import { base_assert, base_modify, base_retract, propagate_dispose } from './node';
 import WorkingMemory from '../working-memory';
+import {memory_clear, memory_push, memory_get, memory_remove} from './misc/memory';
 
 export function dispose(nodes: INode[], n: number, context?: Context) {
 	const node = nodes[n] as IBetaNode;
 	node.leftMemory = {};
 	node.rightMemory = {};
-	node.leftTuples.clear();
-	node.rightTuples.clear();
+	memory_clear(node.leftTuples);
+	memory_clear(node.rightTuples);
 }
 
 // export function dispose_left(nodes: INode[], n: number, context: Context) {
@@ -50,7 +51,7 @@ export function __addToLeftMemory(nodes: INode[], n: number, context: Context) {
 	if (hashCode in lm) {
 		return false;
 	}
-	lm[hashCode] = node.leftTuples.push(context);
+	lm[hashCode] = memory_push(node.leftTuples, context);
 	context.rightMatches = {};
 	return true;
 }
@@ -85,7 +86,7 @@ export function propagateFromLeft(nodes: INode[], n: number, context: Context, r
 export function assert_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	__addToLeftMemory(nodes, n, context);
 	const node = nodes[n] as IBetaNode;
-	const rm = node.rightTuples.getRightMemory(context);
+	const rm = memory_get(node.rightTuples, context);
 	rm.forEach((m) => {
 		propagateFromLeft(nodes, n, context, m.data, wm);
 	});
@@ -97,7 +98,7 @@ export function __addToRightMemory(nodes: INode[], n: number, context: Context) 
 	if (hashCode in rm) {
 		return false;
 	}
-	rm[hashCode] = node.rightTuples.push(context);
+	rm[hashCode] = memory_push(node.rightTuples, context);
 	context.leftMatches = {};
 	return true;
 }
@@ -109,7 +110,7 @@ function propagateFromRight(nodes: INode[], n: number, context: Context, lc: Con
 export function assert_right(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	__addToRightMemory(nodes, n, context);
 	const node = nodes[n] as IBetaNode;
-	const lm = node.leftTuples.getLeftMemory(context);
+	const lm = memory_get(node.leftTuples, context);
 	lm.forEach((m) => {
 		propagateFromRight(nodes, n, context, m.data, wm);
 	});
@@ -122,7 +123,7 @@ export function removeFromLeftMemory(nodes: INode[], n: number, context: Context
 	if (tuple) {
 		const rightMemory = node.rightMemory;
 		const rightMatches = tuple.data.rightMatches;
-		node.leftTuples.remove(tuple);
+		memory_remove(node.leftTuples, tuple);
 		const hashCodes = Object.keys(rightMatches)
 		hashCodes.forEach((hc) => {
 			delete rightMemory[hc].data.leftMatches[hashCode];
@@ -155,7 +156,7 @@ export function modify_left(nodes: INode[], n: number, context: Context, wm: Wor
 	const previousContext = removeFromLeftMemory(nodes, n, context).data;
 	__addToLeftMemory(nodes, n, context);
 	const node = nodes[n] as IBetaNode;
-	const rm = node.rightTuples.getRightMemory(context);
+	const rm = memory_get(node.rightTuples, context);
 	if (!rm.length) {
 		propagateRetractModifyFromLeft(nodes, n, previousContext, wm);
 	} else {
@@ -175,7 +176,7 @@ export function removeFromRightMemory(nodes: INode[], n: number, context: Contex
 		const leftMemory = node.leftMemory;
 		const ret = tuple.data;
 		const leftMatches = ret.leftMatches;
-		tuples.remove(tuple);
+		memory_remove(tuples, tuple);
 		const hashCodes = Object.keys(leftMatches);
 		hashCodes.forEach((hc) => {
 			delete leftMemory[hc].data.rightMatches[hashCode];
@@ -208,7 +209,7 @@ export function modify_right(nodes: INode[], n: number, context: Context, wm: Wo
 	const previousContext = removeFromRightMemory(nodes, n, context).data;
 	__addToRightMemory(nodes, n, context);
 	const node = nodes[n] as IBetaNode;
-	const lm = node.leftTuples.getLeftMemory(context);
+	const lm = memory_get(node.leftTuples, context);
 	if (!lm.length) {
 		propagateRetractModifyFromRight(nodes, n, previousContext, wm);
 	} else {

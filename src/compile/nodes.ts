@@ -4,14 +4,15 @@ import { INode, IRootNode, ITerminalNode, IBucket, nodeType, IJoinNode, IAlphaNo
 import AgendaTree from '../agenda';
 import { IPattern, IObjectPattern, ICompositePattern, IFromPattern, composite_pattern, initial_fact_pattern } from '../pattern';
 import { is_instance_of_reference_constraint, IConstraint, IObjectConstraint, IHashConstraint, IReferenceConstraint, is_instance_of_hash, is_instance_of_equality } from '../constraint';
-import LeftMemory from '../nodes/misc/left-memory';
-import RightMemory from '../nodes/misc/right-memory';
+import Memory, {IMemory} from '../nodes/misc/memory';
 import Context from '../context';
 import Fact from '../facts/fact';
 import InitialFact from '../facts/initial';
 import { addConstraint, create_join_reference_node } from '../nodes/join-reference-node';
+import cst from './constraint';
+import pt from './pattern';
 
-export default function create_root_node(): IRootNode {
+function create_root_node(): IRootNode {
 	return {
 		nodes: [],
 		terminalNodes: [],
@@ -49,7 +50,7 @@ function create_terminal_node(rules: IRule[], index: number, bucket: IBucket): I
 	return node;
 }
 
-export function build(rules: IRule[]) {
+function build_nodes(rules: IRule[]) {
 	const root = create_root_node();
 	rules.forEach((rule, idx) => {
 		const terminalNode = create_terminal_node(rules, idx, root.bucket);
@@ -184,7 +185,7 @@ function create_property_node(constraint: IHashConstraint): IPropertyNode {
 	return mixin(create_alpha('property', constraint), {
 		alias: constraint.alias,
 		constiables: constraint.constraint
-	})
+	});
 }
 
 function __createPropertyNode(root: IRootNode, rule: number, constraint: IHashConstraint) {
@@ -193,8 +194,9 @@ function __createPropertyNode(root: IRootNode, rule: number, constraint: IHashCo
 
 function create_alias_node(pattern: IObjectPattern): IAliasNode {
 	const alias = pattern.alias;
-	return mixin(create_alpha('alias', pattern as any), {
+	return mixin(create_node('alias'), {
 		alias: alias,
+		constraint: pattern,
 		equal(other: IAliasNode) {
 			return other.type == 'alias' && alias === other.alias;
 		}
@@ -203,7 +205,7 @@ function create_alias_node(pattern: IObjectPattern): IAliasNode {
 
 function __createAliasNode(root: IRootNode, rule: number, pattern: IObjectPattern) {
 	// return __checkEqual(new AliasNode(pattern)).addRule(rule);
-	return __checkEqual(root, create_alias_node(pattern));
+	return __checkEqual(root, create_alias_node(pattern) as any);
 }
 
 function create_adapter_node(left: boolean): IAdapterNode {
@@ -219,8 +221,8 @@ function _create_beta_node(type: betaNodeType): IBetaNode {
 	return mixin(create_node(type), {
 		leftMemory: {},
 		rightMemory: {},
-		leftTuples: new LeftMemory(),
-		rightTuples: new RightMemory()
+		leftTuples: Memory(),
+		rightTuples: Memory()
 	});
 }
 
@@ -390,7 +392,6 @@ function __createBetaNode(root: IRootNode, rule: number, pattern: ICompositePatt
 	return joinNode;
 }
 
-
 function __createAlphaNode(root: IRootNode, rule: number, pattern: IObjectPattern, out_node: number, side: Side) {
 	const type = pattern.type;
 	if (type !== 'from' && type !== 'from_exists' && type !== 'from_not') {
@@ -430,4 +431,97 @@ function __createAlphaNode(root: IRootNode, rule: number, pattern: IObjectPatter
 		addParentNode(outNode, parentNode);
 		addOutNode(nodes[parentNode], out_node, pattern);
 	}
+}
+
+const funcs = new Map<nodeType, (node: INode) => INode>();
+
+function terminal(node: ITerminalNode) {
+	delete node.bucket;
+	return node;
+}
+funcs.set('terminal', terminal);
+
+function tp(node: ITypeNode) {
+	delete node.equal;
+	delete node.constraintAssert;
+	node.constraint = cst(node.constraint);
+	return node;
+}
+funcs.set('type', tp);
+function equality(node: IEqualityNode) {
+	delete node.equal;
+	delete node.constraintAssert;
+	delete node.memory;
+	node.constraint = cst(node.constraint);
+	return node;
+}
+funcs.set('equality', equality);
+function property(node: IPropertyNode) {
+	delete node.equal;
+	delete node.constraintAssert;
+	node.constraint = cst(node.constraint);
+	return node;
+}
+funcs.set('property', property);
+function alias(node: IAliasNode) {
+	delete node.equal;
+	node.constraint = pt(node.constraint);
+	return node;
+}
+funcs.set('alias', alias);
+// function adapter(node: IAdapterNode) {
+// 	return node;
+// }
+// funcs.set('leftadapter', adapter);
+// funcs.set('rightadapter', adapter);
+
+function tuple(tuple: IMemory){
+	// todo:
+	return tuple;
+}
+
+function beta(node: IBetaNode) {
+	node.leftTuples = tuple(node.leftTuples);
+	node.rightTuples = tuple(node.rightTuples);
+	delete node.leftMemory;
+	// delete node.leftTuples;
+	delete node.rightMemory;
+	// delete node.rightTuples;
+	return node;
+}
+// funcs.set('beta', beta);
+function join(node: IJoinNode) {
+	node = beta(node);
+	// delete node.constraint;
+	return node;
+}
+funcs.set('join', join);
+function not(node: INotNode) {
+	// node = join(node) as INotNode;
+	// delete node.leftTupleMemory;
+	// delete node.notMatch;
+	return node;
+}
+funcs.set('not', not);
+funcs.set('exists', not);
+function from(node: IFromNotNode) {
+	node = join(node) as IFromNotNode;
+	node.pattern = pt(node.pattern) as IFromPattern;
+	delete node.__equalityConstraints;
+	delete node.fromMemory;
+	delete node.type_assert;
+	delete node.from_assert;
+	return node;
+}
+funcs.set('from', from);
+funcs.set('from-not', from);
+funcs.set('exists-from', from);
+
+export default function (rules: IRule[]) {
+	const root = build_nodes(rules);
+	root.nodes = root.nodes.map((node) => {
+		const fun = funcs.get(node.type);
+		return fun ? fun(node) : node;
+	});
+	return root;
 }

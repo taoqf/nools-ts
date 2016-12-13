@@ -99,6 +99,7 @@ export default class AgendaTree extends EventEmitter {
 		if (agendaGroup) {
 			this.addAgendaGroup(agendaGroup);
 		}
+		return node;
 	}
 
 	isEmpty() {

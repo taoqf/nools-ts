@@ -5,8 +5,7 @@ import compile from './compile';
 import FlowContainer from '../flow-container';
 import tokens from './parser/tokens';
 import parse from './parser/parse';
-import { build } from './nodes';
-import pattern from './pattern';
+import build from './nodes';
 
 export default function parse_rules(src: string, options: ICompileOptions): IFlow {
 	if (!isString(src)) {
@@ -18,6 +17,6 @@ export default function parse_rules(src: string, options: ICompileOptions): IFlo
 	const root = build(rules);
 	return {
 		name: uuid(),
-		root: pattern(root)
+		root: root
 	};
 }

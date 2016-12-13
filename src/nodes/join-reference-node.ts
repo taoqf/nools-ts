@@ -4,7 +4,7 @@ import Context, { Match } from '../context';
 import { IReferenceConstraint, is_instance_of_reference_eq_constraint } from '../constraint';
 import { IJoinReferenceNode } from './join-reference-node';;
 import { create_node } from '../compile/nodes';
-import Memory from './misc/memory';
+import { IMemory, addIndex } from './misc/memory';
 
 const inversions: { [op: string]: string } = {
 	"gt": "lte",
@@ -44,8 +44,8 @@ export function addConstraint(node: IJoinReferenceNode, constraint: IReferenceCo
 			if (leftIndex && rightIndex) {
 				const leftOp = normalizeIndexConstraint(leftIndex, indexes, constraint.op),
 					rightOp = normalizeIndexConstraint(rightIndex, indexes, constraint.op);
-				node.rightMemory.addIndex(rightIndex, leftIndex, rightOp);
-				node.leftMemory.addIndex(leftIndex, rightIndex, leftOp);
+				addIndex(node.rightMemory, rightIndex, leftIndex, rightOp);
+				addIndex(node.leftMemory, leftIndex, rightIndex, leftOp);
 			}
 		}
 	}
@@ -84,14 +84,14 @@ const DEFUALT_CONSTRAINT = {
 export interface IJoinReferenceNode extends INode {
 	constraint: IReferenceConstraint;
 	isDefault: boolean;
-	leftMemory: Memory;
-	rightMemory: Memory;
+	leftMemory: IMemory;
+	rightMemory: IMemory;
 	equal(node: IJoinReferenceNode): boolean;
 	isMatch(lc: Context, rc: Context): boolean;
 	match(lc: Context, rc: Context): Match;
 }
 
-export function create_join_reference_node(leftMemory: Memory, rightMemory: Memory): IJoinReferenceNode {
+export function create_join_reference_node(leftMemory: IMemory, rightMemory: IMemory): IJoinReferenceNode {
 	const constraint = DEFUALT_CONSTRAINT;
 	const constraintAssert = DEFUALT_CONSTRAINT.assert;
 	return mixin(create_node('join-reference'), {

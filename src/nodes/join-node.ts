@@ -2,6 +2,7 @@ import Context from '../context';
 import { INode, IJoinNode, joinNodeType } from '../nodes';
 import { __addToLeftMemory, assert, __addToMemoryMatches, modify, retract, __addToRightMemory, removeFromLeftMemory, propagateRetractModifyFromLeft, removeFromRightMemory, propagateRetractModifyFromRight } from './beta-node';
 import WorkingMemory from '../working-memory';
+import {memory_get} from './misc/memory';
 
 function propagateFromLeft(nodes: INode[], n: number, context: Context, rm: Context, wm: WorkingMemory) {
 	const node = nodes[n] as IJoinNode;
@@ -15,7 +16,7 @@ function propagateFromLeft(nodes: INode[], n: number, context: Context, rm: Cont
 export function assert_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	__addToLeftMemory(nodes, n, context);
 	const node = nodes[n] as IJoinNode;
-	const rm = node.rightTuples.getRightMemory(context);
+	const rm = memory_get(node.rightTuples, context);
 	rm.forEach((m) => {
 		propagateFromLeft(nodes, n, context, m.data, wm);
 	});
@@ -33,7 +34,7 @@ function propagateFromRight(nodes: INode[], n: number, context: Context, lm: Con
 export function assert_right(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	__addToRightMemory(nodes, n, context);
 	const node = nodes[n] as IJoinNode;
-	const lm = node.leftTuples.getLeftMemory(context);
+	const lm = memory_get(node.leftTuples, context);
 	lm.forEach((m) => {
 		propagateFromRight(nodes, n, context, m.data, wm);
 	});
@@ -59,7 +60,7 @@ export function modify_left(nodes: INode[], n: number, context: Context, wm: Wor
 	const previousContext = removeFromLeftMemory(nodes, n, context).data;
 	__addToLeftMemory(nodes, n, context);
 	const node = nodes[n] as IJoinNode;
-	const rm = node.rightTuples.getRightMemory(context);
+	const rm = memory_get(node.rightTuples, context);
 	if (!rm.length) {
 		propagateRetractModifyFromLeft(nodes, n, previousContext, wm);
 	} else {
@@ -90,7 +91,7 @@ export function modify_right(nodes: INode[], n: number, context: Context, wm: Wo
 	const previousContext = removeFromRightMemory(nodes, n, context).data;
 	__addToRightMemory(nodes, n, context);
 	const node = nodes[n] as IJoinNode;
-	const lm = node.leftTuples.getLeftMemory(context);
+	const lm = memory_get(node.leftTuples, context);
 	if (!lm.length) {
 		propagateRetractModifyFromRight(nodes, n, previousContext, wm);
 	} else {

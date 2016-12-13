@@ -6,7 +6,7 @@ import { getMatcher, getSourceMatcher, getIdentifiers, getIndexableProperties } 
 
 export type ConstraintType =
 	'comparison' |	// > >= < <= !=
-	'custom' |		// when type is function, actually I don't need this since we have `class`
+	// 'custom' |		// when type is function, actually I don't need this since we have `class`
 	'equality' |	// ==,TrueConstraint
 	'from' |		// from
 	'hash' |		// {count: $count}
@@ -45,27 +45,10 @@ export function create_true_constraint(alias: string): ITrueConstraint {
 	};
 }
 
-export interface ICustomConstraint extends IConstraint {
-	fn(fact: any, fh?: any): any;
-}
-
-export function create_custom_constraint(alias: string, matcher: (fact: any, fh?: any) => any): ICustomConstraint {
-	return {
-		type: 'custom',
-		fn: matcher,
-		alias: alias,
-		assert(fact: any, fh?: any) {
-			return matcher(fact, fh);
-		},
-		equal(that: IConstraint) {
-			return that.type == 'custom' && matcher === (that as ICustomConstraint).fn;
-		}
-	};
-}
-
 function _create_equality_constraint(type: ConstraintType, alias: string, constraint: ICondition, options = {} as IPatternOptions): IEqualityConstraint {
 	const matcher = getMatcher(constraint, options, true);
 	return {
+		options: options,
 		pattern: options.pattern,
 		type: type,
 		alias: alias,
@@ -80,6 +63,7 @@ function _create_equality_constraint(type: ConstraintType, alias: string, constr
 }
 
 export interface IEqualityConstraint extends IConstraint {
+	options: IPatternOptions;
 	constraint: ICondition;
 	pattern: string;	// todo: pattern and type are not needed.
 }
@@ -103,8 +87,8 @@ export function create_comparison_constraint(alias: string, constraint: IConditi
 }
 
 export interface IObjectConstraint extends IConstraint {
-	cls: string;
-	constraint: any;	// class: String, Number, Boolean... etc
+	cls?: string;
+	constraint?: any;	// class: String, Number, Boolean... etc
 }
 
 export function create_object_constraint(alias: string, cls: string, constraint: any): IObjectConstraint {
@@ -140,31 +124,35 @@ export function create_hash_constraint(alias: string, constraint: Hash): IHashCo
 }
 
 export interface IFromConstraint extends IConstraint {
+	options: IPatternOptions;
 	constraint: Function;
+	condition: ICondition;
 }
 
-export function create_from_constraint(alias: string, constraint: ICondition, options = {} as IPatternOptions): IFromConstraint {
-	const matcher = getSourceMatcher(constraint, options, true);
+export function create_from_constraint(alias: string, condition: ICondition, options = {} as IPatternOptions): IFromConstraint {
+	const matcher = getSourceMatcher(condition, options, true);
 	return {
 		type: 'from',
+		options: options,
+		condition: condition,
 		alias: alias,
 		constraint: matcher,
 		assert(fact: any, fh?: any) {
 			return matcher(fact, fh);
 		},
 		equal(that: IConstraint) {
-			return that.type === 'from' && that.alias === alias && isEqual(constraint, (that as IFromConstraint).constraint);
+			return that.type === 'from' && that.alias === alias && isEqual(condition, (that as IFromConstraint).constraint);
 		}
 	};
 }
 
 export interface IReferenceConstraint extends IConstraint {
-	pattern: string;	// todo: pattern and type are not needed.
 	op: string;
 	constraint: ICondition;
 	merge(that: IReferenceConstraint): IReferenceConstraint;
 	getIndexableProperties(): string[];
 	vars: string[];
+	options: IPatternOptions;
 }
 
 enum enumReferenceOp {
@@ -196,7 +184,7 @@ export function is_instance_of_reference_eq_constraint(constraint: IConstraint) 
 function _create_reference_constraint(type: ConstraintType, op: string, alias: string, constraint: ICondition, options = {} as IPatternOptions): IReferenceConstraint {
 	const matcher = getMatcher(constraint, options, false);
 	return {
-		pattern: options.pattern,
+		options: options,
 		op: op,
 		type: type,
 		alias: alias,

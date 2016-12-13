@@ -4,6 +4,7 @@ import { INode, INotNode } from '../nodes';
 import { removeFromRightMemory, removeFromLeftMemory, retract, __addToRightMemory, __addToLeftMemory, assert, modify } from './beta-node';
 import Context, { Match } from '../context';
 import WorkingMemory from '../working-memory';
+import {memory_get, memory_remove} from './misc/memory';
 
 export function addToLeftBlockedMemory(nodes: INode[], n: number, context: ILinkNode<Context>) {
 	const node = nodes[n] as INotNode;
@@ -11,7 +12,7 @@ export function addToLeftBlockedMemory(nodes: INode[], n: number, context: ILink
 	const ctx = node.leftMemory[hashCode];
 	node.leftTupleMemory[hashCode] = context;
 	if (ctx) {
-		node.leftTuples.remove(ctx);
+		memory_remove(node.leftTuples, ctx);
 	}
 	return node;
 }
@@ -34,7 +35,7 @@ export function blockFromAssertLeft(nodes: INode[], n: number, leftContext: Cont
 
 export function assert_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n] as INotNode;
-	const values = node.rightTuples.getRightMemory(context);
+	const values = memory_get(node.rightTuples, context);
 	const thisConstraint = node.constraint;
 	if (context && values.every((value) => {
 		const rc = value.data;
@@ -53,7 +54,7 @@ export function assert_right(nodes: INode[], n: number, context: Context, wm: Wo
 	__addToRightMemory(nodes, n, context);
 	context.blocking = new LinkedList<Context>();
 	const node = nodes[n] as INotNode;
-	const fl = node.leftTuples.getLeftMemory(context).slice();	// todo: why do we need call slice?
+	const fl = memory_get(node.leftTuples, context).slice();	// todo: why do we need call slice?
 	const thisConstraint = node.constraint;
 	fl.forEach((l) => {
 		const leftContext = l.data;
@@ -77,7 +78,7 @@ export function retract_right(nodes: INode[], n: number, context: Context, wm: W
 		while ((blockingNode = blockingNode.next)) {
 			const leftContext = blockingNode.data;
 			removeFromLeftBlockedMemory(nodes, n, leftContext);
-			const rm = node.rightTuples.getRightMemory(leftContext);
+			const rm = memory_get(node.rightTuples, leftContext);
 			if (leftContext && rm.every((m) => {
 				const rc = m.data;
 				if (thisConstraint.isMatch(leftContext, rc)) {
@@ -137,7 +138,7 @@ export function modify_left(nodes: INode[], n: number, context: Context, wm: Wor
 	const ctx = removeFromLeftMemory(nodes, n, context);
 	const node = nodes[n] as INotNode;
 	const thisConstraint = node.constraint;
-	const rightTuples = node.rightTuples.getRightMemory(context);
+	const rightTuples = memory_get(node.rightTuples, context);
 	let isBlocked = false;
 	let leftContext = ctx && ctx.data;
 	if (!leftContext) {
@@ -204,7 +205,7 @@ export function modify_right(nodes: INode[], n: number, context: Context, wm: Wo
 	if (ctx) {
 		const rightContext = ctx.data;
 		const node = nodes[n] as INotNode;
-		const leftTuples = node.leftTuples.getLeftMemory(context).slice();
+		const leftTuples = memory_get(node.leftTuples, context).slice();
 		const leftTuplesLength = leftTuples.length;
 		const thisConstraint = node.constraint;
 		const blocking = rightContext.blocking;

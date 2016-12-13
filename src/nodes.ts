@@ -2,8 +2,7 @@ import { IConstraint } from './constraint';
 import Context, { Match } from './context';
 import { IObjectPattern, IFromPattern } from './pattern';
 import { IRule } from './interfaces';
-import LeftMemory from './nodes/misc/left-memory';
-import RightMemory from './nodes/misc/right-memory';
+import {IMemory} from './nodes/misc/memory';
 import { ITuple } from './nodes/misc/tuple-entry';
 import { IJoinReferenceNode } from './nodes/join-reference-node';
 import Fact from './facts/fact';
@@ -30,11 +29,14 @@ export interface IAdapterNode extends INode {
 
 export interface IAlphaNode extends INode {
 	constraint: IConstraint;
-	constraintAssert(it: any, fh?: any): boolean;	// todo: need to be removed.
+	constraintAssert(it: any, fh?: any): boolean;
 	equal(constraint: IAlphaNode): boolean;
 }
 
-export interface IAliasNode extends IAlphaNode {
+export interface IAliasNode extends INode {
+	constraint: IObjectPattern;
+	// constraintAssert(it: any, fh?: any): boolean;
+	equal(constraint: IAliasNode): boolean;
 	alias: string;
 }
 
@@ -53,8 +55,8 @@ export interface IPropertyNode extends IAlphaNode {
 export interface IBetaNode extends INode {
 	leftMemory: { [hasCode: string]: ITuple };
 	rightMemory: { [hasCode: string]: ITuple };
-	leftTuples: LeftMemory;
-	rightTuples: RightMemory;
+	leftTuples: IMemory;
+	rightTuples: IMemory;
 }
 
 export interface IJoinNode extends IBetaNode {

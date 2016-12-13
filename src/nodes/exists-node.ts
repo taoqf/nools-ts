@@ -5,6 +5,7 @@ import { INode, IExistsNode } from '../nodes';
 import { removeFromLeftMemory, assert, modify, retract, __addToLeftMemory, removeFromRightMemory, __addToRightMemory } from './beta-node';
 import { removeFromLeftBlockedMemory, __cloneContext, addToLeftBlockedMemory } from './not-node';
 import WorkingMemory from '../working-memory';
+import {memory_get} from './misc/memory';
 
 function blockedContext(nodes: INode[], n: number, leftContext: Context, rightContext: Context, wm: WorkingMemory) {
 	const node = nodes[n] as IExistsNode;
@@ -29,7 +30,7 @@ function blockFromAssertLeft(nodes: INode[], n: number, leftContext: Context, ri
 
 export function assert_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n] as IExistsNode;
-	const values = node.rightTuples.getRightMemory(context);
+	const values = memory_get(node.rightTuples, context);
 	const thisConstraint = node.constraint;
 	if (context && values.every((value) => {
 		const rc = value.data;
@@ -52,7 +53,7 @@ export function assert_right(nodes: INode[], n: number, context: Context, wm: Wo
 	__addToRightMemory(nodes, n, context);
 	context.blocking = new LinkedList<Context>();
 	const node = nodes[n] as IExistsNode;
-	const fl = node.leftTuples.getLeftMemory(context).slice();	// todo: why do we need call slice?
+	const fl = memory_get(node.leftTuples, context).slice();	// todo: why do we need call slice?
 	const thisConstraint = node.constraint;
 	fl.forEach((l) => {
 		const leftContext = l.data;
@@ -223,7 +224,7 @@ export function retract_right(nodes: INode[], n: number, context: Context, wm: W
 		while ((blockingNode = blockingNode.next)) {
 			const leftContext = blockingNode.data;
 			removeFromLeftBlockedMemory(nodes, n, leftContext);
-			const rm = node.rightTuples.getRightMemory(leftContext);
+			const rm = memory_get(node.rightTuples, leftContext);
 			if (leftContext && rm.every((m) => {
 				const rc = m.data;
 				if (thisConstraint.isMatch(leftContext, rc)) {

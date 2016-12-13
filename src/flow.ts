@@ -25,9 +25,7 @@ export default class Flow extends EventEmitter {
 		this.agenda.on("focused", (...args: any[]) => {
 			this.emit('focused', ...args);
 		});
-		this.rootNode = root_node;
-		build_nodes(this.rootNode, this.agenda, defined, scope);
-		// todo: regist all the terminal nodes
+		this.rootNode = build_nodes(root_node, this.agenda, defined, scope);
 	}
 
 	getFacts(Type: any) {
