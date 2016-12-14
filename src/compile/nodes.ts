@@ -475,21 +475,14 @@ funcs.set('alias', alias);
 // funcs.set('leftadapter', adapter);
 // funcs.set('rightadapter', adapter);
 
-function tuple(tuple: IMemory){
-	// todo:
-	return tuple;
-}
-
 function beta(node: IBetaNode) {
-	node.leftTuples = tuple(node.leftTuples);
-	node.rightTuples = tuple(node.rightTuples);
 	delete node.leftMemory;
-	// delete node.leftTuples;
+	delete node.leftTuples;
 	delete node.rightMemory;
-	// delete node.rightTuples;
+	delete node.rightTuples;
 	return node;
 }
-// funcs.set('beta', beta);
+funcs.set('beta', beta);
 function join(node: IJoinNode) {
 	node = beta(node);
 	const c = node.constraint;

@@ -2,7 +2,7 @@
  * @Author: taoqf
  * @Date: 2016-12-13 15:52:51
  * @Last Modified by: taoqf
- * @Last Modified time: 2016-12-14 10:36:52
+ * @Last Modified time: 2016-12-14 10:39:44
  * CopyRight 飞道科技 2016-2026
  */
 import clone from 'lodash-ts/clone';
@@ -118,10 +118,10 @@ function beta(node: IBetaNode, root: IRootNode, agenda: AgendaTree, defines: Map
 		type: node.type,
 		leftMemory: {},
 		rightMemory: {},
-		// leftTuples: Memory(),
-		// rightTuples: Memory()
-		leftTuples: node.leftTuples,
-		rightTuples: node.rightTuples
+		leftTuples: Memory(),
+		rightTuples: Memory()
+		// leftTuples: node.leftTuples,
+		// rightTuples: node.rightTuples
 	};
 }
 funcs.set('beta', beta);
