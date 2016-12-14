@@ -1,12 +1,13 @@
 import { IFromConstraint } from '../constraint';
 import cst from './constraint';
-import { IObjectPattern, PatternType, IFromPattern} from '../pattern';
+import { IPattern, IObjectPattern, PatternType, IFromPattern } from '../pattern';
 const funcs = new Map<PatternType, (constraint: IObjectPattern) => IObjectPattern>();
 
 function obj(pattern: IObjectPattern) {
 	delete pattern.class_type;
-	pattern.constraints = pattern.constraints.map(cst);
+	// pattern.constraints = pattern.constraints.map(cst);
 	delete pattern.pattern;
+	delete pattern.constraints;
 	return pattern;
 }
 funcs.set('object', obj);

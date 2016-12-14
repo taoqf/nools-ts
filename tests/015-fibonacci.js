@@ -47,14 +47,14 @@ const scope = new Map();
 //also declare these outside of the nools
 //file by passing them into the compile method
 class Fibonacci {
-	constructor(sequence){
+	constructor(sequence) {
 		this.value = -1;
 		this.sequence = sequence;
 	}
 }
 
 class Result {
-	constructor(){
+	constructor() {
 		this.value = -1;
 	}
 }
@@ -69,27 +69,26 @@ const flow = nools.compile(rule, {
 });
 // const Fibonacci = flow.getDefined("fibonacci"), Result = flow.getDefined("result");
 
-const r1 = new Result(),
-	session1 = flow.getSession(new Fibonacci(10), r1),
-	s1 = +(new Date());
+const r1 = new Result();
+console.time('s');
+const session1 = flow.getSession(new Fibonacci(10), r1);
 session1.match().then(function () {
-	console.log("10, %d [%dms]", r1.result, +(new Date()) - s1);
+	console.log("10, %d", r1.result);
 	session1.dispose();
 });
 
-const r2 = new Result(),
-	session2 = flow.getSession(new Fibonacci(150), r2),
-	s2 = +(new Date());
+const r2 = new Result();
+const session2 = flow.getSession(new Fibonacci(150), r2);
 session2.match().then(function () {
-	console.log("150, %d [%dms]", r2.result, +(new Date()) - s2);
+	console.log("150, %d", r2.result);
 	session2.dispose();
 });
 
-const r3 = new Result(),
-	session3 = flow.getSession(new Fibonacci(1000), r3),
-	s3 = +(new Date());
+const r3 = new Result();
+const session3 = flow.getSession(new Fibonacci(1000), r3);
 session3.match().then(function () {
-	console.log("1000, %d [%dms]", r3.result, +(new Date()) - s3);
+	console.log("1000, %d", r3.result);
 	session3.dispose();
+	console.timeEnd('s');
 	process.exit();
 });

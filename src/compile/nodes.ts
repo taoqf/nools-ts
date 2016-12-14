@@ -529,5 +529,6 @@ export default function (rules: IRule[]) {
 		const fun = funcs.get(node.type);
 		return fun ? fun(node) : node;
 	});
+	root.patterns = root.patterns.map(pt);
 	return root;
 }

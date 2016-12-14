@@ -1,13 +1,14 @@
-import { IFromConstraint } from '../constraint';
+import { IConstraint, IFromConstraint } from '../constraint';
 import cst from './constraint';
 import { IPattern, IObjectPattern, PatternType, IFromPattern } from '../pattern';
 const funcs = new Map<PatternType, (pattern: IPattern, defines: Map<string, any>) => IObjectPattern>();
 
 function obj(pattern: IObjectPattern, defines: Map<string, any>) {
 	const class_type = defines.get(pattern.cls);
-	const constraints = pattern.constraints.map((constraint) => {
-		return cst(constraint, defines);
-	});
+	// const constraints = pattern.constraints.map((constraint) => {
+	// 	return cst(constraint, defines);
+	// });
+	const constraints: IConstraint[] = null;
 	return {
 		type: pattern.type,
 		id: pattern.id,
