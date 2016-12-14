@@ -1,6 +1,6 @@
 import { IConstraint } from './constraint';
 import Context, { Match } from './context';
-import { IObjectPattern, IFromPattern } from './pattern';
+import { IPattern, IObjectPattern, IFromPattern } from './pattern';
 import { IRule } from './interfaces';
 import {IMemory} from './nodes/misc/memory';
 import { ITuple } from './nodes/misc/tuple-entry';
@@ -20,8 +20,9 @@ export interface INode {
 	type: nodeType;
 	parentNodes: number[];
 	__id: number;
-	out_nodes?: [number, IObjectPattern][];
-	nodes?: Map<number, IObjectPattern[]>;
+	out_nodes?: [number, number][];
+	nodes?: Map<number, IPattern[]>;
+	root?: IRootNode;
 }
 
 export interface IAdapterNode extends INode {
@@ -111,6 +112,7 @@ export interface IBucket {
 
 export interface IRootNode {
 	nodes: INode[];
+	patterns: IPattern[];
 	terminalNodes: number[];
 	joinNodes: number[];
 	alphaNodes: number[];

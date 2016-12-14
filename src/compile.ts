@@ -3,6 +3,9 @@ import keys from 'lodash-ts/keys';
 
 import InitialFact from './facts/initial';
 import { to_map } from './lang';
+import parse from './compile/index';
+// import FlowContainer from './flow-container';
+import { ICompileOptions } from './interfaces';
 
 export function get_defines(d: Map<string, any>) {
 	const defines = to_map(d);
@@ -83,3 +86,8 @@ export function createDefined(action: string | any, defined: Map<string, any>, s
 	}
 	return ret;
 }
+
+export function compile(src: string, options: ICompileOptions) {
+	return parse(src, options);
+}
+export default compile;

@@ -2,13 +2,13 @@
  * @Author: taoqf
  * @Date: 2016-12-13 15:52:51
  * @Last Modified by: taoqf
- * @Last Modified time: 2016-12-14 11:26:27
+ * @Last Modified time: 2016-12-14 15:28:51
  * CopyRight 飞道科技 2016-2026
  */
 import clone from 'lodash-ts/clone';
 import mixin from 'lodash-ts/mixin';
 import { is_instance_of_equality, is_instance_of_reference_constraint } from '../constraint';
-import { IObjectPattern, IFromPattern } from '../pattern';
+import { IPattern, IFromPattern } from '../pattern';
 import { INode, IRootNode, ITerminalNode, IJoinNode, ITypeNode, nodeType, IEqualityNode, IPropertyNode, IAliasNode, IAdapterNode, IBetaNode, INotNode, IFromNode } from '../nodes';
 import AgendaTree from '../agenda';
 import { addConstraint, create_join_reference_node } from '../nodes/join-reference-node';
@@ -20,14 +20,14 @@ import InitialFact from '../facts/initial';
 import Fact from '../facts/fact';
 import pt from './pattern';
 
-function compile_sub_nodes(node: INode) {
+function compile_sub_nodes(patterns: IPattern[], node: INode) {
 	const n = clone(node, true);
-	const nodes = n.nodes = new Map<number, IObjectPattern[]>();
+	const nodes = n.nodes = new Map<number, IPattern[]>();
 	node.out_nodes.forEach(([outNode, pattern]) => {
 		if (!nodes.has(outNode)) {
 			nodes.set(outNode, []);
 		}
-		nodes.get(outNode).push(pattern);
+		nodes.get(outNode).push(patterns[pattern]);
 	});
 	return n;
 }
@@ -208,13 +208,17 @@ funcs.set('from-not', from_not);
 funcs.set('exists-from', from_not);
 
 export default function build(root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
+	const patterns = root.patterns;
 	const nodes = root.nodes.map((node) => {
-		node = compile_sub_nodes(node);
+		node = compile_sub_nodes(patterns, node);
 		const fun = funcs.get(node.type);
 		return fun(node, root, agenda, defines, scope);
 	});
 	return {
 		nodes: nodes,
+		patterns: root.patterns.map((pattern)=>{
+			return pt(pattern, defines);
+		}),
 		terminalNodes: clone(root.terminalNodes),
 		joinNodes: clone(root.joinNodes),
 		alphaNodes: clone(root.alphaNodes),

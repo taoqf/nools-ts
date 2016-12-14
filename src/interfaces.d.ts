@@ -77,6 +77,7 @@ export interface IContext {
 }
 
 export interface IPatternOptions {
+	scope2?: Hash;
 	scope: Map<string, any>;
 	pattern: string;
 	alias?: string;

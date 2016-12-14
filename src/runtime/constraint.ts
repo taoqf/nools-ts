@@ -1,5 +1,6 @@
 import clone from 'lodash-ts/clone';
 import isEqual from 'lodash-ts/isEqual';
+import { IPatternOptions } from '../interfaces';
 import { ConstraintType, IConstraint, ITrueConstraint, IEqualityConstraint, IObjectConstraint, IHashConstraint, IFromConstraint, IReferenceConstraint, is_instance_of_reference_constraint } from '../constraint';
 import { getMatcher, getSourceMatcher, getIndexableProperties } from '../constraint-matcher';
 
@@ -19,8 +20,22 @@ function true_constraint(constraint: ITrueConstraint): ITrueConstraint {
 	};
 }
 funcs.set('true', true_constraint);
+
+	const scope = new Map<string, any>();
+function op(options: IPatternOptions) {
+	// const scope2 = options.scope2;
+	// for(const name in scope2){
+	// 	scope.set(name, scope2[name]);
+	// }
+	return {
+		scope: scope,
+		pattern: options.pattern,
+		alias: options.alias
+	};
+}
+
 function equality(constraint: IEqualityConstraint) {
-	const options = constraint.options;
+	const options = op(constraint.options);
 	const cst = constraint.constraint;
 	const matcher = getMatcher(cst, options, true);
 	const alias = constraint.alias;
@@ -75,7 +90,7 @@ funcs.set('hash', hash);
 function from(constraint: IFromConstraint): IFromConstraint {
 	const alias = constraint.alias;
 	const condition = constraint.condition;
-	const options = constraint.options;
+	const options = op(constraint.options);
 	const matcher = getSourceMatcher(condition, options, true);
 	return {
 		type: 'from',
@@ -94,7 +109,7 @@ function from(constraint: IFromConstraint): IFromConstraint {
 funcs.set('from', from);
 function reference(constraint: IReferenceConstraint) {
 	const alias = constraint.alias;
-	const options = constraint.options;
+	const options = op(constraint.options);
 	const cst = constraint.constraint;
 	const matcher = getMatcher(cst, options, false);
 	return {

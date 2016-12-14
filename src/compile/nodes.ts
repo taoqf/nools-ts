@@ -4,7 +4,7 @@ import { INode, IRootNode, ITerminalNode, IBucket, nodeType, IJoinNode, IAlphaNo
 import AgendaTree from '../agenda';
 import { IPattern, IObjectPattern, ICompositePattern, IFromPattern, composite_pattern, initial_fact_pattern } from '../pattern';
 import { is_instance_of_reference_constraint, IConstraint, IObjectConstraint, IHashConstraint, IReferenceConstraint, is_instance_of_hash, is_instance_of_equality } from '../constraint';
-import Memory, {IMemory} from '../nodes/misc/memory';
+import Memory, { IMemory } from '../nodes/misc/memory';
 import Context from '../context';
 import Fact from '../facts/fact';
 import InitialFact from '../facts/initial';
@@ -15,6 +15,7 @@ import pt from './pattern';
 function create_root_node(): IRootNode {
 	return {
 		nodes: [],
+		patterns: [],
 		terminalNodes: [],
 		joinNodes: [],
 		alphaNodes: [],
@@ -68,7 +69,7 @@ function hasRefernceConstraints(pattern: IObjectPattern) {
 	});
 }
 
-function addOutNode(node: INode, outNode: number, pattern: IObjectPattern) {
+function addOutNode(node: INode, outNode: number, pattern: number) {
 	node.out_nodes.push([outNode, pattern]);
 }
 
@@ -82,15 +83,17 @@ function addParentNode(node: INode, n: number) {
 function merge(node1: number, node2: number, nodes: INode[]) {
 	const n1 = nodes[node1];
 	const n2 = nodes[node2];
-	for (const [node, patterns] of n2.nodes.entries()) {
-		patterns.forEach((pattern) => {
-			addOutNode(n1, node, pattern);
-		});
-		n2.nodes.delete(node);
+	for (const [idx, [node, pattern]] of n2.out_nodes.entries()) {
 	}
+	n2.out_nodes.forEach(([n, p]) => {
+		addOutNode(n1, n, p);
+	});
+	n2.out_nodes = [];
 	n2.parentNodes.forEach((parentNode) => {
 		addParentNode(n1, parentNode);
-		nodes[parentNode].nodes.delete(node2);
+		nodes[parentNode].out_nodes = nodes[parentNode].out_nodes.filter(([n, p]) => {
+			return n != node2;
+		});
 	});
 	return n1;
 }
@@ -333,6 +336,7 @@ function create_exists_from_node(pattern: IFromPattern): IExistsFromNode {
 }
 
 function __createJoinNode(root: IRootNode, rule: number, pattern: ICompositePattern, out_node: number, side: Side) {
+	// const p = root.patterns.push(pattern) - 1;
 	let joinNode: INode;
 	let jn = -1;
 	const nodes = root.nodes;
@@ -364,10 +368,10 @@ function __createJoinNode(root: IRootNode, rule: number, pattern: ICompositePatt
 	let parentNode = joinNode;
 	if (is_instance_of_beta_node(nodes[out_node])) {
 		const an = __createAdapterNode(root, rule, side);
-		addOutNode(parentNode, an, pattern as any);	// todo:: type of pattern should be 'ObjectPattern'
+		addOutNode(parentNode, an, -1);
 		parentNode = nodes[an];
 	}
-	addOutNode(parentNode, out_node, pattern as any);
+	addOutNode(parentNode, out_node, -1);
 	return jn;
 }
 
@@ -393,6 +397,7 @@ function __createBetaNode(root: IRootNode, rule: number, pattern: ICompositePatt
 }
 
 function __createAlphaNode(root: IRootNode, rule: number, pattern: IObjectPattern, out_node: number, side: Side) {
+	const p = root.patterns.push(pattern) - 1;
 	const type = pattern.type;
 	if (type !== 'from' && type !== 'from_exists' && type !== 'from_not') {
 		const nodes = root.nodes;
@@ -401,7 +406,7 @@ function __createAlphaNode(root: IRootNode, rule: number, pattern: IObjectPatter
 		const tn = __createTypeNode(root, constraints[0]);
 		const typeNode = nodes[tn];
 		const an = __createAliasNode(root, rule, pattern);
-		addOutNode(typeNode, an, pattern);
+		addOutNode(typeNode, an, p);
 		addParentNode(nodes[an], tn);
 		let parentNode = an;
 		constraints.filter((constraint, idx) => {
@@ -417,7 +422,7 @@ function __createAlphaNode(root: IRootNode, rule: number, pattern: IObjectPatter
 				n = __createEqualityNode(root, rule, constraint as IObjectConstraint);
 			}
 			const node = nodes[n];
-			addOutNode(nodes[parentNode], n, pattern);
+			addOutNode(nodes[parentNode], n, p);
 			addParentNode(node, parentNode);
 			parentNode = n;
 		});
@@ -425,11 +430,11 @@ function __createAlphaNode(root: IRootNode, rule: number, pattern: IObjectPatter
 		if (is_instance_of_beta_node(outNode)) {
 			const an = __createAdapterNode(root, rule, side);
 			addParentNode(nodes[an], parentNode);
-			addOutNode(nodes[parentNode], an, pattern);
+			addOutNode(nodes[parentNode], an, p);
 			parentNode = an;
 		}
 		addParentNode(outNode, parentNode);
-		addOutNode(nodes[parentNode], out_node, pattern);
+		addOutNode(nodes[parentNode], out_node, p);
 	}
 }
 
