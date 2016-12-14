@@ -31,7 +31,7 @@ export interface IPattern {
 
 export interface IObjectPattern extends IPattern {
 	id: number;
-	cls: string;
+	cls?: string;
 	class_type: any;
 	alias: string;
 	pattern: string;

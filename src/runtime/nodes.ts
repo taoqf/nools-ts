@@ -2,7 +2,7 @@
  * @Author: taoqf
  * @Date: 2016-12-13 15:52:51
  * @Last Modified by: taoqf
- * @Last Modified time: 2016-12-14 10:45:16
+ * @Last Modified time: 2016-12-14 11:26:27
  * CopyRight 飞道科技 2016-2026
  */
 import clone from 'lodash-ts/clone';
@@ -21,14 +21,15 @@ import Fact from '../facts/fact';
 import pt from './pattern';
 
 function compile_sub_nodes(node: INode) {
-	const nodes = node.nodes = new Map<number, IObjectPattern[]>();
+	const n = clone(node, true);
+	const nodes = n.nodes = new Map<number, IObjectPattern[]>();
 	node.out_nodes.forEach(([outNode, pattern]) => {
 		if (!nodes.has(outNode)) {
 			nodes.set(outNode, []);
 		}
 		nodes.get(outNode).push(pattern);
 	});
-	return node;
+	return n;
 }
 
 const funcs = new Map<nodeType, (node: INode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) => INode>();
@@ -210,7 +211,7 @@ export default function build(root: IRootNode, agenda: AgendaTree, defines: Map<
 	const nodes = root.nodes.map((node) => {
 		node = compile_sub_nodes(node);
 		const fun = funcs.get(node.type);
-		return fun ? fun(node, root, agenda, defines, scope) : node;
+		return fun(node, root, agenda, defines, scope);
 	});
 	return {
 		nodes: nodes,

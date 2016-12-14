@@ -4,11 +4,18 @@ import { IObjectPattern, PatternType, IFromPattern } from '../pattern';
 const funcs = new Map<PatternType, (constraint: IObjectPattern, defines: Map<string, any>) => IObjectPattern>();
 
 function obj(pattern: IObjectPattern, defines: Map<string, any>) {
-	pattern.class_type = defines.get(pattern.cls);
-	pattern.constraints = pattern.constraints.map((constraint) => {
+	const class_type = defines.get(pattern.cls);
+	const constraints = pattern.constraints.map((constraint) => {
 		return cst(constraint, defines);
 	});
-	return pattern;
+	return {
+		type: pattern.type,
+		id: pattern.id,
+		class_type: class_type,
+		alias: pattern.alias,
+		pattern: pattern.pattern,
+		constraints: constraints
+	};
 }
 funcs.set('object', obj);
 funcs.set('initial_fact', obj);
@@ -16,8 +23,9 @@ funcs.set('not', obj);
 funcs.set('exists', obj);
 
 function from(pattern: IFromPattern, defines: Map<string, any>) {
+	const from = pattern.from;
 	pattern = obj(pattern, defines) as IFromPattern;
-	pattern.from = cst(pattern.from, defines) as IFromConstraint;
+	pattern.from = cst(from, defines) as IFromConstraint;
 	return pattern;
 }
 funcs.set('from', from);

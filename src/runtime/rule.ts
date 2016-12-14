@@ -19,7 +19,6 @@ function parseAction(action: string, defined: Map<string, any>, scope: Map<strin
 
 export default function (rule: IRule, defined: Map<string, any>, scope: Map<string, any>): IRule {
 	const cb = parseAction(rule.action, defined, scope);
-	delete rule.action;
 	return {
 		name: rule.name,
 		agendaGroup: rule.agendaGroup,
