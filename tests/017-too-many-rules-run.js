@@ -14,7 +14,7 @@ class OAV {
 }
 defines.set('OAV', OAV);
 const nools = require('../dist/runtime');
-console.time('feidao');
+console.time('fd');
 const flow = nools.compile(rule, {
 	name: 'test',
 	define: defines,
@@ -24,7 +24,7 @@ const session = flow.getSession(new OAV('o', 'a', 0));
 session.match().then(() => {
 	console.log('done');
 	session.dispose();
-	console.timeEnd('feidao');
+	console.timeEnd('fd');
 	process.exit();
 }, (err) => {
 	console.error(err);
