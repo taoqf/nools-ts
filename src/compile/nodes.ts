@@ -492,7 +492,15 @@ function beta(node: IBetaNode) {
 // funcs.set('beta', beta);
 function join(node: IJoinNode) {
 	node = beta(node);
-	// delete node.constraint;
+	const c = node.constraint;
+	delete c.leftMemory;
+	delete c.rightMemory;
+	delete c.equal;
+	delete c.isMatch;
+	delete c.match;
+	const cc = c.constraint;
+	delete cc.merge;
+	delete cc.getIndexableProperties;
 	return node;
 }
 funcs.set('join', join);

@@ -2,7 +2,7 @@
  * @Author: taoqf
  * @Date: 2016-12-13 15:52:51
  * @Last Modified by: taoqf
- * @Last Modified time: 2016-12-13 19:36:32
+ * @Last Modified time: 2016-12-14 10:36:52
  * CopyRight 飞道科技 2016-2026
  */
 import clone from 'lodash-ts/clone';
@@ -128,9 +128,12 @@ funcs.set('beta', beta);
 function join(node: IJoinNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
 	const constraint = node.constraint;
 	node = beta(node, root, agenda, defines, scope) as IBetaNode;
-	// const constraint = create_join_reference_node(node.leftTuples, node.rightTuples);
+	const c = create_join_reference_node(node.leftTuples, node.rightTuples);
+	if(!constraint.isDefault){
+		addConstraint(c, cst(constraint.constraint, defines) as any);
+	}
 	return mixin(node, {
-		constraint: constraint
+		constraint: c
 	});
 }
 funcs.set('join', join);
