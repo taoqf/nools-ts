@@ -498,9 +498,9 @@ function join(node: IJoinNode) {
 }
 funcs.set('join', join);
 function not(node: INotNode) {
-	// node = join(node) as INotNode;
-	// delete node.leftTupleMemory;
-	// delete node.notMatch;
+	node = join(node) as INotNode;
+	delete node.leftTupleMemory;
+	delete node.notMatch;
 	return node;
 }
 funcs.set('not', not);

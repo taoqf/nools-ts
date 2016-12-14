@@ -2,7 +2,7 @@
  * @Author: taoqf
  * @Date: 2016-12-13 15:52:51
  * @Last Modified by: taoqf
- * @Last Modified time: 2016-12-14 10:39:44
+ * @Last Modified time: 2016-12-14 10:45:16
  * CopyRight 飞道科技 2016-2026
  */
 import clone from 'lodash-ts/clone';
@@ -120,8 +120,6 @@ function beta(node: IBetaNode, root: IRootNode, agenda: AgendaTree, defines: Map
 		rightMemory: {},
 		leftTuples: Memory(),
 		rightTuples: Memory()
-		// leftTuples: node.leftTuples,
-		// rightTuples: node.rightTuples
 	};
 }
 funcs.set('beta', beta);
@@ -138,13 +136,11 @@ function join(node: IJoinNode, root: IRootNode, agenda: AgendaTree, defines: Map
 }
 funcs.set('join', join);
 function not(node: INotNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
-	return node;
-	// node = join(node, root, agenda, defines, scope) as IJoinNode as INotNode;
-	// return mixin(node, {
-	// 	leftTupleMemory: {},
-	// 	// notMatch: new Context(new InitialFact()).match
-	// 	notMatch: node.notMatch
-	// });
+	node = join(node, root, agenda, defines, scope) as IJoinNode as INotNode;
+	return mixin(node, {
+		leftTupleMemory: {},
+		notMatch: new Context(new InitialFact()).match
+	});
 }
 funcs.set('not', not);
 funcs.set('exists', not);
