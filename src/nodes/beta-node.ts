@@ -2,7 +2,8 @@ import Context from '../context';
 import { INode, IBetaNode } from '../nodes';
 import { base_assert, base_modify, base_retract, propagate_dispose } from './node';
 import WorkingMemory from '../working-memory';
-import {memory_clear, memory_push, memory_get, memory_remove} from './misc/memory';
+import { memory_clear, memory_push, memory_get, memory_remove } from './misc/memory';
+import { ITuple } from './misc/tuple-entry';
 
 export function dispose(nodes: INode[], n: number, context?: Context) {
 	const node = nodes[n] as IBetaNode;

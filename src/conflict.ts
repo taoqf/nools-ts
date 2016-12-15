@@ -26,7 +26,7 @@ function factRecency(a: IInsert, b: IInsert) {
 function factRecencyInverse(a: IInsert, b: IInsert) {
 	// negate fact recency,
 	// but need 0 to produce 1 in ret value of strategy function
-	var fRI = -factRecency(a, b);
+	const fRI = -factRecency(a, b);
 	return (fRI === 0 ? 1 : fRI);
 }
 

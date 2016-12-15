@@ -69,22 +69,23 @@ const flow = nools.compile(rule, {
 });
 // const Fibonacci = flow.getDefined("fibonacci"), Result = flow.getDefined("result");
 
-const r1 = new Result();
-console.time('s');
-const session1 = flow.getSession(new Fibonacci(10), r1);
-session1.match().then(function () {
-	console.log("10, %d", r1.result);
-	session1.dispose();
-});
+// const r1 = new Result();
+// console.time('s');
+// const session1 = flow.getSession(new Fibonacci(10), r1);
+// session1.match().then(function () {
+// 	console.log("10, %d", r1.result);
+// 	session1.dispose();
+// });
 
-const r2 = new Result();
-const session2 = flow.getSession(new Fibonacci(150), r2);
-session2.match().then(function () {
-	console.log("150, %d", r2.result);
-	session2.dispose();
-});
+// const r2 = new Result();
+// const session2 = flow.getSession(new Fibonacci(150), r2);
+// session2.match().then(function () {
+// 	console.log("150, %d", r2.result);
+// 	session2.dispose();
+// });
 
 const r3 = new Result();
+	console.time('s');
 const session3 = flow.getSession(new Fibonacci(1000), r3);
 session3.match().then(function () {
 	console.log("1000, %d", r3.result);

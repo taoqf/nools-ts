@@ -124,12 +124,23 @@ gulp.task('min', function () {
 		.pipe(gulp.dest('./dist/'));
 });
 
+gulp.task('browserify2', function () {
+	return browserify(['./dist/runtime.js'], {
+		standalone: 'nools'
+	})
+		.bundle()
+		.pipe(fs.createWriteStream('./dist/nools-ts.js'));
+});
+
 gulp.task('pack', function (cb) {
 	sequence('browserify', 'min', cb);
 });
+gulp.task('pack2', function (cb) {
+	sequence('browserify2', 'min', cb);
+});
 
 gulp.task('default', function (cb) {
-	sequence('clean', 'copy-files', 'compile-ts', 'dts-generator', 'copy-parser', 'pack', cb);
+	sequence('clean', 'copy-files', 'compile-ts', 'dts-generator', 'copy-parser', 'pack2', cb);
 });
 
 gulp.task('dev', function (cb) {
