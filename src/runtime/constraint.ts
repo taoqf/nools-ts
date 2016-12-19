@@ -4,7 +4,7 @@ import { IPatternOptions } from '../interfaces';
 import { ConstraintType, IConstraint, ITrueConstraint, IEqualityConstraint, IObjectConstraint, IHashConstraint, IFromConstraint, IReferenceConstraint, is_instance_of_reference_constraint } from '../constraint';
 import { getMatcher, getSourceMatcher, getIndexableProperties } from '../constraint-matcher';
 
-const funcs = new Map<ConstraintType, (constraint: IConstraint, defines: Map<string, any>) => IConstraint>();
+const funcs = new Map<ConstraintType, (constraint: IConstraint, defines: Map<string, any>, scope: Map<string, any>) => IConstraint>();
 
 function true_constraint(constraint: ITrueConstraint): ITrueConstraint {
 	const alias = constraint.alias;
@@ -21,12 +21,14 @@ function true_constraint(constraint: ITrueConstraint): ITrueConstraint {
 }
 funcs.set('true', true_constraint);
 
-	const scope = new Map<string, any>();
-function op(options: IPatternOptions) {
-	// const scope2 = options.scope2;
-	// for(const name in scope2){
-	// 	scope.set(name, scope2[name]);
-	// }
+function op(options: IPatternOptions, scope: Map<string, any>) {
+	const scope2 = options.scope2;
+	if(scope2){
+		scope = clone(scope);
+		for(const name in scope2){
+			scope.set(name, scope2[name]);
+		}
+	}
 	return {
 		scope: scope,
 		pattern: options.pattern,
@@ -34,8 +36,8 @@ function op(options: IPatternOptions) {
 	};
 }
 
-function equality(constraint: IEqualityConstraint) {
-	const options = op(constraint.options);
+function equality(constraint: IEqualityConstraint, defines: Map<string, any>, scope: Map<string, any>) {
+	const options = op(constraint.options, scope);
 	const cst = constraint.constraint;
 	const matcher = getMatcher(cst, options, true);
 	const alias = constraint.alias;
@@ -87,10 +89,10 @@ function hash(constraint: IHashConstraint, defines: Map<string, any>): IHashCons
 	};
 }
 funcs.set('hash', hash);
-function from(constraint: IFromConstraint): IFromConstraint {
+function from(constraint: IFromConstraint, defines: Map<string, any>, scope: Map<string, any>): IFromConstraint {
 	const alias = constraint.alias;
 	const condition = constraint.condition;
-	const options = op(constraint.options);
+	const options = op(constraint.options, scope);
 	const matcher = getSourceMatcher(condition, options, true);
 	return {
 		type: 'from',
@@ -107,9 +109,9 @@ function from(constraint: IFromConstraint): IFromConstraint {
 	};
 }
 funcs.set('from', from);
-function reference(constraint: IReferenceConstraint) {
+function reference(constraint: IReferenceConstraint, defines: Map<string, any>, scope: Map<string, any>) {
 	const alias = constraint.alias;
-	const options = op(constraint.options);
+	const options = op(constraint.options, scope);
 	const cst = constraint.constraint;
 	const matcher = getMatcher(cst, options, false);
 	return {
@@ -141,7 +143,7 @@ funcs.set('reference', reference);
 funcs.set('reference', reference);
 funcs.set('reference', reference);
 
-export default function cst(constraint: IConstraint, defines: Map<string, any>) {
+export default function cst(constraint: IConstraint, defines: Map<string, any>, scope: Map<string, any>) {
 	const fun = funcs.get(constraint.type);
-	return fun(constraint, defines);
+	return fun(constraint, defines, scope);
 }

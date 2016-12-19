@@ -5,9 +5,9 @@ const funcs = new Map<PatternType, (constraint: IObjectPattern) => IObjectPatter
 
 function obj(pattern: IObjectPattern) {
 	delete pattern.class_type;
-	// pattern.constraints = pattern.constraints.map(cst);
+	pattern.constraints = pattern.constraints.map(cst);
 	delete pattern.pattern;
-	delete pattern.constraints;
+	// delete pattern.constraints;
 	return pattern;
 }
 funcs.set('object', obj);

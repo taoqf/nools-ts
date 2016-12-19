@@ -2,7 +2,7 @@
  * @Author: taoqf
  * @Date: 2016-12-13 15:52:51
  * @Last Modified by: taoqf
- * @Last Modified time: 2016-12-14 15:28:51
+ * @Last Modified time: 2016-12-19 11:45:58
  * CopyRight 飞道科技 2016-2026
  */
 import clone from 'lodash-ts/clone';
@@ -53,7 +53,7 @@ function terminal(node: ITerminalNode, root: IRootNode, agenda: AgendaTree, defi
 funcs.set('terminal', terminal);
 
 function tp(node: ITypeNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
-	const constraint = cst(node.constraint, defines);
+	const constraint = cst(node.constraint, defines, scope);
 	return {
 		__id: node.__id,
 		constraintAssert: constraint.assert,
@@ -64,7 +64,7 @@ function tp(node: ITypeNode, root: IRootNode, agenda: AgendaTree, defines: Map<s
 }
 funcs.set('type', tp);
 function equality(node: IEqualityNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
-	const constraint = cst(node.constraint, defines);
+	const constraint = cst(node.constraint, defines, scope);
 	return {
 		__id: node.__id,
 		constraintAssert: constraint.assert,
@@ -76,7 +76,7 @@ function equality(node: IEqualityNode, root: IRootNode, agenda: AgendaTree, defi
 }
 funcs.set('equality', equality);
 function property(node: IPropertyNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
-	const constraint = cst(node.constraint, defines);
+	const constraint = cst(node.constraint, defines, scope);
 	const alias = node.alias;
 	return {
 		alias: alias,
@@ -92,7 +92,7 @@ function property(node: IPropertyNode, root: IRootNode, agenda: AgendaTree, defi
 funcs.set('property', property);
 function alias(node: IAliasNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
 	return {
-		constraint: pt(node.constraint, defines),
+		constraint: pt(node.constraint, defines, scope),
 		alias: node.alias,
 		__id: node.__id,
 		nodes: node.nodes,
@@ -129,7 +129,7 @@ function join(node: IJoinNode, root: IRootNode, agenda: AgendaTree, defines: Map
 	node = beta(node, root, agenda, defines, scope) as IBetaNode;
 	const c = create_join_reference_node(node.leftTuples, node.rightTuples);
 	if(!constraint.isDefault){
-		addConstraint(c, cst(constraint.constraint, defines) as any);
+		addConstraint(c, cst(constraint.constraint, defines, scope) as any);
 	}
 	return mixin(node, {
 		constraint: c
@@ -146,7 +146,7 @@ function not(node: INotNode, root: IRootNode, agenda: AgendaTree, defines: Map<s
 funcs.set('not', not);
 funcs.set('exists', not);
 function from(node: IFromNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
-	const pattern = pt(node.pattern, defines) as IFromPattern;
+	const pattern = pt(node.pattern, defines, scope) as IFromPattern;
 	const type_constraint = pattern.constraints[0];
 	const from = pattern.from;
 	const eqConstraints: { (factHanle1: Map<string, Fact>, factHandle2: Map<string, Fact>): boolean; }[] = [];
@@ -177,7 +177,7 @@ function from(node: IFromNode, root: IRootNode, agenda: AgendaTree, defines: Map
 }
 funcs.set('from', from);
 function from_not(node: IFromNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
-	const pattern = pt(node.pattern, defines) as IFromPattern;
+	const pattern = pt(node.pattern, defines, scope) as IFromPattern;
 	const type_constraint = pattern.constraints[0];
 	const from = pattern.from;
 	const constraints = pattern.constraints.slice(1);
@@ -217,7 +217,7 @@ export default function build(root: IRootNode, agenda: AgendaTree, defines: Map<
 	return {
 		nodes: nodes,
 		patterns: root.patterns.map((pattern)=>{
-			return pt(pattern, defines);
+			return pt(pattern, defines, scope);
 		}),
 		terminalNodes: clone(root.terminalNodes),
 		joinNodes: clone(root.joinNodes),

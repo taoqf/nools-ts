@@ -68,7 +68,7 @@ export function getIdentifiers(rule: ICondition) {
 	return removeDups(ret);
 }
 
-export function toJs(rule: ICondition, scope: Map<string, any>, alias: string, equality = false, wrap?: (src: string) => string) {
+function toJs(rule: ICondition, scope: Map<string, any>, alias: string, equality = false, wrap?: (src: string) => string) {
 	/*jshint evil:true*/
 	const js = parse(rule);
 	scope = scope || new Map<string, any>();
