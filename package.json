@@ -27,6 +27,6 @@
     "typescript": "^2.2.0-dev.20161205"
   },
   "dependencies": {
-    "lodash-ts": "^1.1.1"
+    "lodash-ts": "^1.1.2"
   }
 }
