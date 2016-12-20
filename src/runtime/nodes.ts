@@ -2,14 +2,14 @@
  * @Author: taoqf
  * @Date: 2016-12-13 15:52:51
  * @Last Modified by: taoqf
- * @Last Modified time: 2016-12-19 11:45:58
+ * @Last Modified time: 2016-12-20 09:16:39
  * CopyRight 飞道科技 2016-2026
  */
 import clone from 'lodash-ts/clone';
 import mixin from 'lodash-ts/mixin';
 import { is_instance_of_equality, is_instance_of_reference_constraint } from '../constraint';
 import { IPattern, IFromPattern } from '../pattern';
-import { INode, IRootNode, ITerminalNode, IJoinNode, ITypeNode, nodeType, IEqualityNode, IPropertyNode, IAliasNode, IAdapterNode, IBetaNode, INotNode, IFromNode } from '../nodes';
+import { INode, IRootNode, ITerminalNode, IJoinNode, ITypeNode, nodeType, IEqualityNode, IPropertyNode, IAliasNode, IAdapterNode, IBetaNode, INotNode, IFromNode, IFromNotNode } from '../nodes';
 import AgendaTree from '../agenda';
 import { addConstraint, create_join_reference_node } from '../nodes/join-reference-node';
 import compile_rules from './rule';
@@ -23,7 +23,7 @@ import pt from './pattern';
 function compile_sub_nodes(patterns: IPattern[], node: INode) {
 	const n = clone(node, true);
 	const nodes = n.nodes = new Map<number, IPattern[]>();
-	node.out_nodes.forEach(([outNode, pattern]) => {
+	node.ns.forEach(([outNode, pattern]) => {
 		if (!nodes.has(outNode)) {
 			nodes.set(outNode, []);
 		}
@@ -37,16 +37,16 @@ const funcs = new Map<nodeType, (node: INode, root: IRootNode, agenda: AgendaTre
 function terminal(node: ITerminalNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
 	const rule = compile_rules(node.rule, defines, scope);
 	const n = {
-		__id: node.__id,
+		id: node.id,
 		rule: rule,
 		agenda: agenda,
 		bucket: root.bucket,
 		index: node.index,
 		name: node.name,
 		nodes: node.nodes,
-		parentNodes: node.parentNodes,
+		ps: node.ps,
 		type: node.type
-	};
+	} as ITerminalNode;
 	agenda.register(n);
 	return n;
 }
@@ -55,24 +55,24 @@ funcs.set('terminal', terminal);
 function tp(node: ITypeNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
 	const constraint = cst(node.constraint, defines, scope);
 	return {
-		__id: node.__id,
+		id: node.id,
 		constraintAssert: constraint.assert,
 		nodes: node.nodes,
-		parentNodes: node.parentNodes,
+		ps: node.ps,
 		type: node.type
-	};
+	} as ITypeNode;
 }
 funcs.set('type', tp);
 function equality(node: IEqualityNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
 	const constraint = cst(node.constraint, defines, scope);
 	return {
-		__id: node.__id,
+		id: node.id,
 		constraintAssert: constraint.assert,
 		nodes: node.nodes,
-		parentNodes: node.parentNodes,
+		ps: node.ps,
 		memory: new Map<string, boolean>(),
 		type: node.type
-	};
+	} as IEqualityNode;
 }
 funcs.set('equality', equality);
 function property(node: IPropertyNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
@@ -80,48 +80,48 @@ function property(node: IPropertyNode, root: IRootNode, agenda: AgendaTree, defi
 	const alias = node.alias;
 	return {
 		alias: alias,
-		__id: node.__id,
+		id: node.id,
 		constiables: clone(node.constiables),
 		constraint: constraint,
 		constraintAssert: constraint.assert,
 		nodes: node.nodes,
-		parentNodes: node.parentNodes,
+		ps: node.ps,
 		type: node.type
-	};
+	} as IPropertyNode;
 }
 funcs.set('property', property);
 function alias(node: IAliasNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
 	return {
 		constraint: pt(node.constraint, defines, scope),
 		alias: node.alias,
-		__id: node.__id,
+		id: node.id,
 		nodes: node.nodes,
-		parentNodes: node.parentNodes,
+		ps: node.ps,
 		type: node.type
-	};
+	} as IAliasNode;
 }
 funcs.set('alias', alias);
 function adapter(node: IAdapterNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
 	return {
-		__id: node.__id,
+		id: node.id,
 		nodes: node.nodes,
-		parentNodes: node.parentNodes,
+		ps: node.ps,
 		type: node.type
-	};
+	} as IAdapterNode;
 }
 funcs.set('leftadapter', adapter);
 funcs.set('rightadapter', adapter);
 function beta(node: IBetaNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
 	return {
-		__id: node.__id,
+		id: node.id,
 		nodes: node.nodes,
-		parentNodes: node.parentNodes,
+		ps: node.ps,
 		type: node.type,
 		leftMemory: {},
 		rightMemory: {},
 		leftTuples: Memory(),
 		rightTuples: Memory()
-	};
+	} as IBetaNode;
 }
 funcs.set('beta', beta);
 function join(node: IJoinNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
@@ -133,7 +133,7 @@ function join(node: IJoinNode, root: IRootNode, agenda: AgendaTree, defines: Map
 	}
 	return mixin(node, {
 		constraint: c
-	});
+	}) as IJoinNode;
 }
 funcs.set('join', join);
 function not(node: INotNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
@@ -141,7 +141,7 @@ function not(node: INotNode, root: IRootNode, agenda: AgendaTree, defines: Map<s
 	return mixin(node, {
 		leftTupleMemory: {},
 		notMatch: new Context(new InitialFact()).match
-	});
+	}) as INotNode;
 }
 funcs.set('not', not);
 funcs.set('exists', not);
@@ -173,10 +173,10 @@ function from(node: IFromNode, root: IRootNode, agenda: AgendaTree, defines: Map
 		from_assert(fact: any, fh?: any) {
 			return from.assert(fact, fh);
 		}
-	});
+	}) as IFromNode;
 }
 funcs.set('from', from);
-function from_not(node: IFromNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
+function from_not(node: IFromNotNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
 	const pattern = pt(node.pattern, defines, scope) as IFromPattern;
 	const type_constraint = pattern.constraints[0];
 	const from = pattern.from;
@@ -188,7 +188,7 @@ function from_not(node: IFromNode, root: IRootNode, agenda: AgendaTree, defines:
 		}
 	});
 	const vars = node.__variables;
-	node = join(node, root, agenda, defines, scope) as IJoinNode as IFromNode;
+	node = join(node, root, agenda, defines, scope) as IJoinNode as IFromNotNode;
 	return mixin(node, {
 		pattern: pattern,
 		alias: pattern.alias,
@@ -202,7 +202,7 @@ function from_not(node: IFromNode, root: IRootNode, agenda: AgendaTree, defines:
 		from_assert(fact: any, fh?: any) {
 			return from.assert(fact, fh);
 		}
-	});
+	}) as IFromNotNode;
 }
 funcs.set('from-not', from_not);
 funcs.set('exists-from', from_not);
@@ -224,5 +224,5 @@ export default function build(root: IRootNode, agenda: AgendaTree, defines: Map<
 		alphaNodes: clone(root.alphaNodes),
 		typeNodes: clone(root.typeNodes),
 		bucket: clone(root.bucket)
-	};
+	} as IRootNode;
 }

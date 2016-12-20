@@ -18,9 +18,9 @@ export type nodeType = 'terminal' | 'join-reference' | alphaNodeType | adapterNo
 
 export interface INode {
 	type: nodeType;
-	parentNodes: number[];
-	__id: number;
-	out_nodes?: [number, number][];
+	ps: number[];
+	id: number;
+	ns?: [number, number][];
 	nodes?: Map<number, IPattern[]>;
 	root?: IRootNode;
 }

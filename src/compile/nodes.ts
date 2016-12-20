@@ -34,9 +34,9 @@ let id = 0;
 export function create_node(type: nodeType): INode {
 	return {
 		type: type,
-		out_nodes: [],
-		__id: id++,
-		parentNodes: []
+		ns: [],
+		id: id++,
+		ps: []
 	};
 }
 
@@ -70,11 +70,11 @@ function hasRefernceConstraints(pattern: IObjectPattern) {
 }
 
 function addOutNode(node: INode, outNode: number, pattern: number) {
-	node.out_nodes.push([outNode, pattern]);
+	node.ns.push([outNode, pattern]);
 }
 
 function addParentNode(node: INode, n: number) {
-	const parentNodes = node.parentNodes;
+	const parentNodes = node.ps;
 	if (parentNodes.indexOf(n) === -1) {
 		parentNodes.push(n);
 	}
@@ -83,15 +83,15 @@ function addParentNode(node: INode, n: number) {
 function merge(node1: number, node2: number, nodes: INode[]) {
 	const n1 = nodes[node1];
 	const n2 = nodes[node2];
-	for (const [idx, [node, pattern]] of n2.out_nodes.entries()) {
+	for (const [idx, [node, pattern]] of n2.ns.entries()) {
 	}
-	n2.out_nodes.forEach(([n, p]) => {
+	n2.ns.forEach(([n, p]) => {
 		addOutNode(n1, n, p);
 	});
-	n2.out_nodes = [];
-	n2.parentNodes.forEach((parentNode) => {
+	n2.ns = [];
+	n2.ps.forEach((parentNode) => {
 		addParentNode(n1, parentNode);
-		nodes[parentNode].out_nodes = nodes[parentNode].out_nodes.filter(([n, p]) => {
+		nodes[parentNode].ns = nodes[parentNode].ns.filter(([n, p]) => {
 			return n != node2;
 		});
 	});
