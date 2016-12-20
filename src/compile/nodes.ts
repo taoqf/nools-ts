@@ -2,7 +2,7 @@ import mixin from 'lodash-ts/mixin';
 import { IRule } from '../interfaces';
 import { INode, IRootNode, ITerminalNode, IBucket, nodeType, IJoinNode, IAlphaNode, ITypeNode, IEqualityNode, IPropertyNode, IAliasNode, IAdapterNode, IBetaNode, INotNode, IExistsNode, IFromNode, IFromNotNode, IExistsFromNode } from '../nodes';
 import AgendaTree from '../agenda';
-import { IPattern, IObjectPattern, ICompositePattern, IFromPattern, composite_pattern, initial_fact_pattern } from '../pattern';
+import { IPattern, IObjectPattern, ICompositePattern, IFromPattern, composite_pattern, initial_fact_pattern, patternType } from '../pattern';
 import { is_instance_of_reference_constraint, IConstraint, IObjectConstraint, IHashConstraint, IReferenceConstraint, is_instance_of_hash, is_instance_of_equality } from '../constraint';
 import Memory, { IMemory } from '../nodes/misc/memory';
 import Context from '../context';
@@ -341,22 +341,22 @@ function __createJoinNode(root: IRootNode, rule: number, pattern: ICompositePatt
 	let jn = -1;
 	const nodes = root.nodes;
 	const right_type = pattern.rightPattern.type;
-	if (right_type === 'not') {
+	if (right_type === patternType.not) {
 		joinNode = create_not_node();
 		jn = nodes.push(joinNode) - 1;
-	} else if (right_type === 'from_exists') {
+	} else if (right_type === patternType.from_exists) {
 		joinNode = create_exists_from_node(pattern.rightPattern as IFromPattern);
 		jn = nodes.push(joinNode) - 1;
-	} else if (right_type === 'exists') {
+	} else if (right_type === patternType.exists) {
 		joinNode = create_exists_node();
 		jn = nodes.push(joinNode) - 1;
-	} else if (right_type === 'from_not') {
+	} else if (right_type === patternType.from_not) {
 		joinNode = create_from_not_node(pattern.rightPattern as IFromPattern);
 		jn = nodes.push(joinNode) - 1;
-	} else if (right_type === 'from') {
+	} else if (right_type === patternType.from) {
 		joinNode = create_from_node(pattern.rightPattern as IFromPattern);
 		jn = nodes.push(joinNode) - 1;
-	} else if (pattern.type === 'composite' && !hasRefernceConstraints(pattern.leftPattern as IObjectPattern) && !hasRefernceConstraints(pattern.rightPattern as IObjectPattern)) {
+	} else if (pattern.type === patternType.composite && !hasRefernceConstraints(pattern.leftPattern as IObjectPattern) && !hasRefernceConstraints(pattern.rightPattern as IObjectPattern)) {
 		const bn = joinNode = create_beta_node();
 		jn = nodes.push(bn) - 1;
 		root.joinNodes.push(jn);
@@ -377,9 +377,9 @@ function __createJoinNode(root: IRootNode, rule: number, pattern: ICompositePatt
 
 function __addToNetwork(root: IRootNode, rule: number, pattern: IPattern, outNode: number, side: Side = 'left') {
 	const type = pattern.type;
-	if (type === 'composite') {
+	if (type === patternType.composite) {
 		__createBetaNode(root, rule, pattern as ICompositePattern, outNode, side);
-	} else if (type !== 'initial_fact' && side === 'left') {
+	} else if (type !== patternType.initial_fact && side === 'left') {
 		__createBetaNode(root, rule, composite_pattern(initial_fact_pattern(), pattern), outNode, side);
 	} else {
 		__createAlphaNode(root, rule, pattern as IObjectPattern, outNode, side);
@@ -399,7 +399,7 @@ function __createBetaNode(root: IRootNode, rule: number, pattern: ICompositePatt
 function __createAlphaNode(root: IRootNode, rule: number, pattern: IObjectPattern, out_node: number, side: Side) {
 	const p = root.patterns.push(pattern) - 1;
 	const type = pattern.type;
-	if (type !== 'from' && type !== 'from_exists' && type !== 'from_not') {
+	if (type !== patternType.from && type !== patternType.from_exists && type !== patternType.from_not) {
 		const nodes = root.nodes;
 		const outNode = nodes[out_node];
 		const constraints = pattern.constraints;

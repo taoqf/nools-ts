@@ -14,19 +14,20 @@ import InitialFact from './facts/initial';
 import baseParseConstraint from './compile/parser/constraint';
 import { IConstraint, create_true_constraint, create_equality_constraint, create_inequality_constraint, create_comparison_constraint, create_object_constraint, create_hash_constraint, create_from_constraint, create_reference_constraint, create_reference_equality_constraint, create_reference_inequality_constraint, create_reference_gt_constraint, create_reference_lt_constraint, create_reference_gte_constraint, create_reference_lte_constraint } from './constraint';
 
-export type PatternType =
-	'composite' |
-	'object' |
-	'exists' |
-	'from' |
-	'from_exists' |
-	'from_not' |
-	'initial_fact' |
-	'not';
+export enum patternType {
+	composite,
+	object,
+	exists,
+	from,
+	from_exists,
+	from_not,
+	initial_fact,
+	not
+}
 
 export interface IPattern {
 	id: number;
-	type: PatternType;
+	type: patternType;
 }
 
 export interface IObjectPattern extends IPattern {
@@ -188,7 +189,7 @@ function toConstraints(constraint: ICondition, options: {
 }
 
 let id = 0;
-function _object_pattern(type: PatternType, cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, options: IPatternOptions): IObjectPattern {
+function _object_pattern(type: patternType, cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, options: IPatternOptions): IObjectPattern {
 	// this.conditions = conditions;
 	let constraints: IConstraint[] = [create_object_constraint(alias, cls, class_type)];
 	const constrnts = toConstraints(conditions, mixin({ alias: alias }, options));
@@ -215,14 +216,14 @@ function _object_pattern(type: PatternType, cls: string, class_type: any, alias:
 }
 
 export function initial_fact_pattern() {
-	return _object_pattern('initial_fact', 'InitialFact', InitialFact, "__i__", [] as any, {}, {} as IPatternOptions);
+	return _object_pattern(patternType.initial_fact, 'InitialFact', InitialFact, "__i__", [] as any, {}, {} as IPatternOptions);
 }
 
 function object_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
-	return _object_pattern('object', cls, class_type, alias, conditions, store, options);
+	return _object_pattern(patternType.object, cls, class_type, alias, conditions, store, options);
 }
 
-function _from_pattern(type: PatternType, cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, from: ICondition, options?: IPatternOptions): IFromPattern {
+function _from_pattern(type: patternType, cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, from: ICondition, options?: IPatternOptions): IFromPattern {
 	return mixin(_object_pattern(type, cls, class_type, alias, conditions, store, options), {
 		from: create_from_constraint(alias, from, options)
 	});
@@ -230,7 +231,7 @@ function _from_pattern(type: PatternType, cls: string, class_type: any, alias: s
 
 export function composite_pattern(left: IPattern, right: IPattern): ICompositePattern {
 	return {
-		type: 'composite',
+		type: patternType.composite,
 		id: ++id,
 		leftPattern: left,
 		rightPattern: right
@@ -343,11 +344,11 @@ function parseConstraint(constraint: string) {
 }
 
 function from_not_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, from: ICondition, options?: IPatternOptions) {
-	return _from_pattern('from_not', cls, class_type, alias, conditions, store, from, options) as IFromNotPattern;
+	return _from_pattern(patternType.from_not, cls, class_type, alias, conditions, store, from, options) as IFromNotPattern;
 }
 
 function not_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
-	return _object_pattern('not', cls, class_type, alias, conditions, store, options) as INotPattern;
+	return _object_pattern(patternType.not, cls, class_type, alias, conditions, store, options) as INotPattern;
 }
 
 function parsePattern_not(condition: ICondition): [IPattern] {
@@ -380,11 +381,11 @@ function parsePattern_not(condition: ICondition): [IPattern] {
 }
 
 function from_exists_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, from: ICondition, options?: IPatternOptions) {
-	return _from_pattern('from_exists', cls, class_type, alias, conditions, store, from, options) as IFromExistsPattern;
+	return _from_pattern(patternType.from_exists, cls, class_type, alias, conditions, store, from, options) as IFromExistsPattern;
 }
 
 function exists_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
-	return _object_pattern('exists', cls, class_type, alias, conditions, store, options) as IExistsPattern;
+	return _object_pattern(patternType.exists, cls, class_type, alias, conditions, store, options) as IExistsPattern;
 }
 
 function parsePattern_exists(condition: ICondition): [IPattern] {
@@ -417,7 +418,7 @@ function parsePattern_exists(condition: ICondition): [IPattern] {
 }
 
 function from_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, from: ICondition, options?: IPatternOptions) {
-	return _from_pattern('from', cls, class_type, alias, conditions, store, from, options);
+	return _from_pattern(patternType.from, cls, class_type, alias, conditions, store, from, options);
 }
 
 function parsePattern_def(condition: ICondition): [IFromPattern | IObjectPattern] {
