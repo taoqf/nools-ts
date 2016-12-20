@@ -219,7 +219,7 @@ export function initial_fact_pattern() {
 	return _object_pattern(patternType.initial_fact, 'InitialFact', InitialFact, "__i__", [] as any, {}, {} as IPatternOptions);
 }
 
-function object_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
+function object_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, options: IPatternOptions) {
 	return _object_pattern(patternType.object, cls, class_type, alias, conditions, store, options);
 }
 
@@ -347,7 +347,7 @@ function from_not_pattern(cls: string, class_type: any, alias: string, condition
 	return _from_pattern(patternType.from_not, cls, class_type, alias, conditions, store, from, options) as IFromNotPattern;
 }
 
-function not_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
+function not_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, options: IPatternOptions) {
 	return _object_pattern(patternType.not, cls, class_type, alias, conditions, store, options) as INotPattern;
 }
 
@@ -384,7 +384,7 @@ function from_exists_pattern(cls: string, class_type: any, alias: string, condit
 	return _from_pattern(patternType.from_exists, cls, class_type, alias, conditions, store, from, options) as IFromExistsPattern;
 }
 
-function exists_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store = {}, options = {} as IPatternOptions) {
+function exists_pattern(cls: string, class_type: any, alias: string, conditions: ICondition, store: Hash, options: IPatternOptions) {
 	return _object_pattern(patternType.exists, cls, class_type, alias, conditions, store, options) as IExistsPattern;
 }
 
