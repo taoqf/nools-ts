@@ -9,12 +9,29 @@ import Fact from './facts/fact';
 import { ILinkNode } from './linked-list';
 import AgendaTree from './agenda';
 
-export type notNodeType = 'not' | 'exists';
-export type joinNodeType = 'join' | 'from' | 'from-not' | 'exists-from' | notNodeType;
-export type betaNodeType = 'beta' | joinNodeType;
-export type adapterNodeType = 'leftadapter' | 'rightadapter';
-export type alphaNodeType = 'type' | 'alias' | 'equality' | 'property';
-export type nodeType = 'terminal' | 'join-reference' | alphaNodeType | adapterNodeType | betaNodeType;
+export enum nodeType{
+	// notNodeType = 'not' | 'exists';
+	not,
+	exists,
+	// joinNodeType = 'join' | 'from' | 'from-not' | 'exists-from' | notNodeType
+	join,
+	from,
+	from_not,
+	exists_from,
+	// betaNodeType = 'beta' | joinNodeType
+	beta,
+	// adapterNodeType = 'leftadapter' | 'rightadapter'
+	leftadapter,
+	rightadapter,
+	// alphaNodeType = 'type' | 'alias' | 'equality' | 'property'
+	type,
+	alias,
+	equality,
+	property,
+	// nodeType = 'terminal' | 'join-reference' | alphaNodeType | adapterNodeType | betaNodeType
+	terminal,
+	join_reference
+}
 
 export interface INode {
 	type: nodeType;

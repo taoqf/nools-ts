@@ -1,5 +1,5 @@
 import Context from '../context';
-import { INode, IJoinNode, joinNodeType } from '../nodes';
+import { INode, IJoinNode } from '../nodes';
 import { __addToLeftMemory, assert, __addToMemoryMatches, modify, retract, __addToRightMemory, removeFromLeftMemory, propagateRetractModifyFromLeft, removeFromRightMemory, propagateRetractModifyFromRight } from './beta-node';
 import WorkingMemory from '../working-memory';
 import {memory_get} from './misc/memory';

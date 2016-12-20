@@ -4,7 +4,7 @@ import { IConstraint, is_instance_of_hash, is_instance_of_equality, is_instance_
 import Fact from '../facts/fact';
 import Context from '../context';
 import { IFromPattern } from '../pattern';
-import { INode, IFromNotNode, joinNodeType } from '../nodes';
+import { INode, IFromNotNode } from '../nodes';
 import { __addToLeftMemory, assert, modify, retract, removeFromLeftMemory } from './beta-node';
 
 function __isMatch(node: IFromNotNode, oc: Context, o: any, add: boolean, wm: WorkingMemory) {

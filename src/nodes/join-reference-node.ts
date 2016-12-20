@@ -1,5 +1,5 @@
 import mixin from 'lodash-ts/mixin';
-import { INode } from '../nodes';
+import { INode, nodeType } from '../nodes';
 import Context, { Match } from '../context';
 import { IReferenceConstraint, is_instance_of_reference_eq_constraint } from '../constraint';
 import { IJoinReferenceNode } from './join-reference-node';;
@@ -94,7 +94,7 @@ export interface IJoinReferenceNode extends INode {
 export function create_join_reference_node(leftMemory: IMemory, rightMemory: IMemory): IJoinReferenceNode {
 	const constraint = DEFUALT_CONSTRAINT;
 	const constraintAssert = DEFUALT_CONSTRAINT.assert;
-	return mixin(create_node('join-reference'), {
+	return mixin(create_node(nodeType.join_reference), {
 		constraint: constraint,
 		isDefault: true,
 		leftMemory: leftMemory,

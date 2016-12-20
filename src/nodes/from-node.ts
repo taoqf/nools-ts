@@ -3,7 +3,7 @@ import isEmpty from 'lodash-ts/isEmpty';
 import Context from '../context';
 import { IFromPattern } from '../pattern';
 import WorkingMemory from '../working-memory';
-import { INode, IFromNode, joinNodeType } from '../nodes';
+import { INode, IFromNode } from '../nodes';
 import { __addToLeftMemory, assert, removeFromLeftMemory, modify, retract } from './beta-node';
 import { assert_left as base_assert_left } from './join-node';
 
