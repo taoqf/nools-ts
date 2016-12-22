@@ -53,6 +53,7 @@ export interface IAlphaNode extends INode {
 
 export interface IAliasNode extends INode {
 	constraint: IObjectPattern;
+	p: number;
 	// constraintAssert(it: any, fh?: any): boolean;
 	equal(constraint: IAliasNode): boolean;
 	alias: string;
@@ -83,6 +84,7 @@ export interface IJoinNode extends IBetaNode {
 
 export interface IFromNode extends IJoinNode {
 	pattern: IFromPattern;
+	p: number;
 	alias: string;
 	type_assert: (type: any) => boolean;
 	from_assert: (fact: any, fh?: any) => any;
@@ -94,6 +96,7 @@ export interface IFromNode extends IJoinNode {
 
 export interface IFromNotNode extends IJoinNode {
 	pattern: IFromPattern;
+	p: number;
 	alias: string;
 	type_assert: (type: any) => boolean;
 	from_assert: (fact: any, fh?: any) => any;

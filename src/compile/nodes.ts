@@ -195,20 +195,22 @@ function __createPropertyNode(root: IRootNode, rule: number, constraint: IHashCo
 	return __checkEqual(root, create_property_node(constraint));
 }
 
-function create_alias_node(pattern: IObjectPattern): IAliasNode {
+function create_alias_node(root: IRootNode, p: number): IAliasNode {
+	const pattern = root.patterns[p] as IObjectPattern;
 	const alias = pattern.alias;
 	return mixin(create_node(nodeType.alias), {
 		alias: alias,
 		constraint: pattern,
+		p: p,
 		equal(other: IAliasNode) {
 			return other.type == nodeType.alias && alias === other.alias;
 		}
 	});
 }
 
-function __createAliasNode(root: IRootNode, rule: number, pattern: IObjectPattern) {
+function __createAliasNode(root: IRootNode, rule: number, pattern: number) {
 	// return __checkEqual(new AliasNode(pattern)).addRule(rule);
-	return __checkEqual(root, create_alias_node(pattern) as any);
+	return __checkEqual(root, create_alias_node(root, pattern) as any);
 }
 
 function create_adapter_node(left: boolean): IAdapterNode {
@@ -260,7 +262,8 @@ function create_exists_node(): IExistsNode {
 	return _create_not_node(nodeType.exists);
 }
 
-function _create_from_node(type: nodeType, pattern: IFromPattern): IFromNode {
+function _create_from_node(root: IRootNode, type: nodeType, pattern: IFromPattern): IFromNode {
+	const p = root.patterns.push(pattern) - 1;
 	const type_constraint = pattern.constraints[0];
 	const from = pattern.from;
 	const constraints = pattern.constraints.slice(1);
@@ -279,6 +282,7 @@ function _create_from_node(type: nodeType, pattern: IFromPattern): IFromNode {
 	});
 	return mixin(_create_join_node(type), {
 		pattern: pattern,
+		p: p,
 		alias: pattern.alias,
 		constraints: constraints,
 		__equalityConstraints: eqConstraints,
@@ -293,11 +297,12 @@ function _create_from_node(type: nodeType, pattern: IFromPattern): IFromNode {
 	});
 }
 
-function create_from_node(pattern: IFromPattern): IFromNode {
-	return _create_from_node(nodeType.from, pattern);
+function create_from_node(root: IRootNode, pattern: IFromPattern): IFromNode {
+	return _create_from_node(root, nodeType.from, pattern);
 }
 
-function _create_from_not_node(type: nodeType, pattern: IFromPattern): IFromNotNode {
+function _create_from_not_node(root: IRootNode, type: nodeType, pattern: IFromPattern): IFromNotNode {
+	const p = root.patterns.push(pattern) - 1;
 	const type_constraint = pattern.constraints[0];
 	const from = pattern.from;
 	const constraints = pattern.constraints.slice(1);
@@ -313,6 +318,7 @@ function _create_from_not_node(type: nodeType, pattern: IFromPattern): IFromNotN
 	});
 	return mixin(_create_join_node(type), {
 		pattern: pattern,
+		p: p,
 		alias: pattern.alias,
 		constraints: constraints,
 		__equalityConstraints: eqConstraints,
@@ -327,12 +333,12 @@ function _create_from_not_node(type: nodeType, pattern: IFromPattern): IFromNotN
 	});
 }
 
-function create_from_not_node(pattern: IFromPattern): IFromNotNode {
-	return _create_from_not_node(nodeType.from_not, pattern);
+function create_from_not_node(root: IRootNode, pattern: IFromPattern): IFromNotNode {
+	return _create_from_not_node(root, nodeType.from_not, pattern);
 }
 
-function create_exists_from_node(pattern: IFromPattern): IExistsFromNode {
-	return _create_from_not_node(nodeType.exists_from, pattern);
+function create_exists_from_node(root: IRootNode, pattern: IFromPattern): IExistsFromNode {
+	return _create_from_not_node(root, nodeType.exists_from, pattern);
 }
 
 function __createJoinNode(root: IRootNode, rule: number, pattern: ICompositePattern, out_node: number, side: Side) {
@@ -345,16 +351,16 @@ function __createJoinNode(root: IRootNode, rule: number, pattern: ICompositePatt
 		joinNode = create_not_node();
 		jn = nodes.push(joinNode) - 1;
 	} else if (right_type === patternType.from_exists) {
-		joinNode = create_exists_from_node(pattern.rightPattern as IFromPattern);
+		joinNode = create_exists_from_node(root, pattern.rightPattern as IFromPattern);
 		jn = nodes.push(joinNode) - 1;
 	} else if (right_type === patternType.exists) {
 		joinNode = create_exists_node();
 		jn = nodes.push(joinNode) - 1;
 	} else if (right_type === patternType.from_not) {
-		joinNode = create_from_not_node(pattern.rightPattern as IFromPattern);
+		joinNode = create_from_not_node(root, pattern.rightPattern as IFromPattern);
 		jn = nodes.push(joinNode) - 1;
 	} else if (right_type === patternType.from) {
-		joinNode = create_from_node(pattern.rightPattern as IFromPattern);
+		joinNode = create_from_node(root, pattern.rightPattern as IFromPattern);
 		jn = nodes.push(joinNode) - 1;
 	} else if (pattern.type === patternType.composite && !hasRefernceConstraints(pattern.leftPattern as IObjectPattern) && !hasRefernceConstraints(pattern.rightPattern as IObjectPattern)) {
 		const bn = joinNode = create_beta_node();
@@ -405,7 +411,7 @@ function __createAlphaNode(root: IRootNode, rule: number, pattern: IObjectPatter
 		const constraints = pattern.constraints;
 		const tn = __createTypeNode(root, constraints[0]);
 		const typeNode = nodes[tn];
-		const an = __createAliasNode(root, rule, pattern);
+		const an = __createAliasNode(root, rule, p);
 		addOutNode(typeNode, an, p);
 		addParentNode(nodes[an], tn);
 		let parentNode = an;
@@ -470,7 +476,8 @@ function property(node: IPropertyNode) {
 funcs.set(nodeType.property, property);
 function alias(node: IAliasNode) {
 	delete node.equal;
-	node.constraint = pt(node.constraint);
+	// node.constraint = pt(node.constraint);
+	delete node.constraint;
 	return node;
 }
 funcs.set(nodeType.alias, alias);
@@ -510,13 +517,14 @@ function not(node: INotNode) {
 }
 funcs.set(nodeType.not, not);
 funcs.set(nodeType.exists, not);
-function from(node: IFromNotNode) {
-	node = join(node) as IFromNotNode;
-	node.pattern = pt(node.pattern) as IFromPattern;
+function from(node: IFromNode) {
+	node = join(node) as IFromNode;
+	// node.pattern = pt(node.pattern) as IFromPattern;
 	delete node.__equalityConstraints;
 	delete node.fromMemory;
 	delete node.type_assert;
 	delete node.from_assert;
+	delete node.pattern;
 	return node;
 }
 funcs.set(nodeType.from, from);
