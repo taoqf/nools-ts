@@ -138,7 +138,7 @@ dispose_funcs.set(nodeType.exists_from, beta.dispose);
 
 export function base_assert_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
-	const fun = assert_left_funcs.get(node.type);
+	const fun = assert_left_funcs.get(node.tp);
 	if (!fun) {
 		console.error(node, context);
 		throw 'cannot find method assert_left';
@@ -149,7 +149,7 @@ export function base_assert_left(nodes: INode[], n: number, context: Context, wm
 
 export function base_assert_right(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
-	const fun = assert_right_funcs.get(node.type);
+	const fun = assert_right_funcs.get(node.tp);
 	if (!fun) {
 		console.error(node, context);
 		throw 'cannot find method assert_right';
@@ -160,7 +160,7 @@ export function base_assert_right(nodes: INode[], n: number, context: Context, w
 
 export function base_assert(nodes: INode[], n: number, fact: Fact | Context, wm: WorkingMemory) {
 	const node = nodes[n];
-	const fun = assert_funcs.get(node.type);
+	const fun = assert_funcs.get(node.tp);
 	if (!fun) {
 		console.error(node, fact);
 		for (const [outNode, paths] of node.nodes.entries()) {
@@ -173,7 +173,7 @@ export function base_assert(nodes: INode[], n: number, fact: Fact | Context, wm:
 
 export function base_retract_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
-	const fun = retract_left_funcs.get(node.type);
+	const fun = retract_left_funcs.get(node.tp);
 	if (!fun) {
 		console.error(node, context);
 		throw 'cannot find method retract_left';
@@ -184,7 +184,7 @@ export function base_retract_left(nodes: INode[], n: number, context: Context, w
 
 export function base_retract_right(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
-	const fun = retract_right_funcs.get(node.type);
+	const fun = retract_right_funcs.get(node.tp);
 	if (!fun) {
 		console.error(node, context);
 		throw 'cannot find method retract_right';
@@ -195,7 +195,7 @@ export function base_retract_right(nodes: INode[], n: number, context: Context, 
 
 export function base_retract(nodes: INode[], n: number, fact: Fact | Context, wm: WorkingMemory) {
 	const node = nodes[n];
-	const fun = retract_funcs.get(node.type);
+	const fun = retract_funcs.get(node.tp);
 	if (!fun) {
 		console.error(node, fact);
 		for (const [outNode, paths] of node.nodes.entries()) {
@@ -208,7 +208,7 @@ export function base_retract(nodes: INode[], n: number, fact: Fact | Context, wm
 
 export function base_modify_left(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
-	const fun = modify_left_funcs.get(node.type);
+	const fun = modify_left_funcs.get(node.tp);
 	if (!fun) {
 		console.error(node, context);
 		throw 'cannot find method modify_left';
@@ -219,7 +219,7 @@ export function base_modify_left(nodes: INode[], n: number, context: Context, wm
 
 export function base_modify_right(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n];
-	const fun = modify_right_funcs.get(node.type);
+	const fun = modify_right_funcs.get(node.tp);
 	if (!fun) {
 		console.error(node, context);
 		throw 'cannot find method modify_right';
@@ -230,7 +230,7 @@ export function base_modify_right(nodes: INode[], n: number, context: Context, w
 
 export function base_modify(nodes: INode[], n: number, fact: Fact | Context, wm: WorkingMemory) {
 	const node = nodes[n];
-	const fun = modify_funcs.get(node.type);
+	const fun = modify_funcs.get(node.tp);
 	if (!fun) {
 		console.error(node, fact);
 		for (const [outNode, paths] of node.nodes.entries()) {
@@ -243,7 +243,7 @@ export function base_modify(nodes: INode[], n: number, fact: Fact | Context, wm:
 
 export function base_dispose(nodes: INode[], n: number, context: Context) {
 	const node = nodes[n];
-	const fun = dispose_funcs.get(node.type);
+	const fun = dispose_funcs.get(node.tp);
 	if (!fun) {
 		for (const [outNode, value] of node.nodes.entries()) {
 			base_dispose(nodes, outNode, context);

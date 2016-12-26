@@ -5,7 +5,7 @@ import WorkingMemory from '../working-memory';
 
 export function assert(nodes: INode[], n: number, context: Context, wm: WorkingMemory) {
 	const node = nodes[n] as IEqualityNode;
-	const isMatch = node.constraintAssert(context.factHash);
+	const isMatch = node.ca(context.factHash);
 	node.memory.set(context.pathsHash, isMatch);
 	if (isMatch) {
 		propagate_assert(nodes, n, context, wm);
@@ -17,7 +17,7 @@ export function modify(nodes: INode[], n: number, context: Context, wm: WorkingM
 	const hashCode = context.pathsHash;
 	const memory = node.memory
 	const wasMatch = memory.get(hashCode);
-	const isMatch = node.constraintAssert(context.factHash);
+	const isMatch = node.ca(context.factHash);
 	node.memory.set(context.pathsHash, isMatch);
 	if (isMatch) {
 		if (wasMatch) {

@@ -25,7 +25,7 @@ function normalizeIndexConstraint(index: string, indexes: string[], op: string) 
 export function addConstraint(node: IJoinReferenceNode, constraint: IReferenceConstraint) {
 	if (is_instance_of_reference_eq_constraint(constraint)) {
 		const identifiers = constraint.getIndexableProperties();
-		const alias = constraint.alias;
+		const alias = constraint.a;
 		if (identifiers.length === 2 && alias) {
 			let leftIndex: string;
 			let rightIndex: string;

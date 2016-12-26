@@ -103,19 +103,19 @@ export interface IBucket {
 import { IRootNode } from './nodes';
 
 export interface IFlow {
-	name: string;
-	root: IRootNode;
+	n: string;
+	r: IRootNode;
 }
 
 import { IPattern } from './pattern';
 import Flow from './flow';
 
 export interface IRule {
-	name: string;
-	agendaGroup: string;
-	priority: number;
-	autoFocus: boolean;
-	pattern: IPattern;
+	n: string;
+	g: string;
+	p: number;
+	af: boolean;
+	pt: IPattern;
 	action?: string;
 	fire?(flow: Flow, match: Match): Promise<{}>;
 }

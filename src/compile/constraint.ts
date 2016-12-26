@@ -64,6 +64,6 @@ funcs.set(constraintType.reference_lt, reference);
 funcs.set(constraintType.reference_lte, reference);
 
 export default function cst(constraint: IConstraint) {
-	const fun = funcs.get(constraint.type);
+	const fun = funcs.get(constraint.tp);
 	return fun(constraint);
 }

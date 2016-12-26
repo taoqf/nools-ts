@@ -20,11 +20,11 @@ function parseAction(action: string, defined: Map<string, any>, scope: Map<strin
 export default function (rule: IRule, defined: Map<string, any>, scope: Map<string, any>): IRule {
 	const cb = parseAction(rule.action, defined, scope);
 	return {
-		name: rule.name,
-		agendaGroup: rule.agendaGroup,
-		priority: rule.priority,
-		autoFocus: rule.autoFocus,
-		pattern: rule.pattern,
+		n: rule.n,
+		g: rule.g,
+		p: rule.p,
+		af: rule.af,
+		pt: rule.pt,
 		fire(flow: Flow, match: Match) {
 			return new Promise((resolve) => {
 				resolve(cb.call(flow, match.factHash, flow));

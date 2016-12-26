@@ -57,7 +57,7 @@ export default class FlowContainer {
 
 	containsRule(name: string) {
 		return this.__rules.some((rule) => {
-			return rule.name === name;
+			return rule.n === name;
 		});
 	}
 

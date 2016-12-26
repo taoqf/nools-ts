@@ -23,8 +23,8 @@ export enum constraintType {
 }
 
 export interface IConstraint {
-	type: constraintType;
-	alias: string;
+	tp: constraintType;
+	a: string;
 	assert?(fact: any, fh?: any): any;
 	equal?(constraint: IConstraint): boolean;
 	// options: IPatternOptions;
@@ -35,13 +35,13 @@ export interface ITrueConstraint extends IConstraint { }
 
 export function create_true_constraint(alias: string): ITrueConstraint {
 	return {
-		type: constraintType.true,
-		alias: alias,
+		tp: constraintType.true,
+		a: alias,
 		assert(it) {
 			return true;
 		},
 		equal(that: IConstraint) {
-			return that.type == constraintType.true && alias === that.alias;
+			return that.tp == constraintType.true && alias === that.a;
 		}
 	};
 }
@@ -50,15 +50,15 @@ function _create_equality_constraint(type: constraintType, alias: string, constr
 	const matcher = getMatcher(constraint, options, true);
 	return {
 		options: options,
-		pattern: options.pattern,
-		type: type,
-		alias: alias,
+		// pattern: options.pattern,
+		tp: type,
+		a: alias,
 		constraint: constraint,
 		assert(fact: any, fh?: any) {
 			return matcher(fact, fh);
 		},
 		equal(that: IConstraint) {
-			return /*constraint.type == 'equality' && */ that.alias == alias, isEqual(constraint, (that as IEqualityConstraint).constraint);
+			return /*constraint.type == 'equality' && */ that.a == alias, isEqual(constraint, (that as IEqualityConstraint).constraint);
 		}
 	};
 }
@@ -66,7 +66,7 @@ function _create_equality_constraint(type: constraintType, alias: string, constr
 export interface IEqualityConstraint extends IConstraint {
 	options: IPatternOptions;
 	constraint: ICondition;
-	pattern: string;	// todo: pattern and type are not needed.
+	// pattern: string;	// todo: pattern and type are not needed.
 }
 
 export function create_equality_constraint(alias: string, constraint: ICondition, options = {} as IPatternOptions): IEqualityConstraint {
@@ -94,15 +94,15 @@ export interface IObjectConstraint extends IConstraint {
 
 export function create_object_constraint(alias: string, cls: string, constraint: any): IObjectConstraint {
 	return {
-		type: constraintType.object,
-		alias: alias,
+		tp: constraintType.object,
+		a: alias,
 		cls: cls,
 		constraint: constraint,
 		assert(fact: any, fh?: any) {
 			return fact instanceof constraint || fact.constructor === constraint;
 		},
 		equal(that: IConstraint) {
-			return that.type === constraintType.object && constraint === (that as IObjectConstraint).constraint;
+			return that.tp === constraintType.object && constraint === (that as IObjectConstraint).constraint;
 		}
 	};
 }
@@ -112,14 +112,14 @@ export interface IHashConstraint extends IConstraint {
 
 export function create_hash_constraint(alias: string, constraint: Hash): IHashConstraint {
 	return {
-		type: constraintType.hash,
-		alias: alias,
+		tp: constraintType.hash,
+		a: alias,
 		constraint: constraint,
 		assert(fact: any, fh?: any) {
 			return true;
 		},
 		equal(that: IConstraint) {
-			return that.type === constraintType.hash && that.alias === alias && isEqual(constraint, (that as IHashConstraint).constraint);
+			return that.tp === constraintType.hash && that.a === alias && isEqual(constraint, (that as IHashConstraint).constraint);
 		}
 	};
 }
@@ -133,16 +133,16 @@ export interface IFromConstraint extends IConstraint {
 export function create_from_constraint(alias: string, condition: ICondition, options = {} as IPatternOptions): IFromConstraint {
 	const matcher = getSourceMatcher(condition, options, true);
 	return {
-		type: constraintType.from,
+		tp: constraintType.from,
 		options: options,
 		condition: condition,
-		alias: alias,
+		a: alias,
 		constraint: matcher,
 		assert(fact: any, fh?: any) {
 			return matcher(fact, fh);
 		},
 		equal(that: IConstraint) {
-			return that.type === constraintType.from && that.alias === alias && isEqual(condition, (that as IFromConstraint).constraint);
+			return that.tp === constraintType.from && that.a === alias && isEqual(condition, (that as IFromConstraint).constraint);
 		}
 	};
 }
@@ -167,19 +167,19 @@ enum enumReferenceOp {
 }
 
 export function is_instance_of_equality(constraint: IConstraint) {
-	return constraint.type === constraintType.equality || constraint.type === constraintType.inequality || constraint.type === constraintType.comparison;
+	return constraint.tp === constraintType.equality || constraint.tp === constraintType.inequality || constraint.tp === constraintType.comparison;
 }
 
 export function is_instance_of_hash(constraint: IConstraint) {
-	return constraint.type === constraintType.hash;
+	return constraint.tp === constraintType.hash;
 }
 
 export function is_instance_of_reference_constraint(constraint: IConstraint) {
-	return constraint.type === constraintType.reference || constraint.type === constraintType.reference_equality || constraint.type === constraintType.reference_gt || constraint.type === constraintType.reference_gte || constraint.type === constraintType.reference_inequality || constraint.type === constraintType.reference_lt || constraint.type === constraintType.reference_lte;
+	return constraint.tp === constraintType.reference || constraint.tp === constraintType.reference_equality || constraint.tp === constraintType.reference_gt || constraint.tp === constraintType.reference_gte || constraint.tp === constraintType.reference_inequality || constraint.tp === constraintType.reference_lt || constraint.tp === constraintType.reference_lte;
 }
 
 export function is_instance_of_reference_eq_constraint(constraint: IConstraint) {
-	return constraint.type === constraintType.reference_equality || constraint.type === constraintType.reference_gt || constraint.type === constraintType.reference_gte || constraint.type === constraintType.reference_inequality || constraint.type === constraintType.reference_lt || constraint.type === constraintType.reference_lte;
+	return constraint.tp === constraintType.reference_equality || constraint.tp === constraintType.reference_gt || constraint.tp === constraintType.reference_gte || constraint.tp === constraintType.reference_inequality || constraint.tp === constraintType.reference_lt || constraint.tp === constraintType.reference_lte;
 }
 
 function _create_reference_constraint(type: constraintType, op: string, alias: string, constraint: ICondition, options = {} as IPatternOptions): IReferenceConstraint {
@@ -187,8 +187,8 @@ function _create_reference_constraint(type: constraintType, op: string, alias: s
 	return {
 		options: options,
 		op: op,
-		type: type,
-		alias: alias,
+		tp: type,
+		a: alias,
 		constraint: constraint,
 		vars: getIdentifiers(constraint).filter((v) => {
 			return v !== alias;
@@ -201,7 +201,7 @@ function _create_reference_constraint(type: constraintType, op: string, alias: s
 		},
 		merge(that: IConstraint) {
 			if (is_instance_of_reference_constraint(that)) {
-				return _create_reference_constraint(type, op, alias || that.alias, [constraint, (that as IReferenceConstraint).constraint, "and"], mixin({}, options));
+				return _create_reference_constraint(type, op, alias || that.a, [constraint, (that as IReferenceConstraint).constraint, "and"], mixin({}, options));
 			} else {
 				return _create_reference_constraint(type, op, alias, constraint, options);	// return this;
 			}

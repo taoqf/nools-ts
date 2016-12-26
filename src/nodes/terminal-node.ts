@@ -7,12 +7,12 @@ export function assert(nodes: INode[], n: number, context: Context) {
 	const node = nodes[n] as ITerminalNode;
 	const match = context.match;
 	if (match.isMatch) {
-		const rule = node.rule, bucket = node.bucket;
+		const rule = node.r, bucket = node.b;
 		node.agenda.insert(node, {
 			rule: rule,
 			hashCode: context.hashCode,
-			index: node.index,
-			name: rule.name,
+			index: node.i,
+			name: rule.n,
 			recency: bucket.recency++,
 			match: match,
 			counter: bucket.counter

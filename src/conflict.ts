@@ -1,7 +1,7 @@
 import { IInsert } from './interfaces';
 
 function salience(a: IInsert, b: IInsert) {
-	return a.rule.priority - b.rule.priority;
+	return a.rule.p - b.rule.p;
 }
 
 function bucketCounter(a: IInsert, b: IInsert) {

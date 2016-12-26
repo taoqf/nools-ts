@@ -35,17 +35,17 @@ function compile_sub_nodes(patterns: IPattern[], node: INode) {
 const funcs = new Map<nodeType, (node: INode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>, patterns: IPattern[]) => INode>();
 
 function terminal(node: ITerminalNode, root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>, patterns: IPattern[]) {
-	const rule = compile_rules(node.rule, defines, scope);
+	const rule = compile_rules(node.r, defines, scope);
 	const n = {
 		id: node.id,
-		rule: rule,
+		r: rule,
 		agenda: agenda,
-		bucket: root.bucket,
-		index: node.index,
-		name: node.name,
+		b: root.bucket,
+		i: node.i,
+		n: node.n,
 		nodes: node.nodes,
 		ps: node.ps,
-		type: node.type
+		tp: node.tp
 	} as ITerminalNode;
 	agenda.register(n);
 	return n;
@@ -56,10 +56,10 @@ function tp(node: ITypeNode, root: IRootNode, agenda: AgendaTree, defines: Map<s
 	const constraint = cst(node.constraint, defines, scope);
 	return {
 		id: node.id,
-		constraintAssert: constraint.assert,
+		ca: constraint.assert,
 		nodes: node.nodes,
 		ps: node.ps,
-		type: node.type
+		tp: node.tp
 	} as ITypeNode;
 }
 funcs.set(nodeType.type, tp);
@@ -67,11 +67,11 @@ function equality(node: IEqualityNode, root: IRootNode, agenda: AgendaTree, defi
 	const constraint = cst(node.constraint, defines, scope);
 	return {
 		id: node.id,
-		constraintAssert: constraint.assert,
+		ca: constraint.assert,
 		nodes: node.nodes,
 		ps: node.ps,
 		memory: new Map<string, boolean>(),
-		type: node.type
+		tp: node.tp
 	} as IEqualityNode;
 }
 funcs.set(nodeType.equality, equality);
@@ -83,10 +83,10 @@ function property(node: IPropertyNode, root: IRootNode, agenda: AgendaTree, defi
 		id: node.id,
 		constiables: clone(node.constiables),
 		constraint: constraint,
-		constraintAssert: constraint.assert,
+		ca: constraint.assert,
 		nodes: node.nodes,
 		ps: node.ps,
-		type: node.type
+		tp: node.tp
 	} as IPropertyNode;
 }
 funcs.set(nodeType.property, property);
@@ -99,7 +99,7 @@ function alias(node: IAliasNode, root: IRootNode, agenda: AgendaTree, defines: M
 		id: node.id,
 		nodes: node.nodes,
 		ps: node.ps,
-		type: node.type
+		tp: node.tp
 	} as IAliasNode;
 }
 funcs.set(nodeType.alias, alias);
@@ -108,7 +108,7 @@ function adapter(node: IAdapterNode, root: IRootNode, agenda: AgendaTree, define
 		id: node.id,
 		nodes: node.nodes,
 		ps: node.ps,
-		type: node.type
+		tp: node.tp
 	} as IAdapterNode;
 }
 funcs.set(nodeType.leftadapter, adapter);
@@ -118,7 +118,7 @@ function beta(node: IBetaNode, root: IRootNode, agenda: AgendaTree, defines: Map
 		id: node.id,
 		nodes: node.nodes,
 		ps: node.ps,
-		type: node.type,
+		tp: node.tp,
 		leftMemory: {},
 		rightMemory: {},
 		leftTuples: Memory(),
@@ -165,7 +165,7 @@ function from(node: IFromNode, root: IRootNode, agenda: AgendaTree, defines: Map
 	node = join(node, root, agenda, defines, scope, patterns) as IJoinNode as IFromNode;
 	return mixin(node, {
 		pattern: pattern,
-		alias: pattern.alias,
+		alias: pattern.a,
 		constraints: constraints,
 		__equalityConstraints: eqConstraints,
 		__variables: vars,
@@ -195,7 +195,7 @@ function from_not(node: IFromNotNode, root: IRootNode, agenda: AgendaTree, defin
 	node = join(node, root, agenda, defines, scope, patterns) as IJoinNode as IFromNotNode;
 	return mixin(node, {
 		pattern: pattern,
-		alias: pattern.alias,
+		alias: pattern.a,
 		// constraints: constraints,
 		__equalityConstraints: eqConstraints,
 		__variables: vars,
@@ -212,21 +212,21 @@ funcs.set(nodeType.from_not, from_not);
 funcs.set(nodeType.exists_from, from_not);
 
 export default function build(root: IRootNode, agenda: AgendaTree, defines: Map<string, any>, scope: Map<string, any>) {
-	const patterns = root.patterns.map((pattern)=>{
+	const patterns = root.ps.map((pattern)=>{
 		return pt(pattern, defines, scope);
 	});
-	const nodes = root.nodes.map((node) => {
+	const nodes = root.ns.map((node) => {
 		node = compile_sub_nodes(patterns, node);
-		const fun = funcs.get(node.type);
+		const fun = funcs.get(node.tp);
 		return fun(node, root, agenda, defines, scope, patterns);
 	});
 	return {
-		nodes: nodes,
-		patterns: patterns,
-		terminalNodes: clone(root.terminalNodes),
-		joinNodes: clone(root.joinNodes),
-		alphaNodes: clone(root.alphaNodes),
-		typeNodes: clone(root.typeNodes),
+		ns: nodes,
+		ps: patterns,
+		ts: clone(root.ts),
+		js: clone(root.js),
+		as: clone(root.as),
+		tps: clone(root.tps),
 		bucket: clone(root.bucket)
 	} as IRootNode;
 }

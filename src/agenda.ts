@@ -45,7 +45,7 @@ function fh_remove(fh: IFactHash, v: Context | IInsert) {
 function fh_insert(fh: IFactHash, insert: IInsert) {
 	const hashCode = insert.hashCode;
 	if (fh.memory.has(hashCode)) {
-		throw new Error("Activation already in agenda " + insert.rule.name + " agenda");
+		throw new Error("Activation already in agenda " + insert.rule.n + " agenda");
 	}
 	fh.memory.set(hashCode, insert);
 	fh.memoryValues.push(insert);
@@ -94,8 +94,8 @@ export default class AgendaTree extends EventEmitter {
 	}
 
 	register(node: ITerminalNode) {
-		const agendaGroup = node.rule.agendaGroup;
-		this.rules[node.name] = { tree: new AVLTree(this.comparator), factTable: fh_create() };
+		const agendaGroup = node.r.g;
+		this.rules[node.n] = { tree: new AVLTree(this.comparator), factTable: fh_create() };
 		if (agendaGroup) {
 			this.addAgendaGroup(agendaGroup);
 		}
@@ -122,7 +122,7 @@ export default class AgendaTree extends EventEmitter {
 		}
 		if (!this.getFocusedAgenda().isEmpty()) {
 			const activation = this.pop();
-			this.emit("fire", activation.rule.name, activation.match.factHash);
+			this.emit("fire", activation.rule.n, activation.match.factHash);
 			return activation.rule.fire(this.flow, activation.match);
 		} else {
 			//return false if activation not fired
@@ -161,21 +161,21 @@ export default class AgendaTree extends EventEmitter {
 	}
 
 	retract(node: ITerminalNode, retract: Context | IInsert) {
-		const rule = this.rules[node.name];
+		const rule = this.rules[node.n];
 		retract.rule = node;
 		const activation = fh_remove(rule.factTable, retract);
 		if (activation) {
-			this.getAgendaGroup(node.rule.agendaGroup).remove(activation as IInsert);
+			this.getAgendaGroup(node.r.g).remove(activation as IInsert);
 			rule.tree.remove(activation as IInsert);
 		}
 	}
 
 	insert(node: ITerminalNode, insert: IInsert) {
-		const rule = this.rules[node.name], nodeRule = node.rule, agendaGroup = nodeRule.agendaGroup;
+		const rule = this.rules[node.n], nodeRule = node.r, agendaGroup = nodeRule.g;
 		rule.tree.insert(insert);
 		this.getAgendaGroup(agendaGroup).insert(insert);
 		if (agendaGroup) {
-			if (nodeRule.autoFocus) {
+			if (nodeRule.af) {
 				this.setFocus(agendaGroup);
 			}
 		}

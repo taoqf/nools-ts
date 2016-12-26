@@ -34,7 +34,7 @@ export enum nodeType{
 }
 
 export interface INode {
-	type: nodeType;
+	tp: nodeType;
 	ps: number[];
 	id: number;
 	ns?: [number, number][];
@@ -47,15 +47,15 @@ export interface IAdapterNode extends INode {
 
 export interface IAlphaNode extends INode {
 	constraint: IConstraint;
-	constraintAssert(it: any, fh?: any): boolean;
-	equal(constraint: IAlphaNode): boolean;
+	ca(it: any, fh?: any): boolean;
+	eq(constraint: IAlphaNode): boolean;
 }
 
 export interface IAliasNode extends INode {
 	constraint: IObjectPattern;
 	p: number;
 	// constraintAssert(it: any, fh?: any): boolean;
-	equal(constraint: IAliasNode): boolean;
+	eq(constraint: IAliasNode): boolean;
 	alias: string;
 }
 
@@ -119,10 +119,10 @@ export interface IExistsNode extends INotNode {
 }
 
 export interface ITerminalNode extends INode {
-	index: number;
-	name: string;
-	bucket: IBucket;
-	rule: IRule;
+	i: number;
+	n: string;
+	b: IBucket;
+	r: IRule;
 	agenda?: AgendaTree;
 }
 export interface IBucket {
@@ -131,11 +131,11 @@ export interface IBucket {
 }
 
 export interface IRootNode {
-	nodes: INode[];
-	patterns: IPattern[];
-	terminalNodes: number[];
-	joinNodes: number[];
-	alphaNodes: number[];
-	typeNodes: number[];
+	ns: INode[];
+	ps: IPattern[];
+	ts: number[];
+	js: number[];
+	as: number[];
+	tps: number[];
 	bucket?: IBucket;
 }

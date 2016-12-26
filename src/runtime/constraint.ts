@@ -7,15 +7,15 @@ import { getMatcher, getSourceMatcher, getIndexableProperties } from '../constra
 const funcs = new Map<constraintType, (constraint: IConstraint, defines: Map<string, any>, scope: Map<string, any>) => IConstraint>();
 
 function true_constraint(constraint: ITrueConstraint): ITrueConstraint {
-	const alias = constraint.alias;
+	const alias = constraint.a;
 	return {
-		type: constraintType.true,
-		alias: alias,
+		tp: constraintType.true,
+		a: alias,
 		assert(it) {
 			return true;
 		},
 		equal(that: IConstraint) {
-			return that.type == constraintType.true && alias === that.alias;
+			return that.tp == constraintType.true && alias === that.a;
 		}
 	};
 }
@@ -40,17 +40,17 @@ function equality(constraint: IEqualityConstraint, defines: Map<string, any>, sc
 	const options = op(constraint.options, scope);
 	const cst = constraint.constraint;
 	const matcher = getMatcher(cst, options, true);
-	const alias = constraint.alias;
+	const alias = constraint.a;
 	return {
 		// pattern: options.pattern,	// todo:::: can this be removed?
-		type: constraint.type,
-		alias: alias,
+		tp: constraint.tp,
+		a: alias,
 		constraint: cst,
 		assert(fact: any, fh?: any) {
 			return matcher(fact, fh);
 		},
 		equal(that: IConstraint) {
-			return /*constraint.type == 'equality' && */ that.alias == alias, isEqual(cst, (that as IEqualityConstraint).constraint);
+			return /*constraint.type == 'equality' && */ that.a == alias, isEqual(cst, (that as IEqualityConstraint).constraint);
 		}
 	};
 }
@@ -59,66 +59,66 @@ funcs.set(constraintType.inequality, equality);
 funcs.set(constraintType.comparison, equality);
 function obj(constraint: IObjectConstraint, defines: Map<string, any>): IObjectConstraint {
 	const cls = defines.get(constraint.cls);
-	const alias = constraint.alias;
+	const alias = constraint.a;
 	return {
-		type: constraintType.object,
-		alias: alias,
+		tp: constraintType.object,
+		a: alias,
 		constraint: cls,
 		assert(fact: any, fh?: any) {
 			return fact instanceof cls || fact.constructor === cls;
 		},
 		equal(that: IConstraint) {
-			return that.type === constraintType.object && cls === (that as IObjectConstraint).constraint;		// todo: isEqual?????
+			return that.tp === constraintType.object && cls === (that as IObjectConstraint).constraint;		// todo: isEqual?????
 		}
 	};
 }
 funcs.set(constraintType.object, obj);
 function hash(constraint: IHashConstraint, defines: Map<string, any>): IHashConstraint {
-	const alias = constraint.alias;
+	const alias = constraint.a;
 	const cst = clone(constraint.constraint);
 	return {
-		type: constraintType.hash,
-		alias: alias,
+		tp: constraintType.hash,
+		a: alias,
 		constraint: cst,
 		assert(fact: any, fh?: any) {
 			return true;
 		},
 		equal(that: IConstraint) {
-			return that.type === constraintType.hash && that.alias === alias && isEqual(cst, (that as IHashConstraint).constraint);
+			return that.tp === constraintType.hash && that.a === alias && isEqual(cst, (that as IHashConstraint).constraint);
 		}
 	};
 }
 funcs.set(constraintType.hash, hash);
 function from(constraint: IFromConstraint, defines: Map<string, any>, scope: Map<string, any>): IFromConstraint {
-	const alias = constraint.alias;
+	const alias = constraint.a;
 	const condition = constraint.condition;
 	const options = op(constraint.options, scope);
 	const matcher = getSourceMatcher(condition, options, true);
 	return {
-		type: constraintType.from,
+		tp: constraintType.from,
 		options: options,
 		condition: condition,
-		alias: alias,
+		a: alias,
 		constraint: matcher,
 		assert(fact: any, fh?: any) {
 			return matcher(fact, fh);
 		},
 		equal(that: IConstraint) {
-			return that.type === constraintType.from && that.alias === alias && isEqual(condition, (that as IFromConstraint).constraint);
+			return that.tp === constraintType.from && that.a === alias && isEqual(condition, (that as IFromConstraint).constraint);
 		}
 	};
 }
 funcs.set(constraintType.from, from);
 function reference(constraint: IReferenceConstraint, defines: Map<string, any>, scope: Map<string, any>) {
-	const alias = constraint.alias;
+	const alias = constraint.a;
 	const options = op(constraint.options, scope);
 	const cst = constraint.constraint;
 	const matcher = getMatcher(cst, options, false);
 	return {
 		options: options,
 		op: constraint.op,
-		type: constraint.type,
-		alias: alias,
+		tp: constraint.tp,
+		a: alias,
 		constraint: cst,
 		vars: clone(constraint.vars, true),
 		assert(fact: any, fh?: any) {
@@ -144,6 +144,6 @@ funcs.set(constraintType.reference, reference);
 funcs.set(constraintType.reference, reference);
 
 export default function cst(constraint: IConstraint, defines: Map<string, any>, scope: Map<string, any>) {
-	const fun = funcs.get(constraint.type);
+	const fun = funcs.get(constraint.tp);
 	return fun(constraint, defines, scope);
 }

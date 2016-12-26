@@ -6,7 +6,7 @@ import WorkingMemory from '../working-memory';
 
 export function assert(nodes: INode[], n: number, fact: Fact, wm: WorkingMemory) {
 	const node = nodes[n] as ITypeNode;
-	if (node.constraintAssert(fact.object)) {
+	if (node.ca(fact.object)) {
 		for (const [outNode, paths] of node.nodes.entries()) {
 			base_assert(nodes, outNode, new Context(fact, paths), wm);
 		}
@@ -15,7 +15,7 @@ export function assert(nodes: INode[], n: number, fact: Fact, wm: WorkingMemory)
 
 export function modify(nodes: INode[], n: number, fact: Fact, wm: WorkingMemory) {
 	const node = nodes[n] as ITypeNode;
-	if (node.constraintAssert(fact.object)) {
+	if (node.ca(fact.object)) {
 		for (const [outNode, paths] of node.nodes.entries()) {
 			base_modify(nodes, outNode, new Context(fact, paths), wm);
 		}
@@ -24,7 +24,7 @@ export function modify(nodes: INode[], n: number, fact: Fact, wm: WorkingMemory)
 
 export function retract(nodes: INode[], n: number, fact: Fact, wm: WorkingMemory) {
 	const node = nodes[n] as ITypeNode;
-	if (node.constraintAssert(fact.object)) {
+	if (node.ca(fact.object)) {
 		for (const [outNode, paths] of node.nodes.entries()) {
 			base_retract(nodes, outNode, new Context(fact, paths), wm);
 		}

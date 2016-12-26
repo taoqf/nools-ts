@@ -10,10 +10,10 @@ function obj(pattern: IObjectPattern, defines: Map<string, any>, scope: Map<stri
 	});
 	// const constraints: IConstraint[] = null;
 	return {
-		type: pattern.type,
+		tp: pattern.tp,
 		id: pattern.id,
 		class_type: class_type,
-		alias: pattern.alias,
+		a: pattern.a,
 		pattern: pattern.pattern,
 		constraints: constraints
 	};
@@ -34,6 +34,6 @@ funcs.set(patternType.from_exists, from);
 funcs.set(patternType.from_not, from);
 
 export default function pt(pattern: IPattern, defines: Map<string, any>, scope: Map<string, any>) {
-	const fun = funcs.get(pattern.type);
+	const fun = funcs.get(pattern.tp);
 	return fun ? fun(pattern, defines, scope) : pattern;
 }

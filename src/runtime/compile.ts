@@ -7,7 +7,7 @@ export default function (data: IFlow, options: ICompileOptions) {
 	const context = { define: [], rules: [], scope: [] } as IContext;
 	const defines = get_defines(options.define);
 	const scope = to_map(options.scope);
-	const flow = new FlowContainer(data.root, options.name || data.name, defines, scope);
+	const flow = new FlowContainer(data.r, options.name || data.n, defines, scope);
 	//expose any defined classes to the flow.
 	for (const [name, cls] of defines) {
 		flow.addDefined(name, cls);

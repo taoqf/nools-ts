@@ -27,14 +27,14 @@ export enum patternType {
 
 export interface IPattern {
 	id: number;
-	type: patternType;
+	tp: patternType;
 }
 
 export interface IObjectPattern extends IPattern {
 	id: number;
 	cls?: string;
 	class_type: any;
-	alias: string;
+	a: string;
 	pattern: string;
 	constraints: IConstraint[];
 }
@@ -205,11 +205,11 @@ function _object_pattern(type: patternType, cls: string, class_type: any, alias:
 	}
 
 	return {
-		type: type,
+		tp: type,
 		id: ++id,
 		cls: cls,
 		class_type: class_type,
-		alias: alias,
+		a: alias,
 		pattern: options.pattern,
 		constraints: constraints
 	};
@@ -231,7 +231,7 @@ function _from_pattern(type: patternType, cls: string, class_type: any, alias: s
 
 export function composite_pattern(left: IPattern, right: IPattern): ICompositePattern {
 	return {
-		type: patternType.composite,
+		tp: patternType.composite,
 		id: ++id,
 		leftPattern: left,
 		rightPattern: right

@@ -16,7 +16,7 @@ export default function parse_rules(src: string, options: ICompileOptions): IFlo
 	const rules = compile(context, options);
 	const root = build(rules);
 	return {
-		name: uuid(),
-		root: root
+		n: uuid(),
+		r: root
 	};
 }

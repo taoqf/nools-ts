@@ -12,12 +12,12 @@ function _create_rule(name: string, options: IRuleContextOptions, pattern: IPatt
 		autoFocus = isBoolean(options.autoFocus) ? options.autoFocus : false;
 	}
 	return {
-		name: name,
-		pattern: pattern,
+		n: name,
+		pt: pattern,
 		action: action,
-		priority: options.priority || options.salience || 0,
-		agendaGroup: agendaGroup,
-		autoFocus: autoFocus
+		p: options.priority || options.salience || 0,
+		g: agendaGroup,
+		af: autoFocus
 	};
 }
 

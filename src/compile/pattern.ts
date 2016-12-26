@@ -24,6 +24,6 @@ funcs.set(patternType.from, from);
 funcs.set(patternType.from_exists, from);
 funcs.set(patternType.from_not, from);
 export default function pt(pattern: IObjectPattern) {
-	const fun = funcs.get(pattern.type);
+	const fun = funcs.get(pattern.tp);
 	return fun(pattern);
 }
