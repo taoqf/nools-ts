@@ -25,10 +25,10 @@ export function get_defines(d: Map<string, any>) {
 	defines.set('object', Object);
 	defines.set('InitialFact', InitialFact);
 	defines.set('initialfact', InitialFact);
-	if (typeof Buffer !== "undefined") {
-		defines.set('Buffer', Buffer);
-		defines.set('buffer', Buffer);
-	}
+	// if (typeof Buffer !== "undefined") {
+	// 	defines.set('Buffer', Buffer);
+	// 	defines.set('buffer', Buffer);
+	// }
 	return defines;
 }
 
