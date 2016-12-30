@@ -448,6 +448,7 @@ const funcs = new Map<nodeType, (node: INode) => INode>();
 
 function terminal(node: ITerminalNode) {
 	delete node.b;
+	delete node.r.pt;
 	return node;
 }
 funcs.set(nodeType.terminal, terminal);
