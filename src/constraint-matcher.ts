@@ -77,15 +77,15 @@ function toJs(rule: ICondition, scope: Map<string, any>, alias: string, equality
 	const closureconsts = consts.filter((v) => {
 		return scope.has(v);
 	}).map((v) => {
-		return `const ${v}=scope.get('${v}');`;
+		return `var ${v}=scope.get('${v}');`;
 	});
 	const funcconsts = consts.filter((v) => {
 		return !scope.has(v);
 	}).map((v) => {
 		if (equality || v !== alias) {
-			return `const ${v}=fact.get('${v}');`;
+			return `var ${v}=fact.get('${v}');`;
 		} else if (v === alias) {
-			return `const ${v}=hash.get('${v}');`;
+			return `var ${v}=hash.get('${v}');`;
 		} else {
 			return ``;
 		}
