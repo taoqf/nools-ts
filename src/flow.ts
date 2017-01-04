@@ -9,15 +9,13 @@ import ExecutionStrategy from './execution-strategy';
 import build_nodes from './runtime/nodes';
 
 export default class Flow extends EventEmitter {
-	private name: string;
 	// conflictResolutionStrategy: (a, b) => number;
 	private workingMemory = new WorkingMemory();
 	public agenda: AgendaTree;
 	public rootNode: IRootNode;
 	private executionStrategy: ExecutionStrategy;
-	constructor(root_node: IRootNode, name: string, conflictResolutionStrategy: (a: IInsert, b: IInsert) => number, defined: Map<string, any>, scope: Map<string, any>) {
+	constructor(root_node: IRootNode, conflictResolutionStrategy: (a: IInsert, b: IInsert) => number, defined: Map<string, any>, scope: Map<string, any>) {
 		super();
-		this.name = name;
 		this.agenda = new AgendaTree(this, conflictResolutionStrategy);
 		this.agenda.on("fire", (...args: any[]) => {
 			this.emit('fire', ...args);

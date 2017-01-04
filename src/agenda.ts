@@ -1,5 +1,4 @@
 import EventEmitter from './EventEmitter';
-import LinkedList from './linked-list';
 import isFunction from 'lodash-ts/isFunction';
 import { IInsert } from './interfaces';
 import Flow from './flow';
@@ -7,9 +6,7 @@ import AVLTree from './leafy/avl-tree';
 import { ITerminalNode } from './nodes';
 import Context from './context';
 
-interface IFactHash {
-	memory: Map<string, IInsert | Context>;
-	memoryValues: LinkedList<IInsert>;
+interface IFactHash extends Map<string, IInsert | Context> {
 }
 
 interface IAgendaRule {
@@ -20,23 +17,14 @@ interface IAgendaRule {
 }
 
 function fh_create(): IFactHash {
-	return {
-		memory: new Map<string, IInsert | Context>(),
-		memoryValues: new LinkedList<IInsert>()
-	};
-}
-
-function fh_clear(fh: IFactHash) {
-	fh.memoryValues.clear();
-	fh.memory = new Map<string, IInsert>();
+	return new Map<string, IInsert | Context>();
 }
 
 function fh_remove(fh: IFactHash, v: Context | IInsert) {
 	const hashCode = v.hashCode;
-	const memory = fh.memory;
+	const memory = fh;
 	const ret = memory.get(hashCode);
 	if (ret) {
-		fh.memoryValues.remove(ret);
 		memory.delete(hashCode);
 	}
 	return ret;
@@ -44,11 +32,11 @@ function fh_remove(fh: IFactHash, v: Context | IInsert) {
 
 function fh_insert(fh: IFactHash, insert: IInsert) {
 	const hashCode = insert.hashCode;
-	if (fh.memory.has(hashCode)) {
+	const memory = fh;
+	if (memory.has(hashCode)) {
 		throw new Error("Activation already in agenda " + insert.rule.n + " agenda");
 	}
-	fh.memory.set(hashCode, insert);
-	fh.memoryValues.push(insert);
+	memory.set(hashCode, insert);
 }
 
 const DEFAULT_AGENDA_GROUP = "main";
@@ -190,7 +178,7 @@ export default class AgendaTree extends EventEmitter {
 		const rules = this.rules;
 		for (const i in rules) {
 			rules[i].tree.clear();
-			fh_clear(rules[i].factTable);
+			rules[i].factTable = fh_create();
 		}
 		this.rules = {};
 	}

@@ -1,5 +1,4 @@
 import isString from 'lodash-ts/isString';
-import uuid from 'lodash-ts/uuid';
 import { IContext, ICompileOptions, IFlow } from '../interfaces';
 import compile from './compile';
 import FlowContainer from '../flow-container';
@@ -16,7 +15,6 @@ export default function parse_rules(src: string, options: ICompileOptions): IFlo
 	const rules = compile(context, options);
 	const root = build(rules);
 	return {
-		n: uuid(),
 		r: root
 	};
 }

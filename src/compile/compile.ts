@@ -150,11 +150,6 @@ function createRuleFromObject(obj: IRuleContext, defined: Map<string, any>, scop
 }
 
 export default function parse(context: IContext, options: ICompileOptions) {
-	const name = options.name;
-	//if !name throw an error
-	if (!name) {
-		throw new Error("Name must be present in JSON or options");
-	}
 	const defines = get_defines(options.define);
 	const scope = to_map(options.scope);
 	//add the anything added to the scope as a property

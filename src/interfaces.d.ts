@@ -3,7 +3,6 @@ export interface Hash {
 }
 
 export interface ICompileOptions {
-	name?: string;
 	define?: Map<string, any>;
 	scope?: Map<string, any>;
 }
@@ -103,7 +102,6 @@ export interface IBucket {
 import { IRootNode } from './nodes';
 
 export interface IFlow {
-	n: string;
 	r: IRootNode;
 }
 
