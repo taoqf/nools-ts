@@ -68,13 +68,13 @@ function traverseInOrder(tree: Table, key: IEntry, comparator: (v1: ITreeData, v
 function traverseReverseOrder(tree: Table, key: IEntry, comparator: (v1: ITreeData, v2: ITreeData) => boolean) {
 	VALUE.key = key;
 	const ret: ITuple[] = [];
-	let i = 0, current = tree.get_root(), v: ITreeData;
+	let i = 0, current = tree.get_root();
 	while (true) {
 		if (current) {
 			current = (STACK[i++] = current).right;
 		} else {
 			if (i > 0) {
-				v = (current = STACK[--i]).data;
+				const v = (current = STACK[--i]).data;
 				if (comparator(v, VALUE)) {
 					ret.push(...v.value.tuples);
 					current = current.left;
