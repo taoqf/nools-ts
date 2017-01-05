@@ -1,0 +1,51 @@
+
+digraph G {
+	fontname="sans-serif";
+	penwidth="0.1";
+	edge [comment="Wildcard edge",
+		fontname="sans-serif",
+		fontsize=10,
+		colorscheme="blues3",
+		color=2,
+		fontcolor=3];
+	node [fontname="serif",
+		fontsize=13,
+		fillcolor="1",
+		colorscheme="blues4",
+		color="2",
+		fontcolor="4",
+		style="filled"];
+	"root";
+	"0" [label="0.terminal"];
+	"1" [label="1.beta"];
+	"2" [label="2.type"];
+	"3" [label="3.alias"];
+	"4" [label="4.equality"];
+	"5" [label="5.rightadapter"];
+	"6" [label="6.type"];
+	"7" [label="7.alias"];
+	"8" [label="8.equality"];
+	"9" [label="9.leftadapter"];
+	"10" [label="10.terminal"];
+	"11" [label="11.beta"];
+	"12" [label="12.equality"];
+	"13" [label="13.rightadapter"];
+	"14" [label="14.leftadapter"];
+	root -> 2;
+	2 -> 3;
+	3 -> 4;
+	4 -> 5;
+	5 -> 1;
+	1 -> 0;
+	3 -> 12;
+	12 -> 13;
+	13 -> 11;
+	11 -> 10;
+	root -> 6;
+	6 -> 7;
+	7 -> 8;
+	8 -> 9;
+	9 -> 1;
+	8 -> 14;
+	14 -> 11;
+}
