@@ -20,7 +20,7 @@ export default class ExecutionStragegy {
 		this.matchUntilHalt = !!(matchUntilHalt);
 		// extd.bindAll(this, ["onAlter", "callNext"]);
 		this.onAlter = () => {
-			this._onAlter();
+			this.flowAltered = true;
 		};
 	}
 
@@ -28,13 +28,6 @@ export default class ExecutionStragegy {
 		this.__halted = true;
 		if (!this.looping) {
 			this.callback();
-		}
-	}
-
-	_onAlter() {
-		this.flowAltered = true;
-		if (!this.looping && this.matchUntilHalt && !this.__halted) {
-			this.callNext();
 		}
 	}
 
