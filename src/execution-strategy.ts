@@ -12,7 +12,7 @@ export default class ExecutionStragegy {
 	private rootNode: IRootNode;
 	private __halted = false;
 	private flowAltered = false;
-	onAlter: () => void;
+	private onAlter: () => void;
 	constructor(flow: Flow, matchUntilHalt = false) {
 		this.flow = flow;
 		this.agenda = flow.agenda;
@@ -27,11 +27,11 @@ export default class ExecutionStragegy {
 	halt() {
 		this.__halted = true;
 		if (!this.looping) {
-			this.callback();
+			this.tearDown();
 		}
 	}
 
-	setup() {
+	private setup() {
 		const flow = this.flow;
 		this.rootNode.bucket.counter = 0;
 		flow.on("assert", this.onAlter);
@@ -39,7 +39,7 @@ export default class ExecutionStragegy {
 		flow.on("retract", this.onAlter);
 	}
 
-	tearDown() {
+	private tearDown() {
 		const flow = this.flow;
 		flow.removeListener("assert", this.onAlter);
 		flow.removeListener("modify", this.onAlter);
@@ -58,10 +58,10 @@ export default class ExecutionStragegy {
 				if (!this.__halted) {
 					return this.callNext();
 				} else {
-					return this.callback();
+					return this.tearDown();
 				}
 			} else if (!this.matchUntilHalt || this.__halted) {
-				return this.callback();
+				return this.tearDown();
 			} else {
 				return new Promise<any>((resolve, reject) => {
 					reject('something must be wrong.');
@@ -70,12 +70,7 @@ export default class ExecutionStragegy {
 		});
 	}
 
-	callback() {
-		this.tearDown();
-	}
-
-
-	callNext() {
+	private callNext() {
 		this.looping = true;
 		const next = this.agenda.fireNext();
 		return this.__handleAsyncNext(next);
