@@ -539,5 +539,7 @@ export default function (rules: IRule[]) {
 		return fun ? fun(node) : node;
 	});
 	root.ps = root.ps.map(pt);
+	delete root.as;
+	delete root.js;
 	return root;
 }
