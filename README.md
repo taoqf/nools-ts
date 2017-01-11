@@ -13,6 +13,22 @@ Nools is a [rete](http://en.wikipedia.org/wiki/Rete_algorithm) based rules engin
 npm i nools-ts
 ```
 
+# Dev
+1. Clone source from Github, or download source code.
+2. Switch to branch functional
+3. Install gulp
+```bash
+$ npm install gulp -g
+```
+4. Build
+```bash
+$ npm install
+```
+5. Test
+```bash
+$ gulp
+```
+
 # Usage
 
    * Flows
