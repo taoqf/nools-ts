@@ -15,19 +15,25 @@ npm i nools-ts
 
 # Dev
 1. Clone source from Github, or download source code.
+	```bash
+	$ git clone git@github.com:taoqf/nools-ts.git
+	```
 2. Switch to branch functional
+	```bash
+	$ git checkout functional
+	```
 3. Install gulp
-```bash
-$ npm install gulp -g
-```
+	```bash
+	$ npm install gulp -g
+	```
 4. Build
-```bash
-$ npm install
-```
+	```bash
+	$ npm install
+	```
 5. Test
-```bash
-$ gulp
-```
+	```bash
+	$ gulp
+	```
 
 # Usage
 
