@@ -4,10 +4,11 @@ import FlowContainer from './flow-container';
 
 import runtime_compile from './runtime/compile';
 
-import { IFlow, ICompileOptions } from './interfaces';
+import { ICompileOptions } from './interfaces';
+import { IRootNode } from './nodes';
 
-export function compile(flow: IFlow, options: ICompileOptions) {
-	return runtime_compile(flow, options);
+export function compile(root: IRootNode, options: ICompileOptions) {
+	return runtime_compile(root, options);
 }
 
 export default compile;

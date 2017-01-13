@@ -16,7 +16,7 @@ export default class ExecutionStragegy {
 	constructor(flow: Flow, matchUntilHalt = false) {
 		this.flow = flow;
 		this.agenda = flow.agenda;
-		this.rootNode = flow.rootNode;
+		this.rootNode = flow.data;
 		this.matchUntilHalt = !!(matchUntilHalt);
 		// extd.bindAll(this, ["onAlter", "callNext"]);
 		this.onAlter = () => {

@@ -5,7 +5,7 @@ const funcs = new Map<patternType, (constraint: IObjectPattern) => IObjectPatter
 
 function obj(pattern: IObjectPattern) {
 	delete pattern.class_type;
-	pattern.constraints = pattern.constraints.map(cst);
+	// pattern.constraints = pattern.constraints.map(cst);
 	delete pattern.pattern;
 	// delete pattern.constraints;
 	return pattern;

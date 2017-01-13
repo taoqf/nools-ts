@@ -5,6 +5,7 @@ import isMap from 'lodash-ts/isMap';
 import keys from 'lodash-ts/keys';
 
 import { IContext, IRuleContext, ISimpleConstraint, INomalConstraint, INotConstraint, IFromstraint, IOrConstraint, ICompileOptions, ICondition, IRule } from '../interfaces';
+import { IConstraint } from '../constraint';
 import { removeDups, to_map } from '../lang';
 import { get_defines, createDefined, createFunction } from '../compile';
 import { getIdentifiers } from '../constraint-matcher';
@@ -124,7 +125,7 @@ function parseAction(action: string, identifiers: string[], defined: Map<string,
 	return action.trim();
 }
 
-function createRuleFromObject(obj: IRuleContext, defined: Map<string, any>, scope: Map<string, any>) {
+function createRuleFromObject(obj: IRuleContext, defined: Map<string, any>, scope: Map<string, any>, cs: IConstraint[]) {
 	const name = obj.name;
 	if (isEmpty(obj)) {
 		throw new Error("Rule is empty");
@@ -146,7 +147,7 @@ function createRuleFromObject(obj: IRuleContext, defined: Map<string, any>, scop
 		conditions = conditions.concat(c);
 		identifiers = identifiers.concat(i);
 	});
-	return createRule(name, options, conditions, parseAction(action, identifiers, defined, scope));
+	return createRule(name, options, conditions, cs, parseAction(action, identifiers, defined, scope));
 }
 
 export default function parse(context: IContext, options: ICompileOptions) {
@@ -165,7 +166,11 @@ export default function parse(context: IContext, options: ICompileOptions) {
 		scope.set(s.name, createFunction(s.body, defines, scope));
 	});
 	const rules = context.rules;
-	return rules.reverse().reduce((rules, rule) => {
-		return rules.concat(createRuleFromObject(rule, defines, scope));
-	}, [] as IRule[]);
+	const cs = [] as IConstraint[];
+	return {
+		rules: rules.reverse().reduce((rules, rule) => {
+			return rules.concat(createRuleFromObject(rule, defines, scope, cs));
+		}, [] as IRule[])
+		, cs: cs
+	};
 };

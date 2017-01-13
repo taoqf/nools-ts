@@ -47,6 +47,7 @@ export interface IAdapterNode extends INode {
 
 export interface IAlphaNode extends INode {
 	constraint: IConstraint;
+	c: number;
 	ca(it: any, fh?: any): boolean;
 	eq(constraint: IAlphaNode): boolean;
 }
@@ -137,5 +138,6 @@ export interface IRootNode {
 	js: number[];
 	as: number[];
 	tps: number[];
+	cs: IConstraint[];
 	bucket?: IBucket;
 }

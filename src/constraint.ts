@@ -46,19 +46,19 @@ export function create_true_constraint(alias: string): ITrueConstraint {
 	};
 }
 
-function _create_equality_constraint(type: constraintType, alias: string, constraint: ICondition, options = {} as IPatternOptions): IEqualityConstraint {
-	const matcher = getMatcher(constraint, options, true);
+function _create_equality_constraint(type: constraintType, alias: string, condition: ICondition, options = {} as IPatternOptions): IEqualityConstraint {
+	const matcher = getMatcher(condition, options, true);
 	return {
 		options: options,
 		// pattern: options.pattern,
 		tp: type,
 		a: alias,
-		constraint: constraint,
+		constraint: condition,
 		assert(fact: any, fh?: any) {
 			return matcher(fact, fh);
 		},
 		equal(that: IConstraint) {
-			return /*constraint.type == 'equality' && */ that.a == alias, isEqual(constraint, (that as IEqualityConstraint).constraint);
+			return /*constraint.type == 'equality' && */ that.a == alias, isEqual(condition, (that as IEqualityConstraint).constraint);
 		}
 	};
 }
@@ -66,7 +66,6 @@ function _create_equality_constraint(type: constraintType, alias: string, constr
 export interface IEqualityConstraint extends IConstraint {
 	options: IPatternOptions;
 	constraint: ICondition;
-	// pattern: string;	// todo: pattern and type are not needed.
 }
 
 export function create_equality_constraint(alias: string, constraint: ICondition, options = {} as IPatternOptions): IEqualityConstraint {

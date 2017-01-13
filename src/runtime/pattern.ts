@@ -1,3 +1,4 @@
+// import Clone from 'lodash-ts/clone';
 import { IConstraint, IFromConstraint } from '../constraint';
 import cst from './constraint';
 import { IPattern, IObjectPattern, patternType, IFromPattern } from '../pattern';
@@ -5,9 +6,9 @@ const funcs = new Map<patternType, (pattern: IPattern, defines: Map<string, any>
 
 function obj(pattern: IObjectPattern, defines: Map<string, any>, scope: Map<string, any>) {
 	const class_type = defines.get(pattern.cls);
-	const constraints = pattern.constraints.map((constraint) => {
-		return cst(constraint, defines, scope);
-	});
+	// const constraints = pattern.constraints.map((constraint) => {
+	// 	return cst(constraint, defines, scope);
+	// });
 	// const constraints: IConstraint[] = null;
 	return {
 		tp: pattern.tp,
@@ -15,7 +16,8 @@ function obj(pattern: IObjectPattern, defines: Map<string, any>, scope: Map<stri
 		class_type: class_type,
 		a: pattern.a,
 		pattern: pattern.pattern,
-		constraints: constraints
+		constraints: pattern.constraints
+		// constraints: Clone(pattern.constraints)
 	};
 }
 funcs.set(patternType.object, obj);

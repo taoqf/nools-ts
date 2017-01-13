@@ -3,6 +3,7 @@ import isArray from 'lodash-ts/isArray';
 
 import { IRuleContextOptions, ICondition, IRule } from '../interfaces';
 import pattern, { IPattern, composite_pattern } from '../pattern';
+import { IConstraint } from '../constraint';
 
 function _create_rule(name: string, options: IRuleContextOptions, pattern: IPattern, action: string): IRule {
 	let agendaGroup: string = null;
@@ -21,7 +22,7 @@ function _create_rule(name: string, options: IRuleContextOptions, pattern: IPatt
 	};
 }
 
-export function createRule(name: string, options: IRuleContextOptions, conditions: ICondition[], cb: string) {
+export function createRule(name: string, options: IRuleContextOptions, conditions: ICondition[], cs: IConstraint[], cb: string) {
 	let isRules = conditions.every((cond) => {
 		return isArray(cond);
 	});
@@ -61,7 +62,7 @@ export function createRule(name: string, options: IRuleContextOptions, condition
 		}
 		conditions.forEach((condition) => {
 			condition.scope = scope;
-			pattern(condition).forEach(_mergePatterns);
+			pattern(condition, cs).forEach(_mergePatterns);
 		});
 		rules = patterns.map((patterns) => {
 			const compPat = patterns.filter((patt, idx) => {
@@ -72,7 +73,7 @@ export function createRule(name: string, options: IRuleContextOptions, condition
 			return _create_rule(name, options, compPat, cb);
 		});
 	} else {
-		rules = pattern(conditions as any).map((cond) => {
+		rules = pattern(conditions as any, cs).map((cond) => {
 			return _create_rule(name, options, cond, cb);
 		});
 	}

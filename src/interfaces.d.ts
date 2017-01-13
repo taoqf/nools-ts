@@ -9,8 +9,8 @@ export interface ICompileOptions {
 
 export interface ICondition extends Array<any> {
 	scope?: Map<string, any>;
-	[0]: string | ICondition;	// [class_name, class]
-	[1]: string | ICondition;	// always be null ???
+	[0]: string | ICondition;
+	[1]: string | ICondition;
 	[2]: string;
 	[3]?: any;
 	[4]?: {
@@ -99,14 +99,9 @@ export interface IBucket {
 	recency: number;
 }
 
-import { IRootNode } from './nodes';
-
-export interface IFlow {
-	r: IRootNode;
-}
-
 import { IPattern } from './pattern';
 import Flow from './flow';
+import { IConstraint } from './constraint';
 
 export interface IRule {
 	n: string;

@@ -31,9 +31,9 @@ dirs.filter((dir) => {
 	return /\.json$/.test(dir) && fs.existsSync(d) && fs.statSync(d).isFile();
 }).forEach((dir) => {
 	const data = require('./' + dir);
-	const typeNodes = data.r.tps;
+	const typeNodes = data.tps;
 
-	const nodes = data.r.ns;
+	const nodes = data.ns;
 
 	// 1. draw all the nodes
 	const all_nodes = nodes.map((n, i) => {

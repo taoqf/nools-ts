@@ -4,7 +4,8 @@ import keys from 'lodash-ts/keys';
 import InitialFact from './facts/initial';
 import { to_map } from './lang';
 import parse from './compile/index';
-import { ICompileOptions, IFlow } from './interfaces';
+import { ICompileOptions } from './interfaces';
+import { IRootNode } from './nodes';
 
 export function get_defines(d: Map<string, any>) {
 	const defines = to_map(d);

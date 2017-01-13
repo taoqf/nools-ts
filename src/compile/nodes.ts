@@ -12,13 +12,14 @@ import { addConstraint, create_join_reference_node } from '../nodes/join-referen
 import cst from './constraint';
 import pt from './pattern';
 
-function create_root_node(): IRootNode {
+function create_root_node(cs: IConstraint[]): IRootNode {
 	return {
 		ns: [],
 		ps: [],
 		ts: [],
 		js: [],
 		as: [],
+		cs: cs,
 		tps: [],
 		bucket: {
 			counter: 0,
@@ -51,8 +52,8 @@ function create_terminal_node(rules: IRule[], index: number, bucket: IBucket): I
 	return node;
 }
 
-function build_nodes(rules: IRule[]) {
-	const root = create_root_node();
+function build_nodes(rules: IRule[], cs: IConstraint[]) {
+	const root = create_root_node(cs);
 	rules.forEach((rule, idx) => {
 		const terminalNode = create_terminal_node(rules, idx, root.bucket);
 		const tn = root.ns.push(terminalNode) - 1;
@@ -63,9 +64,9 @@ function build_nodes(rules: IRule[]) {
 	return root;
 }
 
-function hasRefernceConstraints(pattern: IObjectPattern) {
+function hasRefernceConstraints(pattern: IObjectPattern, cs: IConstraint[]) {
 	return (pattern.constraints || []).some((c) => {
-		return is_instance_of_reference_constraint(c);
+		return is_instance_of_reference_constraint(cs[c]);
 	});
 }
 
@@ -146,9 +147,10 @@ function __checkEqual<T extends IAlphaNode>(root: IRootNode, node: T) {
 	}
 }
 
-function create_alpha(type: nodeType, constraint: IConstraint): IAlphaNode {
+function create_alpha(type: nodeType, constraint: IConstraint, c: number): IAlphaNode {
 	return mixin(create_node(type), {
 		constraint: constraint,
+		c: c,
 		ca: constraint.assert,
 		eq(other: IAlphaNode) {
 			return constraint.equal(other.constraint);
@@ -156,8 +158,8 @@ function create_alpha(type: nodeType, constraint: IConstraint): IAlphaNode {
 	});
 }
 
-function __createTypeNode(root: IRootNode, constraint: IConstraint) {
-	const typenode = create_alpha(nodeType.type, constraint) as ITypeNode;
+function __createTypeNode(root: IRootNode, constraint: IConstraint, c: number) {
+	const typenode = create_alpha(nodeType.type, constraint, c) as ITypeNode;
 	const typeNodes = root.tps;
 	let index = -1;
 	if (typeNodes.some((id) => {
@@ -174,25 +176,25 @@ function __createTypeNode(root: IRootNode, constraint: IConstraint) {
 	}
 }
 
-function create_equality_node(constraint: IConstraint): IEqualityNode {
-	return mixin(create_alpha(nodeType.equality, constraint), {
+function create_equality_node(constraint: IConstraint, c: number): IEqualityNode {
+	return mixin(create_alpha(nodeType.equality, constraint, c), {
 		memory: new Map<string, boolean>()
 	});
 }
 
-function __createEqualityNode(root: IRootNode, rule: number, constraint: IObjectConstraint) {
-	return __checkEqual(root, create_equality_node(constraint));
+function __createEqualityNode(root: IRootNode, rule: number, constraint: IObjectConstraint, c: number) {
+	return __checkEqual(root, create_equality_node(constraint, c));
 }
 
-function create_property_node(constraint: IHashConstraint): IPropertyNode {
-	return mixin(create_alpha(nodeType.property, constraint), {
+function create_property_node(constraint: IHashConstraint, c: number): IPropertyNode {
+	return mixin(create_alpha(nodeType.property, constraint, c), {
 		alias: constraint.a,
 		constiables: constraint.constraint
 	});
 }
 
-function __createPropertyNode(root: IRootNode, rule: number, constraint: IHashConstraint) {
-	return __checkEqual(root, create_property_node(constraint));
+function __createPropertyNode(root: IRootNode, rule: number, constraint: IHashConstraint, c: number) {
+	return __checkEqual(root, create_property_node(constraint, c));
 }
 
 function create_alias_node(root: IRootNode, p: number): IAliasNode {
@@ -264,9 +266,12 @@ function create_exists_node(): IExistsNode {
 
 function _create_from_node(root: IRootNode, type: nodeType, pattern: IFromPattern): IFromNode {
 	const p = root.ps.push(pattern) - 1;
-	const type_constraint = pattern.constraints[0];
+	const cs = root.cs;
+	const type_constraint = cs[pattern.constraints[0]];
 	const from = pattern.from;
-	const constraints = pattern.constraints.slice(1);
+	const constraints = pattern.constraints.slice(1).map((c)=>{
+		return cs[c];
+	});
 	let vars: any[] = [];
 	const eqConstraints: { (factHanle1: Map<string, Fact>, factHandle2: Map<string, Fact>): boolean; }[] = [];
 	constraints.forEach((c) => {
@@ -303,9 +308,12 @@ function create_from_node(root: IRootNode, pattern: IFromPattern): IFromNode {
 
 function _create_from_not_node(root: IRootNode, type: nodeType, pattern: IFromPattern): IFromNotNode {
 	const p = root.ps.push(pattern) - 1;
-	const type_constraint = pattern.constraints[0];
+	const cs = root.cs;
+	const type_constraint = cs[pattern.constraints[0]];
 	const from = pattern.from;
-	const constraints = pattern.constraints.slice(1);
+	const constraints = pattern.constraints.slice(1).map((c)=>{
+		return cs[c];
+	});
 	let vars: any[] = [];
 	const eqConstraints: { (factHanle1: Map<string, Fact>, factHandle2: Map<string, Fact>): boolean; }[] = [];
 	constraints.forEach((c) => {
@@ -362,7 +370,7 @@ function __createJoinNode(root: IRootNode, rule: number, pattern: ICompositePatt
 	} else if (right_type === patternType.from) {
 		joinNode = create_from_node(root, pattern.rightPattern as IFromPattern);
 		jn = nodes.push(joinNode) - 1;
-	} else if (pattern.tp === patternType.composite && !hasRefernceConstraints(pattern.leftPattern as IObjectPattern) && !hasRefernceConstraints(pattern.rightPattern as IObjectPattern)) {
+	} else if (pattern.tp === patternType.composite && !hasRefernceConstraints(pattern.leftPattern as IObjectPattern, root.cs) && !hasRefernceConstraints(pattern.rightPattern as IObjectPattern, root.cs)) {
 		const bn = joinNode = create_beta_node();
 		jn = nodes.push(bn) - 1;
 		root.js.push(jn);
@@ -386,7 +394,7 @@ function __addToNetwork(root: IRootNode, rule: number, pattern: IPattern, outNod
 	if (type === patternType.composite) {
 		__createBetaNode(root, rule, pattern as ICompositePattern, outNode, side);
 	} else if (type !== patternType.initial_fact && side === 'left') {
-		__createBetaNode(root, rule, composite_pattern(initial_fact_pattern(), pattern), outNode, side);
+		__createBetaNode(root, rule, composite_pattern(initial_fact_pattern(root.cs), pattern), outNode, side);
 	} else {
 		__createAlphaNode(root, rule, pattern as IObjectPattern, outNode, side);
 	}
@@ -409,7 +417,8 @@ function __createAlphaNode(root: IRootNode, rule: number, pattern: IObjectPatter
 		const nodes = root.ns;
 		const outNode = nodes[out_node];
 		const constraints = pattern.constraints;
-		const tn = __createTypeNode(root, constraints[0]);
+		const cs = root.cs;
+		const tn = __createTypeNode(root, cs[constraints[0]], constraints[0]);
 		const typeNode = nodes[tn];
 		const an = __createAliasNode(root, rule, p);
 		addOutNode(typeNode, an, p);
@@ -417,15 +426,16 @@ function __createAlphaNode(root: IRootNode, rule: number, pattern: IObjectPatter
 		let parentNode = an;
 		constraints.filter((constraint, idx) => {
 			return idx > 0;
-		}).forEach((constraint) => {
+		}).forEach((c) => {
+			const constraint = cs[c];
 			let n = -1;
 			if (is_instance_of_hash(constraint)) {
-				n = __createPropertyNode(root, rule, (constraint as IHashConstraint));
+				n = __createPropertyNode(root, rule, (constraint as IHashConstraint), c);
 			} else if (is_instance_of_reference_constraint(constraint)) {
 				addConstraint((outNode as IJoinNode).constraint, constraint as IReferenceConstraint);
 				return;
 			} else {
-				n = __createEqualityNode(root, rule, constraint as IObjectConstraint);
+				n = __createEqualityNode(root, rule, constraint as IObjectConstraint, c);
 			}
 			const node = nodes[n];
 			addOutNode(nodes[parentNode], n, p);
@@ -456,7 +466,7 @@ funcs.set(nodeType.terminal, terminal);
 function tp(node: ITypeNode) {
 	delete node.eq;
 	delete node.ca;
-	node.constraint = cst(node.constraint);
+	delete node.constraint;
 	return node;
 }
 funcs.set(nodeType.type, tp);
@@ -464,14 +474,14 @@ function equality(node: IEqualityNode) {
 	delete node.eq;
 	delete node.ca;
 	delete node.memory;
-	node.constraint = cst(node.constraint);
+	delete node.constraint;
 	return node;
 }
 funcs.set(nodeType.equality, equality);
 function property(node: IPropertyNode) {
 	delete node.eq;
 	delete node.ca;
-	node.constraint = cst(node.constraint);
+	delete node.constraint;
 	return node;
 }
 funcs.set(nodeType.property, property);
@@ -532,13 +542,14 @@ funcs.set(nodeType.from, from);
 funcs.set(nodeType.from_not, from);
 funcs.set(nodeType.exists_from, from);
 
-export default function (rules: IRule[]) {
-	const root = build_nodes(rules);
+export default function (rules: IRule[], cs: IConstraint[]) {
+	const root = build_nodes(rules, cs);
 	root.ns = root.ns.map((node) => {
 		const fun = funcs.get(node.tp);
 		return fun ? fun(node) : node;
 	});
 	root.ps = root.ps.map(pt);
+	root.cs = cs.map(cst);
 	delete root.as;
 	delete root.js;
 	return root;

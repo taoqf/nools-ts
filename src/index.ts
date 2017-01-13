@@ -7,11 +7,11 @@ import runtime_compile from './runtime/compile';
 import { ICompileOptions } from './interfaces';
 
 export function compile(src: string, options: ICompileOptions) {
-	const flow = parse(src, options);
+	const root = parse(src, options);
 	// console.log('----------------------------------');
 	// console.info(JSON.stringify(flow));
 	// console.log('++++++++++++++++++++++++++++++++++');
-	return runtime_compile(flow, options);
+	return runtime_compile(root, options);
 }
 
 export default compile;
