@@ -140,7 +140,15 @@ gulp.task('pack2', function (cb) {
 });
 
 gulp.task('default', function (cb) {
-	sequence('clean', 'copy-files', 'compile-ts', 'dts-generator', 'copy-parser', 'pack2', cb);
+	sequence('clean', 'copy-files', 'compile-ts', 'compile-ts-umd', 'dts-generator', 'copy-parser', 'pack2', cb);
+});
+
+gulp.task('compile-ts-umd', function (cb) {
+	const tsProject = tsc.createProject('./tsconfig.json');
+	tsProject.options.module = 3;
+	return gulp.src(src)
+		.pipe(tsProject())
+		.pipe(gulp.dest(dest + 'umd/'));
 });
 
 gulp.task('dev', function (cb) {
