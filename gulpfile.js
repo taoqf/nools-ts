@@ -5,8 +5,6 @@ const tsc = require('gulp-typescript');
 const del = require('del');
 const sequence = require('gulp-sequence');
 
-const tscProject = tsc.createProject('./tsconfig.json');
-
 const src = tscProject.config.files || ['./typings/index.d.ts'];
 const dest = './dist/';
 
@@ -15,6 +13,7 @@ gulp.task('clean', function () {
 });
 
 gulp.task('compile-ts', function (cb) {
+	const tscProject = tsc.createProject('./tsconfig.json');
 	return gulp.src(src.concat('./src/**/*.ts'))
 		.pipe(tscProject())
 		.pipe(gulp.dest(dest));
