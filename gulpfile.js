@@ -5,7 +5,7 @@ const tsc = require('gulp-typescript');
 const del = require('del');
 const sequence = require('gulp-sequence');
 
-const src = tscProject.config.files || ['./typings/index.d.ts'];
+const src = ['./typings/index.d.ts'];
 const dest = './dist/';
 
 gulp.task('clean', function () {
