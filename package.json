@@ -1,6 +1,6 @@
 {
   "name": "nools-ts",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "description": "nools in TypeScript.",
   "main": "lodash-ts.js",
   "scripts": {
