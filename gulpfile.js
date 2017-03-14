@@ -139,7 +139,46 @@ gulp.task('pack2', function (cb) {
 });
 
 gulp.task('default', function (cb) {
-	sequence('clean', 'copy-files', 'compile-ts', 'compile-ts-umd', 'dts-generator', 'copy-parser', 'pack2', cb);
+	sequence('clean', 'copy-files', 'compile-ts', 'dts-generator', 'copy-parser', 'pack2', cb);
+});
+
+gulp.task('min-runtime', function () {
+	return gulp.src('./dist/pack-runtime.js')
+		.pipe(babel({
+			presets: ['es2015']
+		}))
+		.pipe(uglyfly())
+		.pipe(rename('runtime.js'))
+		.pipe(gulp.dest('./dist/pack/'));
+});
+gulp.task('min-index', function () {
+	return gulp.src('./dist/pack-index.js')
+		.pipe(babel({
+			presets: ['es2015']
+		}))
+		.pipe(uglyfly())
+		.pipe(rename('index.js'))
+		.pipe(gulp.dest('./dist/pack/'));
+});
+gulp.task('browserify-runtime', function () {
+	return browserify(['./dist/runtime.js'], {
+		standalone: 'nools'
+	})
+		.bundle()
+		.pipe(fs.createWriteStream('./dist/pack-runtime.js'));
+});
+gulp.task('browserify-index', function () {
+	return browserify(['./dist/index.js'], {
+		standalone: 'nools'
+	})
+		.bundle()
+		.pipe(fs.createWriteStream('./dist/pack-index.js'));
+});
+gulp.task('pack-test', function (cb) {
+	sequence('browserify-runtime', 'min-runtime', 'browserify-index', 'min-index', cb);
+});
+gulp.task('test', function (cb) {
+	sequence('clean', 'copy-files', 'compile-ts', 'copy-parser', 'pack-test', cb);
 });
 
 gulp.task('compile-ts-umd', function (cb) {

@@ -24,7 +24,7 @@ funcs.set(constraintType.true, true_constraint);
 function op(options: IPatternOptions, scope: Map<string, any>) {
 	const scope2 = options.scope2;
 	if(scope2){
-		scope = clone(scope);
+		scope = new Map<string, any>(scope);
 		for(const name in scope2){
 			scope.set(name, scope2[name]);
 		}
