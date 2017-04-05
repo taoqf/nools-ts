@@ -76,7 +76,7 @@ export function createDefined(action: string | any, defined: Map<string, any>, s
 		opts = opts || {};
 		for (const i in opts) {
 			if (i in action) {
-				this[i] = opts[i];
+				ret[i] = opts[i];
 			}
 		}
 	};

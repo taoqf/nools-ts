@@ -5,32 +5,20 @@ const tsc = require('gulp-typescript');
 const del = require('del');
 const sequence = require('gulp-sequence');
 
-const src = ['./typings/index.d.ts', './src/**/*.ts'];
 const dest = './dist/';
 
 gulp.task('clean', function () {
-	return del(['./dist/', './dist-api/', './dist-umd/']);
+	return del([dest, './dist-api/', './dist-umd/']);
 });
 
-gulp.task('compile-ts', function (cb) {
-	const tscProject = tsc.createProject('./tsconfig.json');
-	return gulp.src(src)
-		.pipe(tscProject())
+gulp.task('compile-ts', (cb) => {
+	const ts = require('gulp-typescript');
+	const tsProject = ts.createProject('./tsconfig.json');
+	tsProject.options.module = 1;	// commonjs
+	const dest = tsProject.options.outDir;
+	return tsProject.src()
+		.pipe(tsProject())
 		.pipe(gulp.dest(dest));
-});
-
-gulp.task('dts-generator', function (cb) {
-	require('dts-generator').default({
-		name: packageJson.name,
-		// project: './',
-		baseDir: './',
-		rootDir: './src/',
-		exclude: ['node-modules'],
-		out: dest + 'typings/' + packageJson.name + '.d.ts',
-		moduleResolution: 1,
-		target: 1
-	});
-	cb();
 });
 
 const gulpCopy = require('gulp-copy');
@@ -139,7 +127,7 @@ gulp.task('pack2', function (cb) {
 });
 
 gulp.task('default', function (cb) {
-	sequence('clean', 'copy-files', 'compile-ts', 'dts-generator', 'copy-parser', 'pack2', cb);
+	sequence('clean', 'copy-files', 'compile-ts', 'copy-parser', 'pack2', cb);
 });
 
 gulp.task('min-runtime', function () {
@@ -181,14 +169,34 @@ gulp.task('test', function (cb) {
 	sequence('clean', 'copy-files', 'compile-ts', 'copy-parser', 'pack-test', cb);
 });
 
-gulp.task('compile-ts-umd', function (cb) {
-	const tsProject = tsc.createProject('./tsconfig.json');
-	tsProject.options.module = 3;
-	return gulp.src(src)
+gulp.task('compile-ts-umd', (cb) => {
+	const ts = require('gulp-typescript');
+	const tsProject = ts.createProject('./tsconfig.json');
+	tsProject.options.module = 3;	// umd
+	const path = require('path');
+	const dest = path.join(tsProject.options.outDir, 'umd');
+	return gulp.src(['./src/**/*.ts'])
 		.pipe(tsProject())
-		.pipe(gulp.dest(dest + 'umd/'));
+		.pipe(gulp.dest(dest));
 });
 
 gulp.task('dev', function (cb) {
 	sequence('compile-ts', 'copy-parser', cb);
+});
+
+gulp.task('watch', () => {
+	const ts = require('gulp-typescript');
+	const tsProject = ts.createProject('./tsconfig.json');
+	tsProject.options.module = 1;	// commonjs
+	const outDir = tsProject.options.outDir;
+	const path = require('path');
+	return gulp.watch(['./src/**/*.ts'], (file) => {
+		const tsProject = ts.createProject('./tsconfig.json');
+		tsProject.options.module = 1;	// commonjs
+		const relative = path.relative('./src/', path.dirname(file.path));
+		const dest = path.join(outDir, relative);
+		return gulp.src([file.path])
+			.pipe(tsProject())
+			.pipe(gulp.dest(dest));
+	});
 });

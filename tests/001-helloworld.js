@@ -1,3 +1,4 @@
+(async() => {
 const rule = `
 //find any message that starts with hello
 rule Hello {
@@ -40,11 +41,8 @@ const flow = nools.compile(rule, {
 	scope: scope
 });
 const session = flow.getSession(new Message('hello world'));
-session.match().then(() => {
-	console.log('done');
-	session.dispose();
-	process.exit();
-}, (err) => {
-	console.error(err);
-	process.exit();
-});
+await session.match();
+console.log('done');
+session.dispose();
+process.exit();
+})();

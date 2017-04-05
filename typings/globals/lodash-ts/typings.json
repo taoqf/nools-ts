@@ -1,8 +1,0 @@
-{
-  "resolution": "main",
-  "tree": {
-    "src": "/home/taoqf/git/nools-ts/node_modules/lodash-ts/typings/lodash-ts.d.ts",
-    "raw": "npm:lodash-ts/typings/lodash-ts.d.ts",
-    "typings": "/home/taoqf/git/nools-ts/node_modules/lodash-ts/typings/lodash-ts.d.ts"
-  }
-}

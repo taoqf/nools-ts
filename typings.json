@@ -1,8 +1,0 @@
-{
-	"name": "nools-ts",
-	"dependencies": {},
-	"globalDependencies": {
-		"lodash-ts": "npm:lodash-ts/typings/lodash-ts.d.ts",
-		"node": "registry:dt/node#6.0.0+20161010101523"
-	}
-}

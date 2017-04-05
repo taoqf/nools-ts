@@ -89,7 +89,7 @@ export default class Tree<T> {
 			throw new TypeError();
 		}
 		order = order || IN_ORDER;
-		this.traverse(this.__root, order, function (node) {
+		this.traverse(this.__root, order, (node) => {
 			cb(node, this);
 		});
 	}
@@ -168,7 +168,7 @@ export default class Tree<T> {
 
 		order = order || IN_ORDER;
 		const ret = new Tree<T>();
-		this.traverse(this.__root, order, function (node) {
+		this.traverse(this.__root, order, (node) => {
 			ret.insert(cb(node, this));
 		});
 		return ret;
@@ -181,7 +181,7 @@ export default class Tree<T> {
 
 		order = order || IN_ORDER;
 		const ret = new Tree<T>();
-		this.traverse(this.__root, order, function (node) {
+		this.traverse(this.__root, order, (node) => {
 			if (cb(node, this)) {
 				ret.insert(node);
 			}
@@ -195,7 +195,7 @@ export default class Tree<T> {
 
 		order = order || IN_ORDER;
 		let ret = false;
-		this.traverseWithCondition(this.__root, order, function (node) {
+		this.traverseWithCondition(this.__root, order, (node) => {
 			ret = cb(node, this);
 			return !ret;
 		});
@@ -207,7 +207,7 @@ export default class Tree<T> {
 		}
 		order = order || IN_ORDER;
 		let ret = false;
-		this.traverseWithCondition(this.__root, order, function (node) {
+		this.traverseWithCondition(this.__root, order, (node) => {
 			ret = cb(node, this);
 			return ret;
 		});

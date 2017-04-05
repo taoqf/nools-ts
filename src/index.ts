@@ -1,3 +1,4 @@
+import {} from '@types/node';
 import parse from './compile/index';
 // import { parse_rules } from './compile/index';
 import FlowContainer from './flow-container';
