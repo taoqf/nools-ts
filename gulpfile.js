@@ -23,7 +23,9 @@ gulp.task('compile-ts', (cb) => {
 
 const gulpCopy = require('gulp-copy');
 
-gulp.task('copy-files', function () {
+gulp.task('copy-files', async () => {
+	await gulp.src('./src/interfaces.d.ts')
+		.pipe(gulp.dest(dest));
 	return gulp.src(['./package.json', './typings.json', './readme.md'])
 		.pipe(gulpCopy(dest));
 });
