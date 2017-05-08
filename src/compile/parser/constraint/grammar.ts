@@ -1,4 +1,4 @@
-const {Parser} = require('jison');
+const { Parser } = require('jison');
 import * as fs from 'fs';
 
 // const Parser = require("jison").Parser, fs = require("fs");
@@ -185,5 +185,8 @@ const grammar = {
 	}
 };
 
-const parser = new Parser(grammar);
+const parser = new Parser(grammar, {
+	"token-stack": true,
+	moduleMain: () => { }
+});
 fs.writeFileSync(__dirname + '/parser.js', parser.generate());
