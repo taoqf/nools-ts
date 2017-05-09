@@ -120,12 +120,13 @@ gulp.task('browserify2', function () {
 gulp.task('pack', function (cb) {
 	sequence('browserify', 'min', cb);
 });
+
 gulp.task('pack2', function (cb) {
 	sequence('browserify2', 'min', cb);
 });
 
 gulp.task('default', function (cb) {
-	sequence('clean', 'copy-files', 'compile-ts', 'copy-parser', 'pack2', cb);
+	sequence('clean', 'copy-files', 'compile-ts', 'compile-ts-umd', 'copy-parser', 'pack2', cb);
 });
 
 gulp.task('min-runtime', function () {
@@ -137,6 +138,7 @@ gulp.task('min-runtime', function () {
 		.pipe(rename('runtime.js'))
 		.pipe(gulp.dest('./dist/pack/'));
 });
+
 gulp.task('min-index', function () {
 	return gulp.src('./dist/pack-index.js')
 		.pipe(babel({
@@ -146,6 +148,7 @@ gulp.task('min-index', function () {
 		.pipe(rename('index.js'))
 		.pipe(gulp.dest('./dist/pack/'));
 });
+
 gulp.task('browserify-runtime', function () {
 	return browserify(['./dist/runtime.js'], {
 		standalone: 'nools'
@@ -153,6 +156,7 @@ gulp.task('browserify-runtime', function () {
 		.bundle()
 		.pipe(fs.createWriteStream('./dist/pack-runtime.js'));
 });
+
 gulp.task('browserify-index', function () {
 	return browserify(['./dist/index.js'], {
 		standalone: 'nools'
@@ -160,9 +164,11 @@ gulp.task('browserify-index', function () {
 		.bundle()
 		.pipe(fs.createWriteStream('./dist/pack-index.js'));
 });
+
 gulp.task('pack-test', function (cb) {
 	sequence('browserify-runtime', 'min-runtime', 'browserify-index', 'min-index', cb);
 });
+
 gulp.task('test', function (cb) {
 	sequence('clean', 'copy-files', 'compile-ts', 'copy-parser', 'pack-test', cb);
 });
