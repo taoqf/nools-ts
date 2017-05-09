@@ -1,7 +1,7 @@
-import {ICondition} from '../../interfaces';
+import { ICondition } from '../../interfaces';
 
-const _parseConstraint = require('./constraint/parser');
+import * as _parseConstraint from './constraint/parser';
 
-export default function parseConstraint(constraint: string): ICondition {
+export default function parseConstraint(constraint: string) {
 	return _parseConstraint.parse(constraint);
 }

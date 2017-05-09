@@ -38,7 +38,7 @@
 	"opts": {
 		"template1": "./node_modules/ink-docstrap/template",
 		"encoding": "utf8",
-		"destination": "./dist-api",
+		"destination": "./dist/api",
 		"recurse": true,
 		"tutorials": "",
 		"explain": false,
