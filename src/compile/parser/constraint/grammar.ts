@@ -187,6 +187,15 @@ const grammar = {
 
 const parser = new Parser(grammar, {
 	"token-stack": true,
-	moduleMain: () => { }
+	moduleMain: () => { },
+	moduleType: 'commonjs'
 });
 fs.writeFileSync(__dirname + '/parser.js', parser.generate());
+
+import * as path from 'path';
+
+const amd_parser = new Parser(grammar, {
+	"token-stack": true,
+	moduleType: 'amd'
+});
+fs.writeFileSync('./dist/umd/compile/parser/constraint/parser.js', amd_parser.generate());
