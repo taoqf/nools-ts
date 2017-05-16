@@ -122,7 +122,7 @@ gulp.task('watch', () => {
 		const tsProject = ts.createProject('./tsconfig.json');
 		tsProject.options.module = 1;	// commonjs
 		const relative = path.relative('./src/', path.dirname(file.path));
-		const dest = path.join(outDir, relative);
+		const dest = path.join(outDir, relative, 'umd');
 		return gulp.src([file.path])
 			.pipe(tsProject())
 			.pipe(gulp.dest(dest));
