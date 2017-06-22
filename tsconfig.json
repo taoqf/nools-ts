@@ -61,7 +61,9 @@
 		"suppressImplicitAnyIndexErrors": true, // default false
 		"traceResolution": true, // default false
 		"typeRoots": [],
-		"types": [],
+		"types": [
+			"node"
+		],
 		"watch": false
 	}
 }
