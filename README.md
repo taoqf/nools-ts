@@ -793,7 +793,7 @@ When declaring a flow it is defined with a default conflict resolution strategy.
 
 The default conflict resolution strategy consists of `salience` and `activationRecency`.
 
-###Examples
+### Examples
 
 **Example 1**
 
@@ -832,7 +832,7 @@ In the above example activation 2 would be fired since it is the most recent act
 ```
 In this example activation 1 would fire because it has a greater salience
 
-###Overidding The Default Strategy
+### Overidding The Default Strategy
 
 To override the default strategy you can use the `conflictResolution` method on a flow.
 
@@ -1431,7 +1431,7 @@ rule "my rule", {
 
 <a name="exists-constraint"></a>
 
-###Exists Constraint
+### Exists Constraint
 
 `exists` is the logical inversion of a `not` constraint. It checks for the existence of a fact in memory.
 
