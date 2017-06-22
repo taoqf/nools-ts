@@ -1,31 +1,33 @@
 {
-  "name": "nools-ts",
-  "version": "2.2.6",
-  "description": "nools in TypeScript.",
-  "main": "lodash-ts.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "nools"
-  ],
-  "author": "taoqf <tao_qiufeng@126.com>",
-  "license": "MIT",
-  "devDependencies": {
-    "babel-preset-es2015": "latest",
-    "browserify": "latest",
-    "del": "latest",
-    "gulp": "latest",
-    "gulp-babel": "latest",
-    "gulp-rename": "latest",
-    "gulp-sequence": "latest",
-    "gulp-typescript": "latest",
-    "gulp-uglyfly": "latest",
-    "jison": "latest",
-    "typescript": "next"
-  },
-  "dependencies": {
-    "@types/node": "latest",
-    "lodash-ts": "latest"
-  }
+	"name": "nools-ts",
+	"version": "2.2.6",
+	"description": "nools in TypeScript.",
+	"main": "dist/lodash-ts.js",
+	"scripts": {
+		"test": "npm run build",
+		"build": "gulp",
+		"prepare": "gulp"
+	},
+	"keywords": [
+		"nools"
+	],
+	"author": "taoqf <tao_qiufeng@126.com>",
+	"license": "MIT",
+	"devDependencies": {
+		"babel-preset-es2015": "latest",
+		"browserify": "latest",
+		"del": "latest",
+		"gulp": "latest",
+		"gulp-babel": "latest",
+		"gulp-rename": "latest",
+		"gulp-sequence": "latest",
+		"gulp-typescript": "latest",
+		"gulp-uglyfly": "latest",
+		"jison": "latest",
+		"typescript": "next"
+	},
+	"dependencies": {
+		"@types/node": "latest",
+		"lodash-ts": "latest"
+	}
 }

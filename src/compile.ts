@@ -59,15 +59,15 @@ export function createDefined(action: string | any, defined: Map<string, any>, s
 		const declares = keys(defined).filter((name) => {
 			return action.indexOf(name) !== -1;
 		}).map((name) => {
-			return `const ${name}=defined.get('${name}');`;
+			return `var ${name}=defined.get('${name}');`;
 		}).concat(keys(scope).filter((name) => {
 			return action.indexOf(name) !== -1;
 		}).map((name) => {
-			return `const ${name}= function(){const prop=scope.get('${name}'); return __objToStr__.call(prop)==='[object Function]' ? prop.apply(void 0, arguments) : prop;};`;
+			return `var ${name}= function(){var prop=scope.get('${name}'); return __objToStr__.call(prop)==='[object Function]' ? prop.apply(void 0, arguments) : prop;};`;
 		}));
 
 		if (declares.length) {
-			declares.unshift("const __objToStr__ = Object.prototype.toString;");
+			declares.unshift("var __objToStr__ = Object.prototype.toString;");
 		}
 		action = [declares.join(""), "return ", action, ";"].join("");
 		action = new Function("defined", "scope", action)(defined, scope);

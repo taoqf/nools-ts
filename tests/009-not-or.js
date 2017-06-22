@@ -9,7 +9,7 @@ rule MultiNotOrRule {
 		)
 	}
 	then {
-		console.log('n:', n1);
+		console.log('matched!!!');
 	}
 }
 `;
@@ -22,9 +22,10 @@ const flow = nools.compile(rule, {
 	define: defines,
 	scope: scope
 });
-// const session = flow.getSession(4, 2);
-// const session = flow.getSession(4, 2, 3);
-const session = flow.getSession(4,5);
+// const session = flow.getSession(2);	// cannot match
+// const session = flow.getSession(4, 2);	// match once
+// const session = flow.getSession(4, 2, 3);	// match once
+const session = flow.getSession(4,5);	// match twice
 session.match().then(() => {
 	console.log('done');
 	session.dispose();

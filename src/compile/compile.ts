@@ -101,7 +101,7 @@ function get_append_declares(action: string) {
 				return `${scope}.has('${v}') && (${v} = ${scope}.get('${v}'));`;
 			} else {
 				vars.add(v);
-				return `let ${v} = ${scope}.get('${v}');`;
+				return `var ${v} = ${scope}.get('${v}');`;
 			}
 		});
 	}

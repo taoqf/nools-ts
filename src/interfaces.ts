@@ -101,7 +101,6 @@ export interface IBucket {
 
 import { IPattern } from './pattern';
 import Flow from './flow';
-import { IConstraint } from './constraint';
 
 export interface IRule {
 	n: string;

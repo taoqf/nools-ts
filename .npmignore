@@ -1,0 +1,10 @@
+.vscode/
+node_modules/
+src/
+.npmignore
+.gitignore
+gulpfile.js
+jsconfig.json
+jsdoc.json
+tsconfig.json
+yarn.lock

@@ -1,4 +1,5 @@
 const gulp = require('gulp');
+const sequence = require('gulp-sequence');
 
 gulp.task('clean', () => {
 	const del = require('del');
@@ -16,7 +17,7 @@ gulp.task('compile-ts', () => {
 });
 
 gulp.task('copy-files', () => {
-	return gulp.src(['./package.json', './typings.json', './readme.md', './src/interfaces.d.ts'])
+	return gulp.src(['./src/interfaces.d.ts'])
 		.pipe(gulp.dest('./dist/'));
 });
 
@@ -129,37 +130,6 @@ gulp.task('watch', () => {
 	});
 });
 
-gulp.task('pack', (cb) => {
-	const browserify = require('browserify');
-	const fs = require('fs');
-	const sequence = require('gulp-sequence');
-	sequence('browserify', 'min', cb);
-});
+gulp.task('pack2', sequence('browserify2', 'min'));
 
-gulp.task('pack2', (cb) => {
-	const browserify = require('browserify');
-	const fs = require('fs');
-	const sequence = require('gulp-sequence');
-	sequence('browserify2', 'min', cb);
-});
-
-gulp.task('pack-test', (cb) => {
-	sequence('browserify-runtime', 'min-runtime', 'browserify-index', 'min-index', cb);
-});
-
-gulp.task('default', (cb) => {
-	const browserify = require('browserify');
-	const fs = require('fs');
-	const sequence = require('gulp-sequence');
-	sequence('clean', 'copy-files', 'compile-ts', 'compile-ts-umd', 'copy-parser', 'pack2', cb);
-});
-
-gulp.task('test', (cb) => {
-	const sequence = require('gulp-sequence');
-	sequence('clean', 'copy-files', 'compile-ts', 'copy-parser', 'pack-test', cb);
-});
-
-gulp.task('dev', (cb) => {
-	const sequence = require('gulp-sequence');
-	sequence('compile-ts', 'copy-parser', cb);
-});
+gulp.task('default', sequence('clean',  'compile-ts', 'compile-ts-umd', 'copy-parser', 'pack2'));
