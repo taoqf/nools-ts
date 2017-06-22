@@ -66,7 +66,7 @@ export function getParamList(str: string) {
 // 	if (to.split(pathSep).length === 1) {
 // 		return to;
 // 	}
-// 	return path.resolve(from, to);
+// 	return path.resolve(from, to).replace(/\\/g, '/');
 
 // };
 

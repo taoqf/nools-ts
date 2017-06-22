@@ -162,10 +162,8 @@ export default class AgendaTree extends EventEmitter {
 		const rule = this.rules[node.n], nodeRule = node.r, agendaGroup = nodeRule.g;
 		rule.tree.insert(insert);
 		this.getAgendaGroup(agendaGroup).insert(insert);
-		if (agendaGroup) {
-			if (nodeRule.af) {
-				this.setFocus(agendaGroup);
-			}
+		if (nodeRule.af) {
+			this.setFocus(agendaGroup);
 		}
 
 		fh_insert(rule.factTable, insert);
