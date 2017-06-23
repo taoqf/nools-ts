@@ -17,7 +17,7 @@ gulp.task('compile-ts', () => {
 });
 
 gulp.task('copy-files', () => {
-	return gulp.src(['./src/interfaces.d.ts'])
+	return gulp.src(['./package.json', './README.md'])
 		.pipe(gulp.dest('./dist/'));
 });
 
@@ -132,4 +132,4 @@ gulp.task('watch', () => {
 
 gulp.task('pack2', sequence('browserify2', 'min'));
 
-gulp.task('default', sequence('clean',  'compile-ts', 'compile-ts-umd', 'copy-parser', 'pack2'));
+gulp.task('default', sequence('clean', 'copy-files', 'compile-ts', 'compile-ts-umd', 'copy-parser', 'pack2'));
