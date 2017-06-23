@@ -5,7 +5,7 @@
 	"main": "dist/lodash-ts.js",
 	"scripts": {
 		"test": "npm run build",
-		"dist": "npm publish ./dist/",
+		"dist": "gulp && npm publish ./dist/",
 		"build": "gulp",
 		"prepare": "gulp"
 	},
