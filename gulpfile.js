@@ -32,7 +32,8 @@ gulp.task('min', () => {
 	const babel = require('gulp-babel');
 	return gulp.src('./dist/nools-ts.js')
 		.pipe(babel({
-			presets: ['es2015']
+			presets: ['env'],
+			plugins: ['transform-runtime']
 		}))
 		.pipe(uglyfly())
 		.pipe(rename('nools-ts.min.js'))
@@ -55,7 +56,7 @@ gulp.task('min-runtime', () => {
 	const rename = require('gulp-rename');
 	return gulp.src('./dist/pack-runtime.js')
 		.pipe(babel({
-			presets: ['es2015']
+			presets: ['env']
 		}))
 		.pipe(uglyfly())
 		.pipe(rename('runtime.js'))
