@@ -72,12 +72,10 @@ describe('fibonacci', () => {
 		});
 
 		const r = new Result();
-		console.time('s');
 		const session = flow.getSession(new Fibonacci(10), r);
 		await session.match();
 		r.result.should.equal(55);
 		session.dispose();
-		console.timeEnd('s');
 	});
 	it('classic 150', async () => {
 		const rule = `
@@ -148,12 +146,10 @@ describe('fibonacci', () => {
 		});
 
 		const r = new Result();
-		console.time('s');
 		const session = flow.getSession(new Fibonacci(150), r);
 		await session.match();
 		r.result.should.equal(9.969216677189305e+30);
 		session.dispose();
-		console.timeEnd('s');
 	});
 	it('classic 1000', async () => {
 		const rule = `
@@ -222,29 +218,11 @@ describe('fibonacci', () => {
 			define: defines,
 			scope: scope
 		});
-		// const Fibonacci = flow.getDefined("fibonacci"), Result = flow.getDefined("result");
-
-		// const r1 = new Result();
-		// console.time('s');
-		// const session1 = flow.getSession(new Fibonacci(10), r1);
-		// session1.match().then(function () {
-		// 	console.log("10, %d", r1.result);
-		// 	session1.dispose();
-		// });
-
-		// const r2 = new Result();
-		// const session2 = flow.getSession(new Fibonacci(150), r2);
-		// session2.match().then(function () {
-		// 	console.log("150, %d", r2.result);
-		// 	session2.dispose();
-		// });
 
 		const r = new Result();
-		console.time('s');
 		const session = flow.getSession(new Fibonacci(1000), r);
 		await session.match();
 		r.result.should.equal(4.346655768693743e+208);
 		session.dispose();
-		console.timeEnd('s');
 	});
 });
