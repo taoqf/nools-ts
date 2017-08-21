@@ -1,6 +1,6 @@
 const nools = require('../dist/');
 
-require('should');
+// require('should');
 
 describe('salience', () => {
 	it('rules should be fired in order', async () => {

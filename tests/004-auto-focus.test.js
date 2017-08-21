@@ -1,6 +1,6 @@
 const nools = require('../dist/');
 
-require('should');
+// require('should');
 
 describe('auto focus', () => {
 	it('rule B to C will be auto focused', async () => {

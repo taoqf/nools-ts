@@ -1,6 +1,6 @@
 const nools = require('../dist/');
 
-require('should');
+// require('should');
 
 describe('global', () => {
 	it('should have properties', async () => {

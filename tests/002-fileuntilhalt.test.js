@@ -1,6 +1,6 @@
 const nools = require('../dist/');
 
-require('should');
+// require('should');
 
 describe('fire until halt', () => {
 	it('should halt when count to 10000', async () => {

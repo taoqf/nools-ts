@@ -1,6 +1,6 @@
 const nools = require('../dist/');
 
-require('should');
+// require('should');
 
 describe('or', () => {
 	it('should fired 3 times.', async () => {

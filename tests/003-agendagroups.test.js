@@ -1,6 +1,6 @@
 const nools = require('../dist/');
 
-require('should');
+// require('should');
 
 describe('agenda groups', () => {
 	it('should only match ag1', async () => {

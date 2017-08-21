@@ -4,10 +4,12 @@
 	"description": "nools in TypeScript.",
 	"main": "dist/lodash-ts.js",
 	"scripts": {
-		"test": "mocha ./tests/**.test.js --max-old-space-size=4096 --harmony --check-leaks",
+		"test": "mocha ./tests/should.js ./tests/**.test.js --max-old-space-size=4096 --harmony --check-leaks",
 		"converage": "istanbul cover -hook-run-in-content node_modules/mocha/bin/_mocha ./tests/**.test.js --max-old-space-size=4096 --harmony --check-leaks",
 		"dist": "gulp && npm publish ./dist/",
-		"build": "gulp"
+		"build": "gulp",
+		"karma": "karma start ./tests/karma.unit.js",
+		"help": "cd ./tests/ && mocha --recursive -R markdown > spec.md"
 	},
 	"keywords": [
 		"nools"
@@ -16,9 +18,6 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/mocha": "latest",
-		"babel-core": "latest",
-		"babel-plugin-transform-runtime": "latest",
-		"babel-preset-env": "latest",
 		"browserify": "latest",
 		"gulp": "latest",
 		"gulp-babel": "latest",
@@ -28,8 +27,16 @@
 		"gulp-uglyfly": "latest",
 		"istanbul": "latest",
 		"jison": "latest",
+		"karma": "^1.6.0",
+		"karma-chrome-launcher": "latest",
+		"karma-mocha": "latest",
+		"karma-mocha-reporter": "latest",
+		"karma-phantomjs-launcher": "latest",
+		"karma-should": "latest",
+		"karma-webpack": "latest",
 		"mocha": "latest",
-		"typescript": "next"
+		"typescript": "next",
+		"webpack": "latest"
 	},
 	"dependencies": {
 		"@types/node": "latest",

@@ -4,7 +4,7 @@ const rt = require('../dist/runtime');
 
 // const { should } = require('chai');
 // should();
-require('should');
+// require('should');
 
 describe('hello world', () => {
 	let r;

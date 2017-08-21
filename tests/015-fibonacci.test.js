@@ -1,6 +1,6 @@
 const nools = require('../dist/');
 
-require('should');
+// require('should');
 
 describe('fibonacci', () => {
 	it('classic 10', async () => {
