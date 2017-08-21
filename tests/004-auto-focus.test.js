@@ -1,4 +1,10 @@
-const rule = `
+const nools = require('../dist/');
+
+require('should');
+
+describe('auto focus', () => {
+	it('rule B to C will be auto focused', async () => {
+		const rule = `
 rule Bootstrap {
     when{
         a : State a.name == 'A' && a.state == 'NOT_RUN';
@@ -47,38 +53,37 @@ rule 'B to D' {
     }
 }
 `;
-let nools = require('../dist/');
 
-const defines = new Map();
-const scope = new Map();
+		const defines = new Map();
+		const scope = new Map();
 
-class State {
-	constructor(name, state) {
-		this.name = name;
-		this.state = state;
-	}
-}
+		class State {
+			constructor(name, state) {
+				this.name = name;
+				this.state = state;
+			}
+		}
 
-defines.set('State', State);
+		defines.set('State', State);
 
-const flow = nools.compile(rule, {
-	name: 'test',
-	define: defines,
-	scope: scope
-});
-const fired = [];
-const session = flow.getSession(new State("A", "NOT_RUN"),
-	new State("B", "NOT_RUN"),
-	new State("C", "NOT_RUN"),
-	new State("D", "NOT_RUN"));
-session.on("fire", (name) => {
-	fired.push(name);
-}).match().then(() => {
-	console.log('done');
-	console.log(fired);  //[ 'Hello World' ]
-	session.dispose();
-	process.exit();
-}, (err) => {
-	console.error(err);
-	process.exit();
+		const flow = nools.compile(rule, {
+			name: 'test',
+			define: defines,
+			scope: scope
+		});
+		const fired = [];
+		const session = flow.getSession(new State("A", "NOT_RUN"),
+			new State("B", "NOT_RUN"),
+			new State("C", "NOT_RUN"),
+			new State("D", "NOT_RUN"));
+		await session.on("fire", (name) => {
+			fired.push(name);
+		}).match();
+		session.dispose();
+		fired.should.be.eql([
+			"Bootstrap",
+			"A to B",
+			"B to C",
+			"B to D"]);
+	});
 });
