@@ -2,5 +2,7 @@ language: node_js
 
 script: npm test
 
+os: linux
+
 node_js:
   - node
