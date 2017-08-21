@@ -19,6 +19,8 @@
 	"devDependencies": {
 		"@types/mocha": "latest",
 		"babel-core": "latest",
+		"babel-plugin-transform-runtime": "latest",
+		"babel-preset-env": "latest",
 		"browserify": "latest",
 		"gulp": "latest",
 		"gulp-babel": "latest",
@@ -28,7 +30,7 @@
 		"gulp-uglyfly": "latest",
 		"istanbul": "latest",
 		"jison": "latest",
-		"karma": "^1.6.0",
+		"karma": "latest",
 		"karma-chrome-launcher": "latest",
 		"karma-mocha": "latest",
 		"karma-mocha-reporter": "latest",
