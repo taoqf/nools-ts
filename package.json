@@ -4,7 +4,7 @@
 	"description": "nools in TypeScript.",
 	"main": "dist/lodash-ts.js",
 	"scripts": {
-		"test": "npm run build && mocha ./tests/**.test.js --max-old-space-size=4096 --harmony --check-leaks",
+		"test": "mocha ./tests/**.test.js --max-old-space-size=4096 --harmony --check-leaks",
 		"dist": "gulp && npm publish ./dist/",
 		"build": "gulp"
 	},
