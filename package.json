@@ -18,6 +18,7 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/mocha": "latest",
+		"babel-core": "latest",
 		"browserify": "latest",
 		"gulp": "latest",
 		"gulp-babel": "latest",
