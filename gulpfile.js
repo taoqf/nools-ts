@@ -1,20 +1,11 @@
 const gulp = require('gulp');
 const sequence = require('gulp-sequence');
+const shell = require('gulp-shell');
 
-gulp.task('clean', () => {
-	const del = require('del');
-	return del('./dist/');
-});
+gulp.task('clean', shell.task('rm -rf ./dist/'));
 
-gulp.task('compile-ts', () => {
-	const ts = require('gulp-typescript');
-	const tsProject = ts.createProject('./tsconfig.json');
-	tsProject.options.module = 1;	// commonjs
-	const dest = tsProject.options.outDir;
-	return tsProject.src()
-		.pipe(tsProject())
-		.pipe(gulp.dest(dest));
-});
+gulp.task('compile-ts', shell.task('tsc'));
+gulp.task('compile-ts-umd', shell.task('tsc -m umd --outDir ./dist/umd/'));
 
 gulp.task('copy-files', () => {
 	return gulp.src(['./package.json', './README.md'])
@@ -35,8 +26,8 @@ gulp.task('browserify', () => {
 		.pipe(fs.createWriteStream('./dist/nools-ts.js'));
 });
 
-const rename = require('gulp-rename');
 gulp.task('min', () => {
+	const rename = require('gulp-rename');
 	const uglyfly = require('gulp-uglyfly');
 	const babel = require('gulp-babel');
 	return gulp.src('./dist/nools-ts.js')
@@ -61,6 +52,7 @@ gulp.task('browserify2', () => {
 gulp.task('min-runtime', () => {
 	const uglyfly = require('gulp-uglyfly');
 	const babel = require('gulp-babel');
+	const rename = require('gulp-rename');
 	return gulp.src('./dist/pack-runtime.js')
 		.pipe(babel({
 			presets: ['es2015']
@@ -102,33 +94,7 @@ gulp.task('browserify-index', () => {
 		.pipe(fs.createWriteStream('./dist/pack-index.js'));
 });
 
-gulp.task('compile-ts-umd', (cb) => {
-	const ts = require('gulp-typescript');
-	const tsProject = ts.createProject('./tsconfig.json');
-	tsProject.options.module = 3;	// umd
-	const path = require('path');
-	const dest = path.join(tsProject.options.outDir, 'umd');
-	return gulp.src(['./src/**/*.ts'])
-		.pipe(tsProject())
-		.pipe(gulp.dest(dest));
-});
-
-gulp.task('watch', () => {
-	const ts = require('gulp-typescript');
-	const tsProject = ts.createProject('./tsconfig.json');
-	tsProject.options.module = 1;	// commonjs
-	const outDir = tsProject.options.outDir;
-	const path = require('path');
-	return gulp.watch(['./src/**/*.ts'], (file) => {
-		const tsProject = ts.createProject('./tsconfig.json');
-		tsProject.options.module = 1;	// commonjs
-		const relative = path.relative('./src/', path.dirname(file.path));
-		const dest = path.join(outDir, relative, 'umd');
-		return gulp.src([file.path])
-			.pipe(tsProject())
-			.pipe(gulp.dest(dest));
-	});
-});
+gulp.task('watch-ts', shell.task('tsc -w'));
 
 gulp.task('pack2', sequence('browserify2', 'min'));
 

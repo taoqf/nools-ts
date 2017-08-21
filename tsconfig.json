@@ -1,8 +1,15 @@
 {
+	"exclude": [
+		"./dist/"
+	],
+	"include": [
+		"./src/**/*.ts"
+	],
+	"compileOnSave": false,
 	"compilerOptions": {
 		"module": "commonjs",
-		"target": "es6",
-		"noImplicitAny": false,
+		"target": "esnext",
+		"noImplicitAny": true,
 		"sourceMap": false,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
@@ -27,14 +34,14 @@
 		"inlineSources": false,
 		"isolatedModules": false,
 		"lib": [
-			"es6",
-			"es7",
+			// "es6",
+			"esnext",
 			"dom"
 		],
-		"listFiles": true, // default false
-		"listEmittedFiles": true, // default false
+		"listFiles": false,
+		"listEmittedFiles": false,
 		"locale": "zh_CN",
-		"newLine": "CRLF",
+		"newLine": "lf",
 		"noEmit": false,
 		"moduleResolution": "node",
 		"noEmitHelpers": false,
@@ -59,8 +66,10 @@
 		"stripInternal": false,
 		"suppressExcessPropertyErrors": false,
 		"suppressImplicitAnyIndexErrors": true, // default false
-		"traceResolution": true, // default false
-		"typeRoots": [],
+		"traceResolution": false,
+		"typeRoots": [
+			// "./node_modules/@types/"
+		],
 		"types": [
 			"node"
 		],
