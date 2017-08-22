@@ -5,7 +5,7 @@
 	"main": "dist/lodash-ts.js",
 	"scripts": {
 		"test": "mocha -R dot ./tests/should.js ./tests/**.test.js --max-old-space-size=4096 --harmony --check-leaks",
-		"converage": "istanbul cover -hook-run-in-content node_modules/mocha/bin/_mocha ./tests/**.test.js --max-old-space-size=4096 --harmony --check-leaks",
+		"converage": "istanbul cover -hook-run-in-content node_modules/mocha/bin/_mocha ./tests/should.js ./tests/**.test.js --max-old-space-size=4096 --harmony --check-leaks",
 		"dist": "gulp && npm publish ./dist/",
 		"build": "gulp",
 		"karma": "karma start ./tests/karma.unit.js"

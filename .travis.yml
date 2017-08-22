@@ -1,8 +1,5 @@
 language: node_js
 os: linux
-node_js:
-  - node
-
+node_js: node
+before_script: npm run build
 script: npm test
-before_script:
-  - npm run build
