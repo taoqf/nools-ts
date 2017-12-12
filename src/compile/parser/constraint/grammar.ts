@@ -1,5 +1,5 @@
 const { Parser } = require('jison');
-import * as fs from 'fs';
+const fs = require('fs');
 
 // const Parser = require("jison").Parser, fs = require("fs");
 

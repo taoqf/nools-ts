@@ -34,7 +34,6 @@
 		"inlineSources": false,
 		"isolatedModules": false,
 		"lib": [
-			// "es6",
 			"esnext",
 			"dom"
 		],
@@ -51,7 +50,6 @@
 		"maxNodeModuleJsDepth": 0,
 		"noLib": false,
 		"outDir": "./dist",
-		// "outFile": "./dist/tqf",
 		"noFallthroughCasesInSwitch": false,
 		"noResolve": false,
 		"noUnusedLocals": false,
@@ -59,13 +57,12 @@
 		"paths": {},
 		"preserveConstEnums": false,
 		"pretty": true,
-		// "mapRoot": "",
 		"removeComments": false,
-		"skipDefaultLibCheck": true, // default false
-		"skipLibCheck": true, // default false
+		"skipDefaultLibCheck": true,
+		"skipLibCheck": true,
 		"stripInternal": false,
 		"suppressExcessPropertyErrors": false,
-		"suppressImplicitAnyIndexErrors": true, // default false
+		"suppressImplicitAnyIndexErrors": true,
 		"traceResolution": false,
 		"typeRoots": [
 			// "./node_modules/@types/"
