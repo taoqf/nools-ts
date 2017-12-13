@@ -15,6 +15,7 @@ gulp.task('copy-files', () => {
 
 gulp.task('copy-parser', () => {
 	require('./dist/compile/parser/constraint/grammar.js');
+	require('./dist/es/compile/parser/constraint/grammar.js');
 });
 
 gulp.task('browserify', () => {
