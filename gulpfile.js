@@ -18,60 +18,6 @@ gulp.task('copy-parser', () => {
 	require('./dist/es/compile/parser/constraint/grammar.js');
 });
 
-gulp.task('browserify', () => {
-	const browserify = require('browserify');
-	const fs = require('fs');
-	return browserify(['./dist/index.js'], {
-		standalone: 'nools'
-	})
-		.bundle()
-		.pipe(fs.createWriteStream('./dist/nools-ts.js'));
-});
-
-gulp.task('min', () => {
-	const rename = require('gulp-rename');
-	const uglyfly = require('gulp-uglyfly');
-	const babel = require('gulp-babel');
-	return gulp.src('./dist/nools-ts.js')
-		.pipe(babel())
-		.pipe(uglyfly())
-		.pipe(rename('nools-ts.min.js'))
-		.pipe(gulp.dest('./dist/'));
-});
-
-gulp.task('browserify2', () => {
-	const browserify = require('browserify');
-	const fs = require('fs');
-	// const babelify = require('babelify');
-	return browserify(['./dist/runtime.js'], {
-		standalone: 'nools'
-	})
-		// .transform(babelify)
-		.bundle()
-		.pipe(fs.createWriteStream('./dist/nools-ts.js'));
-});
-
-gulp.task('min-runtime', () => {
-	const uglyfly = require('gulp-uglyfly');
-	const babel = require('gulp-babel');
-	const rename = require('gulp-rename');
-	return gulp.src('./dist/pack-runtime.js')
-		.pipe(babel())
-		.pipe(uglyfly())
-		.pipe(rename('runtime.js'))
-		.pipe(gulp.dest('./dist/pack/'));
-});
-
-gulp.task('min-index', () => {
-	const uglyfly = require('gulp-uglyfly');
-	const babel = require('gulp-babel');
-	return gulp.src('./dist/pack-index.js')
-		.pipe(babel())
-		.pipe(uglyfly())
-		.pipe(rename('index.js'))
-		.pipe(gulp.dest('./dist/pack/'));
-});
-
 gulp.task('browserify-runtime', () => {
 	const browserify = require('browserify');
 	const fs = require('fs');
@@ -79,21 +25,46 @@ gulp.task('browserify-runtime', () => {
 		standalone: 'nools'
 	})
 		.bundle()
-		.pipe(fs.createWriteStream('./dist/pack-runtime.js'));
+		.pipe(fs.createWriteStream('./dist/rt.js'));
 });
 
-gulp.task('browserify-index', () => {
-	const browserify = require('browserify');
-	const fs = require('fs');
-	return browserify(['./dist/index.js'], {
-		standalone: 'nools'
-	})
-		.bundle()
-		.pipe(fs.createWriteStream('./dist/pack-index.js'));
+gulp.task('min-runtime', () => {
+	const rename = require('gulp-rename');
+	const uglyfly = require('gulp-uglyfly');
+	const babel = require('gulp-babel');
+	return gulp.src('./dist/rt.js')
+		.pipe(babel())
+		.pipe(uglyfly())
+		.pipe(rename('rt.min.js'))
+		.pipe(gulp.dest('./dist/'));
+});
+
+gulp.task('runtime', sequence('browserify-runtime', 'min-runtime'));
+
+gulp.task('browserify-nools', () => {
+	const rename = require('gulp-rename');
+	const uglyfly = require('gulp-uglyfly');
+	const babel = require('gulp-babel');
+	return gulp.src('./dist/index.js')
+		.pipe(babel())
+		.pipe(uglyfly())
+		.pipe(rename('nools.js'))
+		.pipe(gulp.dest('./dist/'));
+});
+
+gulp.task('min-nools', () => {
+	const rename = require('gulp-rename');
+	const uglyfly = require('gulp-uglyfly');
+	const babel = require('gulp-babel');
+	return gulp.src('./dist/nools.js')
+		.pipe(babel())
+		.pipe(uglyfly())
+		.pipe(rename('nools.min.js'))
+		.pipe(gulp.dest('./dist/'));
 });
 
 gulp.task('watch-ts', shell.task('tsc -w'));
 
-gulp.task('pack2', sequence('browserify2', 'min'));
+gulp.task('nools', sequence('browserify-nools', 'min-nools'));
 
-gulp.task('default', sequence('clean', 'copy-files', 'compile-ts', 'compile-ts-umd', 'compile-ts-es', 'copy-parser', 'pack2'));
+gulp.task('default', sequence('clean', 'copy-files', 'compile-ts', 'compile-ts-umd', 'compile-ts-es', 'copy-parser', ['runtime', 'nools']));

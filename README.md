@@ -1702,7 +1702,7 @@ Nools is compatible with amd(requirejs) and can also be used in a standard scrip
 In this example we compile rules definitions inlined in a script tag.
 
 ```html
-<script type="text/javascript" src="nools.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/nools-ts"></script>
 <script type="text/nools" id="simple">
 define Message {
     message : "",
