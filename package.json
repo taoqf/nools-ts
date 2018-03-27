@@ -1,8 +1,8 @@
 {
 	"name": "nools-ts",
-	"version": "2.3.3",
+	"version": "2.3.4",
 	"description": "nools in TypeScript.",
-	"main": "dist/lodash-ts.js",
+	"main": "nools-ts.min.js",
 	"scripts": {
 		"test": "mocha -R dot --require should ./tests/**.test.js --max-old-space-size=4096 --harmony --check-leaks",
 		"converage": "istanbul cover -hook-run-in-content node_modules/mocha/bin/_mocha --require should ./tests/**.test.js --max-old-space-size=4096 --harmony --check-leaks",
