@@ -42,14 +42,13 @@ gulp.task('min-runtime', () => {
 gulp.task('runtime', sequence('browserify-runtime', 'min-runtime'));
 
 gulp.task('browserify-nools', () => {
-	const rename = require('gulp-rename');
-	const uglyfly = require('gulp-uglyfly');
-	const babel = require('gulp-babel');
-	return gulp.src('./dist/index.js')
-		.pipe(babel())
-		.pipe(uglyfly())
-		.pipe(rename('nools.js'))
-		.pipe(gulp.dest('./dist/'));
+	const browserify = require('browserify');
+	const fs = require('fs');
+	return browserify(['./dist/index.js'], {
+		standalone: 'nools'
+	})
+		.bundle()
+		.pipe(fs.createWriteStream('./dist/nools.js'));
 });
 
 gulp.task('min-nools', () => {
