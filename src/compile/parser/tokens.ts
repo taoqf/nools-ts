@@ -52,7 +52,7 @@ function parseRules(str: string) {
 	let ruleLine: string;
 	for (let i = 0; i < l && (ruleLine = ruleLines[i].replace(/^\s*|\s*$/g, "").replace(/\n/g, "")); i++) {
 		if (!isWhiteSpace(ruleLine)) {
-			let constraint = [] as ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint;
+			let constraint = [] as unknown as ISimpleConstraint | INomalConstraint | INotConstraint | IFromstraint | IOrConstraint;
 			if (predicateRegExp.test(ruleLine)) {	// "not", "or", "exists"
 				const m = ruleLine.match(predicateRegExp);
 				const pred = m[1].replace(/^\s*|\s*$/g, "");

@@ -5,7 +5,7 @@ if (typeof setImmediate === "function") {
 	// In IE10, or use https://github.com/NobleJS/setImmediate
 	if (typeof window !== "undefined") {
 		nextTick = (task: () => void) => {
-			window.setImmediate(task);
+			setImmediate(task);
 		};
 	} else {
 		nextTick = setImmediate;

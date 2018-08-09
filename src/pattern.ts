@@ -203,7 +203,7 @@ function _object_pattern(type: patternType, cls: string, class_type: any, alias:
 		const atm = create_hash_constraint(alias, store);
 		constraints.push(atm);
 	}
-	const csts = constraints.map((c)=>{
+	const csts = constraints.map((c) => {
 		return cs.push(c) - 1;
 	});
 
@@ -360,7 +360,7 @@ function parsePattern_not(condition: ICondition, cs: IConstraint[]): [IPattern] 
 	if (condition[4] && condition[4].from) {
 		return [
 			from_not_pattern(
-				condition[0][0],
+				condition[0][0] as string,
 				getParamType(condition[0][1], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
@@ -373,7 +373,7 @@ function parsePattern_not(condition: ICondition, cs: IConstraint[]): [IPattern] 
 	} else {
 		return [
 			not_pattern(
-				condition[0][0],
+				condition[0][0] as string,
 				getParamType(condition[0][1], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
@@ -399,7 +399,7 @@ function parsePattern_exists(condition: ICondition, cs: IConstraint[]): [IPatter
 	if (condition[4] && condition[4].from) {
 		return [
 			from_exists_pattern(
-				condition[0][0],
+				condition[0][0] as string,
 				getParamType(condition[0][1], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
@@ -412,7 +412,7 @@ function parsePattern_exists(condition: ICondition, cs: IConstraint[]): [IPatter
 	} else {
 		return [
 			exists_pattern(
-				condition[0][0],
+				condition[0][0] as string,
 				getParamType(condition[0][1], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
@@ -436,7 +436,7 @@ function parsePattern_def(condition: ICondition, cs: IConstraint[]): [IFromPatte
 	if (condition[4] && condition[4].from) {
 		return [
 			from_pattern(
-				condition[0][0],
+				condition[0][0] as string,
 				getParamType(condition[0][1], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),
@@ -449,7 +449,7 @@ function parsePattern_def(condition: ICondition, cs: IConstraint[]): [IFromPatte
 	} else {
 		return [
 			object_pattern(
-				condition[0][0],
+				condition[0][0] as string,
 				getParamType(condition[0][1], condition.scope),
 				condition[1] as string || "m",
 				parseConstraint(condition[2] || "true"),

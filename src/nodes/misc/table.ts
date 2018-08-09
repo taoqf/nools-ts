@@ -1,6 +1,6 @@
-import {ITreeNode} from '../../leafy/tree';
+import { ITreeNode } from '../../leafy/tree';
 import AVLTree from '../../leafy/avl-tree';
-import TupleEntry, {ITuple} from './tuple-entry';
+import TupleEntry, { ITuple } from './tuple-entry';
 
 export interface IEntry {
 	key: number;
@@ -108,10 +108,22 @@ export default class Table extends AVLTree<ITreeData>{
 		super(compare);
 	}
 	clearCache() {
-		this.hasGTCache && this.gtCache.clear() && (this.hasGTCache = false);
-		this.hasGTECache && this.gteCache.clear() && (this.hasGTECache = false);
-		this.hasLTCache && this.ltCache.clear() && (this.hasLTCache = false);
-		this.hasLTECache && this.lteCache.clear() && (this.hasLTECache = false);
+		if (this.hasGTCache) {
+			this.gtCache.clear();
+			this.hasGTCache = false
+		}
+		if (this.hasGTECache) {
+			this.gteCache.clear();
+			this.hasGTECache = false
+		}
+		if (this.hasLTCache) {
+			this.ltCache.clear();
+			this.hasLTCache = false
+		}
+		if (this.hasLTECache) {
+			this.lteCache.clear();
+			this.hasLTECache = false
+		}
 	}
 
 	contains_by_key(key: IEntry) {
